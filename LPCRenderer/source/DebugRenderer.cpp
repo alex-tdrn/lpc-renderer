@@ -21,6 +21,13 @@ void DebugRenderer::render(Scene* scene) const
 	{
 		if(!prop.enabled())
 			continue;
+		if(highlightProps)
+		{
+			if(prop.highlighted())
+				ShaderManager::debug()->set("color", highlightColor);
+			else
+				ShaderManager::debug()->set("color", meshColor);
+		}
 		ShaderManager::debug()->set("model", prop.getModelMatrix());
 		prop.getMesh()->getRepresentation()->use();
 	}
@@ -30,5 +37,8 @@ void DebugRenderer::drawUI()
 {
 	Renderer::drawUI();
 	ImGui::ColorEdit3("Mesh Color", &meshColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	ImGui::Checkbox("Highlight Props", &highlightProps);
+	if(highlightProps)
+		ImGui::ColorEdit3("Highlight Color", &meshColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
 	ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 16.0f);
 }

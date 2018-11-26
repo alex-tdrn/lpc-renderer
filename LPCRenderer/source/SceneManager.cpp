@@ -40,5 +40,20 @@ Scene* SceneManager::load(std::filesystem::path const& filename)
 			props.back().setTransformation(translationMatrix * rotationMatrix);
 		}
 	}
-	return add(std::make_unique<Scene>(std::move(props)));
+	if(importIntoActiveScene && getActive())
+	{
+		getActive()->addProps(std::move(props));
+		return getActive();
+	}
+	else
+	{
+		return add(std::make_unique<Scene>(std::move(props)));
+	}
+}
+
+void SceneManager::drawUI(bool* open)
+{
+	Manager<Scene, true>::drawUI(open, [&](){
+		ImGui::Checkbox("Import Into Active Scene", &importIntoActiveScene);
+	});
 }

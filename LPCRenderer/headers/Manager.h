@@ -48,7 +48,8 @@ public:
 		return impl::BaseClassWithActiveInstance<T>::activeResource;
 	}
 
-	static void drawUI(bool* open)
+	template <typename F = void*>
+	static void drawUI(bool* open, F additionalUICallback = (void*)(nullptr))
 	{
 		static T* selected = [&](){
 			if constexpr(ActiveInstance)
@@ -61,6 +62,8 @@ public:
 		ImGui::Columns(2);
 
 		ImGui::SetColumnWidth(-1, ImGui::GetTextLineHeightWithSpacing() * 15);
+		if constexpr(!std::is_same_v<F, void*>)
+			additionalUICallback();
 		ImGui::BeginChild(("###SelectionArea" + name).data());
 		int id = 0;
 		for(auto& resource : store)

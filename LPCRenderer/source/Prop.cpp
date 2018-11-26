@@ -32,6 +32,16 @@ void Prop::disable()
 	_enabled = false;
 }
 
+bool Prop::highlighted() const
+{
+	return _highlighted;
+}
+
+void Prop::setHighlighted(bool flag)
+{
+	_highlighted = flag;
+}
+
 glm::mat4 Prop::getModelMatrix() const
 {
 	glm::mat4 globalScaling{1.0f};

@@ -22,6 +22,7 @@ public:
 public:
 	float getGlobalScaling() const;
 	void addProp(Prop&& prop);
+	void addProps(std::vector<Prop> && props);
 	std::vector<Prop> const& getProps() const;
 	Camera& getCamera();
 	void drawUI();

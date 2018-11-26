@@ -3,15 +3,12 @@
 
 Scene::Scene(Prop&& prop)
 {
-	prop.scene = this;
-	props.push_back(std::move(prop));
+	addProp(std::move(prop));
 }
 
 Scene::Scene(std::vector<Prop>&& props)
-	:props(std::move(props))
 {
-	for(auto& prop : this->props)
-		prop.scene = this;
+	addProps(std::move(props));
 }
 
 std::string Scene::getNamePrefix() const
@@ -26,7 +23,18 @@ float Scene::getGlobalScaling() const
 
 void Scene::addProp(Prop&& prop)
 {
+	prop.scene = this;
 	props.push_back(prop);
+}
+
+void Scene::addProps(std::vector<Prop>&& props)
+{
+	this->props.reserve(this->props.size() + props.size());
+	for(auto& prop : props)
+	{
+		prop.scene = this;
+		this->props.push_back(std::move(prop));
+	}
 }
 
 std::vector<Prop> const& Scene::getProps() const
@@ -48,6 +56,8 @@ void Scene::drawUI()
 	ImGui::Separator();
 	static std::size_t currentProp = 0;
 	static bool noneSelected = false;
+	for(auto& prop : props)
+		prop.setHighlighted(false);
 	if(currentProp >= props.size())
 		currentProp = 0;
 	if(props.empty())
@@ -82,6 +92,7 @@ void Scene::drawUI()
 
 	if(!noneSelected)
 	{
+		props[currentProp].setHighlighted(true);
 		props[currentProp].drawUI();
 		ImGui::Separator();
 	}

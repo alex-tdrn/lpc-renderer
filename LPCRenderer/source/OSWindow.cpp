@@ -224,7 +224,10 @@ void OSWindow::callback::filesDropped(GLFWwindow* window, int count, const char*
 		if(path.extension().string() == ".ply")
 		{
 			Mesh* mesh = MeshManager::load(path);
-			SceneManager::add(std::make_unique<Scene>(Prop{mesh}));
+			if(SceneManager::importIntoActiveScene && SceneManager::getActive())
+				SceneManager::getActive()->addProp(Prop{mesh});
+			else
+				SceneManager::add(std::make_unique<Scene>(Prop{mesh}));
 		}
 		else if(path.extension().string() == ".conf")
 		{
