@@ -2,4 +2,4 @@
 *.user
 x64
 LPCRenderer/x64
-imgui.ini
+*.ini
