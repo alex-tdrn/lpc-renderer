@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Libraries">
+      <UniqueIdentifier>{842d902e-5569-4c32-bf43-1a14396274ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{177297db-afa4-4306-9998-096a930335c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Utilities">
+      <UniqueIdentifier>{666df0dd-0933-4e53-a31f-cf1a5c4a24f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Management">
+      <UniqueIdentifier>{f2892704-72ee-44e7-a644-52072d12f721}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="libraries\glad\glad.c">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_demo.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_draw.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_impl_glfw_gl3.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DebugRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\OSWindow.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Profiler.cpp">
+      <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Mesh.cpp">
+      <Filter>Resource Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Prop.cpp" />
+    <ClCompile Include="source\Scene.cpp" />
+    <ClCompile Include="source\ShaderManager.cpp" />
+    <ClCompile Include="source\Shader.cpp" />
+    <ClCompile Include="source\MeshManager.cpp" />
+    <ClCompile Include="source\RendererManager.cpp" />
+    <ClCompile Include="source\SceneManager.cpp" />
+    <ClCompile Include="source\MeshRepresentation.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Camera.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="libraries\stb_truetype.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\stb_rect_pack.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\KHR\khrplatform.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui_internal.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui_impl_glfw_gl3.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GLFW\glfw3.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\GLFW\glfw3native.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\glad\glad.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Renderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Shader.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\DebugRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\AutoName.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\OSWindow.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Profiler.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\UIWindow.h">
+      <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Manager.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Mesh.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\stb_textedit.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Prop.h" />
+    <ClInclude Include="headers\Scene.h" />
+    <ClInclude Include="headers\ShaderManager.h" />
+    <ClInclude Include="headers\MeshManager.h" />
+    <ClInclude Include="headers\RendererManager.h" />
+    <ClInclude Include="headers\SceneManager.h" />
+    <ClInclude Include="headers\MeshRepresentation.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Camera.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\debug.vert" />
+    <None Include="shaders\debug.frag" />
+  </ItemGroup>
+</Project>
