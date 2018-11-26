@@ -218,11 +218,19 @@ void OSWindow::callback::keyPressed(GLFWwindow* window, int key, int keycode, in
 
 void OSWindow::callback::filesDropped(GLFWwindow* window, int count, const char** paths)
 {
-	std::vector<Prop> props;
 	for(int i = 0; i < count; i++)
-		for(auto mesh : MeshManager::load({paths[i]}))
-			props.emplace_back(mesh);
-	SceneManager::add(std::make_unique<Scene>(std::move(props)));
+	{
+		std::filesystem::path path{paths[i]};
+		if(path.extension().string() == ".ply")
+		{
+			Mesh* mesh = MeshManager::load(path);
+			SceneManager::add(std::make_unique<Scene>(Prop{mesh}));
+		}
+		else if(path.extension().string() == ".conf")
+		{
+			SceneManager::load(path);
+		}
+	}
 }
 
 void APIENTRY OSWindow::callback::debug(GLenum source, GLenum type, GLuint id, GLenum severity,

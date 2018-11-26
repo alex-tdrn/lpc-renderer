@@ -78,7 +78,6 @@ public:
 
 		ImGui::NextColumn();
 		ImGui::BeginChild(("###Selected" + name).data());
-		ImGui::SameLine();
 		if(selected)
 			selected->drawUI();
 		ImGui::EndChild();

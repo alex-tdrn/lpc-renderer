@@ -7,7 +7,7 @@
 
 std::string const Manager<Mesh>::name = "Meshes";
 
-static Mesh* loadPLY(std::filesystem::path const& filename)
+Mesh* MeshManager::load(std::filesystem::path const& filename)
 {
 	std::ifstream fileStream{filename, std::ios::binary};
 	if(fileStream.fail())
@@ -26,37 +26,4 @@ static Mesh* loadPLY(std::filesystem::path const& filename)
 	auto mesh = std::make_unique<Mesh>(std::move(vertices));
 	mesh->setName(filename.stem().string());
 	return MeshManager::add(std::move(mesh));
-}
-
-std::vector<Mesh*> MeshManager::load(std::filesystem::path const& filename)
-{
-	if(filename.extension().string() == ".ply")
-	{
-		return {loadPLY(filename)};
-	}
-	else if(filename.extension().string() == ".conf")
-	{
-		std::vector<Mesh*> ret;
-		std::ifstream filestream{filename};
-		if(filestream.fail())
-		{
-			std::cerr << "Failed to open" + filename.string();
-			std::terminate();
-		}
-		std::string token;
-		while(filestream >> token)
-		{
-			if(token == "bmesh")
-			{
-				std::string meshName;
-				filestream >> meshName;
-				ret.push_back(loadPLY(filename.parent_path() / meshName));
-			}
-		}
-		return ret;
-	}
-	else
-	{
-		return {};
-	}
 }

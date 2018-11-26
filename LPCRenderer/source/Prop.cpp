@@ -1,6 +1,7 @@
 #include "Prop.h"
 #include "Mesh.h"
 #include "MeshManager.h"
+#include "Scene.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
@@ -33,7 +34,15 @@ void Prop::disable()
 
 glm::mat4 Prop::getModelMatrix() const
 {
-	return transform * glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
+	glm::mat4 globalScaling{1.0f};
+	if(scene)
+		globalScaling = glm::scale(globalScaling, glm::vec3{scene->getGlobalScaling()});
+	return globalScaling * transform * glm::scale(glm::mat4{1.0f}, glm::vec3{scaling});
+}
+
+void Prop::setTransformation(glm::mat4 t)
+{
+	transform = t;
 }
 
 Mesh *Prop::getMesh() const
@@ -62,7 +71,7 @@ void Prop::drawUI()
 		}
 		ImGui::EndCombo();
 	}
-	ImGui::DragFloat("Scale", &scale, 0.1f);
+	ImGui::DragFloat("Scaling", &scaling, 0.1f);
 	ImGui::PopID();
 }
 

@@ -7,7 +7,7 @@
 class MeshManager : public Manager<Mesh>
 {
 public:
-	static std::vector<Mesh*> load(std::filesystem::path const& filename);
+	static Mesh* load(std::filesystem::path const& filename);
 
 };
 

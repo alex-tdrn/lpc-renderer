@@ -44,10 +44,10 @@ void drawUI()
 	ImGui_ImplGlfwGL3_NewFrame();
 
 	static std::array uiWindows = {
-		UIWindow{"Profiler", Profiler::drawUI},
-		UIWindow{SceneManager::name, SceneManager::drawUI},
+		UIWindow{"Profiler", Profiler::drawUI, true},
+		UIWindow{SceneManager::name, SceneManager::drawUI, true},
 		UIWindow{MeshManager::name, MeshManager::drawUI},
-		UIWindow{RendererManager::name, RendererManager::drawUI},
+		UIWindow{RendererManager::name, RendererManager::drawUI, true},
 		UIWindow{ShaderManager::name, ShaderManager::drawUI},
 		UIWindow{"ImGui Demo", ImGui::ShowDemoWindow}
 	};

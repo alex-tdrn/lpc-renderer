@@ -5,12 +5,12 @@
 class UIWindow
 {
 private:
-	bool _open = false;
+	bool _open;
 	std::string name;
 	void(*drawFunction)(bool*);
 public:
-	UIWindow(std::string name, void(*drawFunction)(bool*))
-		:name(std::move(name)), drawFunction(drawFunction)
+	UIWindow(std::string name, void(*drawFunction)(bool*), bool open = false)
+		:name(std::move(name)), drawFunction(drawFunction), _open(open)
 	{
 
 	}

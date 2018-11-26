@@ -1,15 +1,27 @@
 #include "Scene.h"
 #include "imgui.h"
 
+Scene::Scene(Prop&& prop)
+{
+	prop.scene = this;
+	props.push_back(std::move(prop));
+}
+
 Scene::Scene(std::vector<Prop>&& props)
 	:props(std::move(props))
 {
-
+	for(auto& prop : this->props)
+		prop.scene = this;
 }
 
 std::string Scene::getNamePrefix() const
 {
 	return "Scene";
+}
+
+float Scene::getGlobalScaling() const
+{
+	return globalScaling;
 }
 
 void Scene::addProp(Prop&& prop)
@@ -30,6 +42,10 @@ Camera& Scene::getCamera()
 void Scene::drawUI()
 {
 	ImGui::PushID(this);
+	ImGui::AlignTextToFramePadding();
+	ImGui::Text("Global Scaling");
+	ImGui::DragFloat("###GlobalScaling", &globalScaling, 0.1f);
+	ImGui::Separator();
 	static std::size_t currentProp = 0;
 	static bool noneSelected = false;
 	if(currentProp >= props.size())
