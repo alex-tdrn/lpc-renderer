@@ -38,9 +38,6 @@
     <ClCompile Include="source\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="source\DebugRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="source\OSWindow.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -61,6 +58,7 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="source\Camera.cpp" />
+    <ClCompile Include="source\Importer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -96,9 +94,6 @@
     <ClInclude Include="headers\Shader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="headers\DebugRenderer.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="headers\AutoName.h">
       <Filter>Utilities</Filter>
     </ClInclude>
@@ -130,6 +125,8 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="headers\Camera.h" />
+    <ClInclude Include="libraries\tinyply.h" />
+    <ClInclude Include="headers\Importer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\debug.vert" />

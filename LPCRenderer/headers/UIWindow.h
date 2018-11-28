@@ -7,10 +7,11 @@ class UIWindow
 private:
 	bool _open;
 	std::string name;
-	void(*drawFunction)(bool*);
+	void(*drawFunction)();
+	ImGuiWindowFlags flags;
 public:
-	UIWindow(std::string name, void(*drawFunction)(bool*), bool open = false)
-		:name(std::move(name)), drawFunction(drawFunction), _open(open)
+	UIWindow(std::string name, void(*drawFunction)(), bool open = false, ImGuiWindowFlags flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar)
+		:name(std::move(name)), drawFunction(drawFunction), _open(open), flags(flags)
 	{
 
 	}
@@ -24,7 +25,12 @@ public:
 
 	void drawUI()
 	{
-		if(_open)
-			drawFunction(&_open);
+		if(!_open)
+			return;
+		ImGui::Begin(name.data(), &_open, flags);
+		ImGui::PushID(this);
+		drawFunction();
+		ImGui::PopID();
+		ImGui::End();
 	}
 };

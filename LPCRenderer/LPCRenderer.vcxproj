@@ -125,6 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Shader.cpp" />
     <ClCompile Include="source\MeshManager.cpp" />
@@ -136,7 +137,6 @@
     <ClCompile Include="source\MeshRepresentation.cpp" />
     <ClCompile Include="source\Mesh.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
-    <ClCompile Include="source\DebugRenderer.cpp" />
     <ClCompile Include="libraries\glad\glad.c" />
     <ClCompile Include="libraries\imgui.cpp" />
     <ClCompile Include="libraries\imgui_demo.cpp" />
@@ -150,10 +150,10 @@
     <ClInclude Include="headers\Camera.h" />
     <ClInclude Include="headers\MeshRepresentation.h" />
     <ClInclude Include="headers\AutoName.h" />
-    <ClInclude Include="headers\DebugRenderer.h" />
     <ClInclude Include="headers\Renderer.h" />
     <ClInclude Include="headers\Shader.h" />
     <ClInclude Include="headers\OSWindow.h" />
+    <ClInclude Include="headers\Importer.h" />
     <ClInclude Include="libraries\glad\glad.h" />
     <ClInclude Include="libraries\GLFW\glfw3.h" />
     <ClInclude Include="libraries\GLFW\glfw3native.h" />
@@ -174,6 +174,7 @@
     <ClInclude Include="headers\MeshManager.h" />
     <ClInclude Include="headers\RendererManager.h" />
     <ClInclude Include="headers\SceneManager.h" />
+    <ClInclude Include="libraries\tinyply.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\debug.frag" />

@@ -1,13 +1,12 @@
 #pragma once
+#include "glm/glm.hpp"
+
 #include <optional>
 #include <array>
 #include <vector>
-
 struct Vertex
 {
-	float x;
-	float y;
-	float z;
+	glm::vec3 position;
 };
 
 class MeshRepresentation
@@ -18,12 +17,16 @@ private:
 	std::size_t vertexCount = 0;
 
 public:
+	MeshRepresentation(std::vector<Vertex> const& vertices, std::size_t n);
 	MeshRepresentation(std::vector<Vertex> const& vertices);
 	MeshRepresentation(MeshRepresentation const&) = delete;
 	MeshRepresentation(MeshRepresentation&&);
 	~MeshRepresentation();
 	MeshRepresentation& operator=(MeshRepresentation const&) = delete;
-	MeshRepresentation& operator=(MeshRepresentation&&) = delete;
+	MeshRepresentation& operator=(MeshRepresentation&&);
+
+private:
+	void freeBuffers();
 
 public:
 	void use() const;

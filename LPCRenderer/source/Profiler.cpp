@@ -33,13 +33,9 @@ void Profiler::recordFrame()
 	lastFrame = currentFrame;
 }
 
-void Profiler::drawUI(bool* open)
+void Profiler::drawUI()
 {
-	if(!*open)
-		return;
 	float const plotHeight = 100;
-	ImGui::Begin("Profiler", open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);
-
 	ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFrame);
 	ImGui::Text("Frametime: %.1f ms", frametime);
 	ImGui::Text("Average Frametime: %.1f ms", averageFrametime);
@@ -81,5 +77,4 @@ void Profiler::drawUI(bool* open)
 		ImGui::EndChild();
 		ImGui::Unindent();
 	}
-	ImGui::End();
 }

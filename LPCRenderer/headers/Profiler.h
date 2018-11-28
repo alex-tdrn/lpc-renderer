@@ -3,5 +3,5 @@
 namespace Profiler
 {
 	void recordFrame();
-	void drawUI(bool* open);
+	void drawUI();
 }

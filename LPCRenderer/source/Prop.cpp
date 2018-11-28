@@ -82,6 +82,32 @@ void Prop::drawUI()
 		ImGui::EndCombo();
 	}
 	ImGui::DragFloat("Scaling", &scaling, 0.1f);
+	constexpr float rotateAmount = glm::radians(0.1f);
+	ImGui::Text("Rotate");
+	ImGui::SameLine();
+	ImGui::Button("+X");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, +rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("-X");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, -rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("+Y");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, +rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("-Y");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, -rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("+Z");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, +rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
+	ImGui::SameLine();
+	ImGui::Button("-Z");
+	if(ImGui::IsItemActive())
+		transform = glm::rotate(transform, -rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
 	ImGui::PopID();
 }
 

@@ -3,7 +3,7 @@
 #include "GLFW/glfw3.h"
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
-#include "MeshManager.h"
+#include "Importer.h"
 #include "SceneManager.h"
 
 #include <iostream>
@@ -218,22 +218,10 @@ void OSWindow::callback::keyPressed(GLFWwindow* window, int key, int keycode, in
 
 void OSWindow::callback::filesDropped(GLFWwindow* window, int count, const char** paths)
 {
+	std::vector<std::filesystem::path> filenames;
 	for(int i = 0; i < count; i++)
-	{
-		std::filesystem::path path{paths[i]};
-		if(path.extension().string() == ".ply")
-		{
-			Mesh* mesh = MeshManager::load(path);
-			if(SceneManager::importIntoActiveScene && SceneManager::getActive())
-				SceneManager::getActive()->addProp(Prop{mesh});
-			else
-				SceneManager::add(std::make_unique<Scene>(Prop{mesh}));
-		}
-		else if(path.extension().string() == ".conf")
-		{
-			SceneManager::load(path);
-		}
-	}
+		 filenames.emplace_back(paths[i]);
+	Importer::import(filenames);
 }
 
 void APIENTRY OSWindow::callback::debug(GLenum source, GLenum type, GLuint id, GLenum severity,
