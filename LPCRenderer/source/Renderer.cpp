@@ -41,7 +41,7 @@ void Renderer::render(Scene* scene) const
 
 std::string Renderer::getNamePrefix() const
 {
-	return "Debug Renderer";
+	return "Renderer";
 }
 
 void Renderer::drawUI()

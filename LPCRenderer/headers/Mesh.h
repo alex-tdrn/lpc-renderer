@@ -24,10 +24,8 @@ public:
 private:
 	void updateRepresentation();
 
-protected:
-	std::string getNamePrefix() const override;
-
 public:
+	std::string getNamePrefix() const override;
 	static std::unique_ptr<Mesh> join(std::vector<std::unique_ptr<Mesh>>&& meshes);
 	MeshRepresentation const& getRepresentation() const;
 	void setCullMatrix(glm::mat4 mvp);

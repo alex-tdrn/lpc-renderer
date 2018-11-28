@@ -15,10 +15,9 @@ private:
 private:
 	glm::mat4 getRotationMatrix() const;
 
-protected:
-	std::string getNamePrefix() const override;
 
 public:
+	std::string getNamePrefix() const override;
 	glm::mat4 getViewMatrix() const;
 	glm::mat4 getProjectionMatrix() const;
 	void move(glm::vec3 amount);

@@ -28,8 +28,7 @@ int main(int argc, char** argv)
 		Profiler::recordFrame();
 		if(RendererManager::getActive())
 		{
-			if(SceneManager::getActive())
-				RendererManager::getActive()->render(SceneManager::getActive());
+			RendererManager::getActive()->render(SceneManager::getActive());
 		}
 		drawUI();
 

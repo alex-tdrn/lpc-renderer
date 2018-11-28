@@ -12,14 +12,12 @@ private:
 	Camera camera;
 	float globalScaling = 1.0f;
 
-protected:
-	std::string getNamePrefix() const override;
-
 public:
 	Scene(Prop&& prop);
 	Scene(std::vector<Prop>&& props);
 
 public:
+	std::string getNamePrefix() const override;
 	float getGlobalScaling() const;
 	void addProp(Prop&& prop);
 	void addProps(std::vector<Prop> && props);

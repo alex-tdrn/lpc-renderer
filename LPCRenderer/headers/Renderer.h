@@ -16,10 +16,8 @@ private:
 	float pointSize = 2.0f;
 	mutable bool frustumCulling = false;
 
-protected:
-	std::string getNamePrefix() const override;
-
 public:
+	std::string getNamePrefix() const override;
 	void render(Scene* = nullptr) const;
 	void drawUI();
 

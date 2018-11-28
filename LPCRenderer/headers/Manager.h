@@ -59,6 +59,18 @@ public:
 		ImGui::Columns(2);
 
 		ImGui::SetColumnWidth(-1, ImGui::GetTextLineHeightWithSpacing() * 15);
+		if constexpr(std::is_default_constructible_v<T>)
+		{
+			if(ImGui::Button("Add New"))
+				add(std::make_unique<T>());
+			if constexpr(std::is_copy_constructible_v<T>)
+				ImGui::SameLine();
+		}
+		if constexpr(std::is_copy_constructible_v<T>)
+		{
+			if(ImGui::Button("Clone Current") && selected != nullptr)
+				add(std::make_unique<T>(*selected));
+		}
 		ImGui::BeginChild(("###SelectionArea" + name).data());
 		int id = 0;
 		for(auto& resource : store)

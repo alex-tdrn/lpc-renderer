@@ -21,10 +21,8 @@ public:
 private:
 	int getLocation(std::string_view const name) const;
 
-protected:
-	std::string getNamePrefix() const override;
-
 public:
+	std::string getNamePrefix() const override;
 	void reload();
 	void use();
 	void set(std::string_view const name, int value) const;

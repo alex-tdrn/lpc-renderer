@@ -18,10 +18,8 @@ private:
 public:
 	Prop(Mesh* mesh, glm::mat4 transform = glm::mat4(1.0f));
 
-protected:
-	std::string getNamePrefix() const override;
-
 public:
+	std::string getNamePrefix() const override;
 	bool enabled() const;
 	void enable();
 	void disable();
