@@ -8,13 +8,13 @@
 class Scene : public AutoName<Scene>
 {
 private:
-	glm::vec3 backgroundColor{0.6, 0.7, 0.3};
+	glm::vec3 backgroundColor{0};
 	Camera camera;
 	glm::vec3 lightDirection{0.0f, 0.0f, 1.0f};
-	glm::vec3 lightColor{1.0f};
+	glm::vec3 lightColor{0.8f, 1.0f, 1.0f};
 	glm::vec3 diffuseColor{0.3f, 0.4f, 0.2f};
 	glm::vec3 specularColor{1.0f};
-	float shininess = 32.0f;
+	float shininess = 8.0f;
 	float ambientStrength = 0.25f;
 	PointCloud* cloud = nullptr;
 	glm::mat4 modelMatrix = glm::mat4(1.0f);

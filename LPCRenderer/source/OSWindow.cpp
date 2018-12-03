@@ -68,6 +68,8 @@ void OSWindow::init()
 	}
 #endif
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 	glfwSetFramebufferSizeCallback(handle, callback::framebufferResized);
 	glfwSetCursorPosCallback(handle, callback::cursorMoved);
 	glfwSetMouseButtonCallback(handle, callback::mouseButtonPressed);

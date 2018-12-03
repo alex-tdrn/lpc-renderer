@@ -16,6 +16,6 @@ out VS_OUT
 void main()
 {
 	vs_out.position = vec3(view * model * vec4(position, 1.0f));
-	vs_out.normal = mat3(transpose(inverse(view * model))) * normal;
+	vs_out.normal = mat3(transpose(inverse(view * model))) * (-normal);
 	gl_Position = projection * view * model * vec4(position, 1.0f);	
 }

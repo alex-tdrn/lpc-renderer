@@ -15,10 +15,7 @@ void Renderer::render(Scene* scene) const
 	if(!scene->getPointCloud())
 		return;
 
-	if(activeShader == ShaderManager::pcBarebones())
-		glPointSize(pointSize);
-	else
-		glPointSize(1.0f);
+	glPointSize(pointSize);
 
 	activeShader->use();
 
@@ -39,12 +36,17 @@ void Renderer::render(Scene* scene) const
 		activeShader->set("light.direction", scene->getLightDirection());
 
 	}
+	else if(activeShader == ShaderManager::pcDebugNormals())
+	{
+		activeShader->set("lineLength", debugNormalsLineLength);
+	}
+
 	PointCloud const* cloud = scene->getPointCloud();
 	if(decimation)
 		cloud = cloud->decimated(maxVertices);
 	if(frustumCulling)
 		cloud = cloud->culled(p * v * m);
-	pointCloudRepresentation.updateAndUse(cloud);
+	pointCloudRepresentation.updateAndUse(cloud, useNormalsIfAvailable);
 }
 
 std::string Renderer::getNamePrefix() const
@@ -68,12 +70,24 @@ void Renderer::drawUI()
 	ImGui::Text("Rendering Method");
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Barebones", activeShader == ShaderManager::pcBarebones()))
+	{
 		activeShader = ShaderManager::pcBarebones();
+		useNormalsIfAvailable = false;
+	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Lit", activeShader == ShaderManager::pcLit()))
+	{
 		activeShader = ShaderManager::pcLit();
-	if(activeShader == ShaderManager::pcBarebones())
-		ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
-
+		useNormalsIfAvailable = true;
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Debug Normals", activeShader == ShaderManager::pcDebugNormals()))
+	{
+		activeShader = ShaderManager::pcDebugNormals();
+		useNormalsIfAvailable = true;
+	}
+	ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
+	if(activeShader == ShaderManager::pcDebugNormals())
+		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.001f);
 	ImGui::PopID();
 }

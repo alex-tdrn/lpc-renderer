@@ -177,6 +177,9 @@
   <ItemGroup>
     <None Include="shaders\pcBarebones.frag" />
     <None Include="shaders\pcBarebones.vert" />
+    <None Include="shaders\pcDebugNormals.frag" />
+    <None Include="shaders\pcDebugNormals.geom" />
+    <None Include="shaders\pcDebugNormals.vert" />
     <None Include="shaders\pcLit.frag" />
     <None Include="shaders\pcLit.vert" />
   </ItemGroup>

@@ -7,6 +7,7 @@ class ShaderManager : public Manager<Shader>
 {
 public:
 	static void initialize();
+	static Shader* pcDebugNormals();
 	static Shader* pcBarebones();
 	static Shader* pcLit();
 };

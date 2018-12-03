@@ -18,6 +18,8 @@ private:
 	bool decimation = true;
 	int maxVertices = 1'000'000;
 	bool frustumCulling = false;
+	bool useNormalsIfAvailable = false;
+	float debugNormalsLineLength = 0.015f;
 
 public:
 	std::string getNamePrefix() const override;

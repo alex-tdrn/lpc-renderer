@@ -83,10 +83,17 @@ namespace Importer
 		file.parse_header(fileStream);
 		std::shared_ptr<tinyply::PlyData> plyPositions =
 			file.request_properties_from_element("vertex", {"x", "y", "z"});
+		std::shared_ptr<tinyply::PlyData> plyNormals =
+			file.request_properties_from_element("vertex", {"nx", "ny", "nz"});
 		file.read(fileStream);
-		std::vector<glm::vec3> vertices(plyPositions->count);
-		std::memcpy(vertices.data(), plyPositions->buffer.get(), plyPositions->buffer.size_bytes());
-		auto mesh = std::make_unique<PointCloud>(std::move(vertices));
+
+		std::vector<glm::vec3> positions(plyPositions->count);
+		std::memcpy(positions.data(), plyPositions->buffer.get(), plyPositions->buffer.size_bytes());
+
+		std::vector<glm::vec3> normals(plyNormals->count);
+		std::memcpy(normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
+
+		auto mesh = std::make_unique<PointCloud>(std::move(positions), std::move(normals));
 		mesh->setName(filename.stem().string());
 		return mesh;
 	}
