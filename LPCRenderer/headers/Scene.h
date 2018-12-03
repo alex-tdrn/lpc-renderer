@@ -1,5 +1,5 @@
 #pragma once
-#include "Prop.h"
+#include "PointCloud.h"
 #include "AutoName.h"
 #include "Camera.h"
 
@@ -8,21 +8,33 @@
 class Scene : public AutoName<Scene>
 {
 private:
-	std::vector<Prop> props;
+	glm::vec3 backgroundColor{0.6, 0.7, 0.3};
 	Camera camera;
-	float globalScaling = 1.0f;
+	glm::vec3 lightDirection{0.0f, 0.0f, 1.0f};
+	glm::vec3 lightColor{1.0f};
+	glm::vec3 diffuseColor{0.3f, 0.4f, 0.2f};
+	glm::vec3 specularColor{1.0f};
+	float shininess = 32.0f;
+	float ambientStrength = 0.25f;
+	PointCloud* cloud = nullptr;
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	float scaling = 1.0f;
 
 public:
-	Scene(Prop&& prop);
-	Scene(std::vector<Prop>&& props);
+	Scene(PointCloud* cloud = nullptr);
 
 public:
 	std::string getNamePrefix() const override;
-	float getGlobalScaling() const;
-	void addProp(Prop&& prop);
-	void addProps(std::vector<Prop> && props);
-	std::vector<Prop> const& getProps() const;
 	Camera& getCamera();
+	glm::vec3 getBackgroundColor() const;
+	glm::vec3 getLightColor() const;
+	glm::vec3 getLightDirection() const;
+	glm::vec3 getDiffuseColor() const;
+	glm::vec3 getSpecularColor() const;
+	float getShininess() const;
+	float getAmbientStrength() const;
+	PointCloud const* getPointCloud() const;
+	glm::mat4 getModelMatrix() const;
 	void drawUI();
 
 };

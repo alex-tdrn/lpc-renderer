@@ -4,39 +4,47 @@
 #include "imgui.h"
 #include "Scene.h"
 #include "ShaderManager.h"
-#include "Mesh.h"
+#include "PointCloud.h"
 
 void Renderer::render(Scene* scene) const
 {
-	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
 	if(!scene)
 		return;
-	glPointSize(pointSize);
-	ShaderManager::debug()->use();
-	ShaderManager::debug()->set("color", meshColor);
-	ShaderManager::debug()->set("view", scene->getCamera().getViewMatrix());
-	ShaderManager::debug()->set("projection", scene->getCamera().getProjectionMatrix());
+	glm::vec3 backgroundColor = scene->getBackgroundColor();
+	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
+	if(!scene->getPointCloud())
+		return;
 
-	for(auto const& prop : scene->getProps())
+	if(activeShader == ShaderManager::pcBarebones())
+		glPointSize(pointSize);
+	else
+		glPointSize(1.0f);
+
+	activeShader->use();
+
+	glm::mat4 m = scene->getModelMatrix();
+	activeShader->set("model", m);
+	glm::mat4 v = scene->getCamera().getViewMatrix();
+	activeShader->set("view", v);
+	glm::mat4 p = scene->getCamera().getProjectionMatrix();
+	activeShader->set("projection", p);
+
+	activeShader->set("diffuseColor", scene->getDiffuseColor());
+	if(activeShader == ShaderManager::pcLit())
 	{
-		if(!prop.enabled())
-			continue;
-		if(highlightProps)
-		{
-			if(prop.highlighted())
-				ShaderManager::debug()->set("color", highlightColor);
-			else
-				ShaderManager::debug()->set("color", meshColor);
-		}
-		ShaderManager::debug()->set("model", prop.getModelMatrix());
-		if(frustumCulling)
-		{
-			prop.getMesh()->setCullMatrix(scene->getCamera().getProjectionMatrix() * scene->getCamera().getViewMatrix() * prop.getModelMatrix());
-		}
-		prop.getMesh()->getRepresentation().use();
+		activeShader->set("specularColor", scene->getSpecularColor());
+		activeShader->set("shininess", scene->getShininess());
+		activeShader->set("ambientStrength", scene->getAmbientStrength());
+		activeShader->set("light.color", scene->getLightColor());
+		activeShader->set("light.direction", scene->getLightDirection());
+
 	}
+	PointCloud const* cloud = scene->getPointCloud();
+	if(decimation)
+		cloud = cloud->decimated(maxVertices);
 	if(frustumCulling)
-		frustumCulling = false;
+		cloud = cloud->culled(p * v * m);
+	pointCloudRepresentation.updateAndUse(cloud);
 }
 
 std::string Renderer::getNamePrefix() const
@@ -47,13 +55,25 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	ImGui::ColorEdit3("Background", &backgroundColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
-	ImGui::ColorEdit3("Mesh Color", &meshColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
-	ImGui::Checkbox("Highlight Props", &highlightProps);
-	if(highlightProps)
-		ImGui::ColorEdit3("Highlight Color", &highlightColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
-	ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 16.0f);
-	if(ImGui::Button("Cull Points"))
-		frustumCulling = true;
+	
+	ImGui::Checkbox("Decimation", &decimation);
+	if(decimation)
+	{
+		ImGui::InputInt("###InputMaxVertices", &maxVertices);
+		if(maxVertices < 1)
+			maxVertices = 1;
+	}
+	ImGui::Checkbox("Frustum Culling", &frustumCulling);
+
+	ImGui::Text("Rendering Method");
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Barebones", activeShader == ShaderManager::pcBarebones()))
+		activeShader = ShaderManager::pcBarebones();
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Lit", activeShader == ShaderManager::pcLit()))
+		activeShader = ShaderManager::pcLit();
+	if(activeShader == ShaderManager::pcBarebones())
+		ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
+
 	ImGui::PopID();
 }

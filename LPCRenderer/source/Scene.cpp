@@ -1,14 +1,12 @@
 #include "Scene.h"
+#include "PointCloudManager.h"
+
+#include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
 
-Scene::Scene(Prop&& prop)
+Scene::Scene(PointCloud* cloud)
+	:cloud(cloud)
 {
-	addProp(std::move(prop));
-}
-
-Scene::Scene(std::vector<Prop>&& props)
-{
-	addProps(std::move(props));
 }
 
 std::string Scene::getNamePrefix() const
@@ -16,30 +14,14 @@ std::string Scene::getNamePrefix() const
 	return "Scene";
 }
 
-float Scene::getGlobalScaling() const
+PointCloud const* Scene::getPointCloud() const
 {
-	return globalScaling;
+	return cloud;
 }
 
-void Scene::addProp(Prop&& prop)
+glm::mat4 Scene::getModelMatrix() const
 {
-	prop.scene = this;
-	props.push_back(prop);
-}
-
-void Scene::addProps(std::vector<Prop>&& props)
-{
-	this->props.reserve(this->props.size() + props.size());
-	for(auto& prop : props)
-	{
-		prop.scene = this;
-		this->props.push_back(std::move(prop));
-	}
-}
-
-std::vector<Prop> const& Scene::getProps() const
-{
-	return props;
+	return glm::scale(modelMatrix, glm::vec3{scaling});
 }
 
 Camera& Scene::getCamera()
@@ -47,57 +29,103 @@ Camera& Scene::getCamera()
 	return camera;
 }
 
+glm::vec3 Scene::getBackgroundColor() const
+{
+	return backgroundColor;
+}
+
+glm::vec3 Scene::getLightColor() const
+{
+	return lightColor;
+}
+
+glm::vec3 Scene::getLightDirection() const
+{
+	return lightDirection;
+}
+
+glm::vec3 Scene::getDiffuseColor() const
+{
+	return diffuseColor;
+}
+
+glm::vec3 Scene::getSpecularColor() const
+{
+	return specularColor;
+}
+
+float Scene::getShininess() const
+{
+	return shininess;
+}
+
+float Scene::getAmbientStrength() const
+{
+	return ambientStrength;
+}
+
 void Scene::drawUI()
 {
 	ImGui::PushID(this);
 	ImGui::AlignTextToFramePadding();
-	ImGui::Text("Global Scaling");
-	ImGui::DragFloat("###GlobalScaling", &globalScaling, 0.1f);
-	ImGui::Separator();
-	static std::size_t currentProp = 0;
-	static bool noneSelected = false;
-	for(auto& prop : props)
-		prop.setHighlighted(false);
-	if(currentProp >= props.size())
-		currentProp = 0;
-	if(props.empty())
-		noneSelected = true;
-	ImGui::AlignTextToFramePadding();
-	ImGui::Text("Prop");
-	std::string currentName = "None";
-	if(!noneSelected)
+	ImGui::ColorEdit3("Background", &backgroundColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	ImGui::SameLine();
+	ImGui::ColorEdit3("Light Color", &lightColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	//ImGui::ColorEdit3("Light Direction", &backgroundColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	ImGui::ColorEdit3("Diffuse Color", &diffuseColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	ImGui::SameLine();
+	ImGui::ColorEdit3("Specular Color", &specularColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+	ImGui::SliderFloat("Shininess", &shininess, 0.0f, 256.0f);
+	ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0f, 1.0f);
+
+	ImGui::Text("Camera");
+	camera.drawUI();
+
+	if(ImGui::BeginCombo("Point Cloud", !cloud ? "None" : cloud->getName().data()))
 	{
-		auto& prop = props[currentProp];
-		currentName = prop.getName();
-		if(!prop.enabled())
-			currentName += "(*)";
-	}
-	if(ImGui::BeginCombo("###Prop", currentName.data()))
-	{
-		for(int i = 0; i < props.size(); i++)
+		int id = 0;
+		for(auto& cloud : PointCloudManager::getAll())
 		{
-			ImGui::PushID(i);
-			bool isSelected = i == currentProp;
-			ImGui::Selectable(props[i].getName().data(), &isSelected);
+			ImGui::PushID(id++);
+			bool isSelected = this->cloud == cloud.get();
+			ImGui::Selectable(cloud->getName().data(), &isSelected);
 			if(isSelected)
 			{
 				ImGui::SetItemDefaultFocus();
-				currentProp = i;
-				noneSelected = false;
+				this->cloud = cloud.get();
 			}
 			ImGui::PopID();
 		}
 		ImGui::EndCombo();
 	}
 
-	if(!noneSelected)
-	{
-		props[currentProp].setHighlighted(true);
-		props[currentProp].drawUI();
-		ImGui::Separator();
-	}
-	ImGui::NewLine();
-	ImGui::Text("Camera");
-	camera.drawUI();
+	ImGui::DragFloat("Scaling", &scaling, 0.1f);
+	static float rotateAmount = glm::radians(0.1f);
+	ImGui::SliderFloat("Rotation Speed", &rotateAmount, glm::radians(0.1f), glm::radians(10.0f));
+	ImGui::Text("Rotate");
+	ImGui::SameLine();
+	ImGui::Button("+X");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("-X");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("+Y");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("-Y");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	ImGui::Button("+Z");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
+	ImGui::SameLine();
+	ImGui::Button("-Z");
+	if(ImGui::IsItemActive())
+		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
 	ImGui::PopID();
 }

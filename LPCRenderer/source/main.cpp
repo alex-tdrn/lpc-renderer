@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "imgui_impl_glfw_gl3.h"
 #include "RendererManager.h"
-#include "MeshManager.h"
+#include "PointCloudManager.h"
 #include "ShaderManager.h"
 #include "SceneManager.h"
 #include "Importer.h"
@@ -45,10 +45,9 @@ void drawUI()
 	static std::array uiWindows = {
 		UIWindow{"Profiler", Profiler::drawUI, true, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize},
 		UIWindow{SceneManager::name, SceneManager::drawUI, true},
-		UIWindow{MeshManager::name, MeshManager::drawUI, true},
+		UIWindow{PointCloudManager::name, PointCloudManager::drawUI, true},
 		UIWindow{RendererManager::name, RendererManager::drawUI, true},
-		UIWindow{ShaderManager::name, ShaderManager::drawUI},
-		UIWindow{"Importer", Importer::drawUI, true}
+		UIWindow{ShaderManager::name, ShaderManager::drawUI}
 	};
 
 	if(ImGui::BeginMainMenuBar())

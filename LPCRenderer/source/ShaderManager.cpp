@@ -12,13 +12,22 @@ Shader* load(std::string&& name, Sources&&... sources)
 
 void ShaderManager::initialize()
 {
-	debug();
+	pcBarebones();
+	pcLit();
 }
 
-Shader* ShaderManager::debug()
+Shader* ShaderManager::pcBarebones()
 {
-	static auto ret = load("Debug",
-		"shaders/debug.vert", "shaders/debug.frag"
+	static auto ret = load("Point Cloud Barebones",
+		"shaders/pcBarebones.vert", "shaders/pcBarebones.frag"
+	);
+	return ret;
+}
+
+Shader* ShaderManager::pcLit()
+{
+	static auto ret = load("Point Cloud Lit",
+		"shaders/pcLit.vert", "shaders/pcLit.frag"
 	);
 	return ret;
 }

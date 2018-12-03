@@ -1,5 +1,5 @@
 #include "SceneManager.h"
-#include "MeshManager.h"
+#include "PointCloudManager.h"
 
 
 std::string const Manager<Scene, true>::name = "Scenes";
