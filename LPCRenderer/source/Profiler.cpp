@@ -73,7 +73,7 @@ void Profiler::drawUI()
 	}
 
 	ImGui::NewLine();
-	if(ImGui::CollapsingHeader("Memory"))
+	if(ImGui::CollapsingHeader("Memory", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		if(allocatedGigaBytes)
 		{

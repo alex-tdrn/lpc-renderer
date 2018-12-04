@@ -13,6 +13,7 @@ class Renderer : public AutoName<Renderer>
 {
 private:
 	Shader* activeShader = ShaderManager::pcBarebones();
+	mutable PointCloud const* currentPointCloud = nullptr;
 	static inline std::vector<PointCloudRepresentation> pointCloudBufffers{0};
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;

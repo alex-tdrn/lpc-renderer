@@ -47,13 +47,13 @@ void Renderer::render(Scene* scene) const
 		activeShader->set("lineLength", debugNormalsLineLength);
 	}
 
-	PointCloud const* cloud = scene->getPointCloud();
+	currentPointCloud = scene->getPointCloud();
 	if(decimation)
-		cloud = cloud->decimated(maxVertices);
+		currentPointCloud = currentPointCloud->decimated(maxVertices);
 	if(frustumCulling)
-		cloud = cloud->culled(p * v * m);
+		currentPointCloud = currentPointCloud->culled(p * v * m);
 	currentPointCloudBuffer %= pointCloudBufffers.size();
-	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(cloud, useNormalsIfAvailable, bufferOrphaning);
+	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
 }
 
 std::string Renderer::getNamePrefix() const
@@ -75,15 +75,26 @@ void Renderer::drawUI()
 	{
 		pointCloudBufffers.resize(nBuffers);
 	}
-
+	if(currentPointCloud)
+	{
+		ImGui::Text("Rendering %lu Vertices", currentPointCloud->getSize());
+		ImGui::SameLine();
+		if(currentPointCloud->hasNormals() && useNormalsIfAvailable)
+			ImGui::Text("With Normals");
+		else
+			ImGui::Text("Without Normals");
+	}
 	ImGui::Checkbox("Decimation", &decimation);
+	ImGui::SameLine();
+	ImGui::Checkbox("Frustum Culling", &frustumCulling);
 	if(decimation)
 	{
-		ImGui::InputInt("###InputMaxVertices", &maxVertices);
+		ImGui::Text("Max Vertices");
+		ImGui::SameLine();
+		ImGui::DragInt("###InputMaxVertices", &maxVertices, 10'000, 1, std::numeric_limits<int>::max());
 		if(maxVertices < 1)
 			maxVertices = 1;
 	}
-	ImGui::Checkbox("Frustum Culling", &frustumCulling);
 
 	ImGui::Text("Rendering Method");
 	ImGui::SameLine();

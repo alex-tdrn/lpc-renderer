@@ -45,7 +45,7 @@ void drawUI()
 	static std::array uiWindows = {
 		UIWindow{"Profiler", Profiler::drawUI, true, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize},
 		UIWindow{SceneManager::name, SceneManager::drawUI, true},
-		UIWindow{PointCloudManager::name, PointCloudManager::drawUI, true},
+		UIWindow{PointCloudManager::name, PointCloudManager::drawUI},
 		UIWindow{RendererManager::name, RendererManager::drawUI, true},
 		UIWindow{ShaderManager::name, ShaderManager::drawUI}
 	};
