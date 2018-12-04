@@ -28,6 +28,7 @@ private:
 	void freeBuffers();
 
 public:
+	void shrink();
 	void updateAndUse(PointCloud const* cloud, bool useNormalsIfAvailable, bool orphaning = false);
 	void use() const;
 

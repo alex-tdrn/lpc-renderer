@@ -13,9 +13,10 @@ class Renderer : public AutoName<Renderer>
 {
 private:
 	Shader* activeShader = ShaderManager::pcBarebones();
-	mutable std::vector<PointCloudRepresentation> pointCloudBufffers{1};
-	mutable int currentPointCloudBuffer = 0;
-	bool bufferOrphaning = false;
+	static inline std::vector<PointCloudRepresentation> pointCloudBufffers{0};
+	static inline int currentPointCloudBuffer = 0;
+	static inline int nBuffers = 1;
+	static inline bool bufferOrphaning = false;
 	float pointSize = 1.0f;
 	bool decimation = true;
 	int maxVertices = 100'000;
@@ -24,7 +25,7 @@ private:
 	float debugNormalsLineLength = 0.015f;
 
 public:
-	Renderer() = default;
+	Renderer();
 	Renderer(Renderer const&) = delete;
 	Renderer(Renderer&&) = default;
 	~Renderer() = default;

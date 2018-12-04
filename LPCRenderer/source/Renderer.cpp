@@ -6,6 +6,12 @@
 #include "ShaderManager.h"
 #include "PointCloud.h"
 
+Renderer::Renderer()
+{
+	if(pointCloudBufffers.empty())
+		pointCloudBufffers.resize(nBuffers);
+}
+
 void Renderer::render(Scene* scene) const
 {
 	if(!scene)
@@ -59,7 +65,10 @@ void Renderer::drawUI()
 {
 	ImGui::PushID(this);
 	ImGui::Checkbox("Buffer Orphaning", &bufferOrphaning);
-	static int nBuffers = 0;
+	ImGui::SameLine();
+	if(ImGui::Button("Shrink Buffers"))
+		for(auto& buffer : pointCloudBufffers)
+			buffer.shrink();
 	nBuffers = pointCloudBufffers.size();
 	ImGui::SliderInt("# of Buffers", &nBuffers, 1, 8);
 	if(nBuffers != pointCloudBufffers.size())

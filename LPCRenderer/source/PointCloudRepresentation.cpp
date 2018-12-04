@@ -1,6 +1,7 @@
 #include "PointCloudRepresentation.h"
 #include "PointCloud.h"
 #include "glad/glad.h"
+#include "Profiler.h"
 
 PointCloudRepresentation::PointCloudRepresentation()
 {
@@ -41,6 +42,16 @@ void PointCloudRepresentation::freeBuffers()
 {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+	Profiler::recordGPUDeallocation(capacity);
+}
+
+void PointCloudRepresentation::shrink()
+{
+	Profiler::recordGPUDeallocation(capacity - bufferSize);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_STREAM_DRAW);
+	capacity = bufferSize;
 }
 
 void PointCloudRepresentation::updateAndUse(PointCloud const* cloud, bool useNormalsIfAvailable, bool orphaning)
@@ -49,11 +60,14 @@ void PointCloudRepresentation::updateAndUse(PointCloud const* cloud, bool useNor
 
 		if(bufferSize > capacity)
 		{
+			Profiler::recordGPUAllocation(bufferSize - capacity);
 			glBufferData(GL_ARRAY_BUFFER, bufferSize, nullptr, GL_STREAM_DRAW);
 			capacity = bufferSize;
 		}
 		else if(orphaning)
+		{
 			glBufferData(GL_ARRAY_BUFFER, capacity, nullptr, GL_STREAM_DRAW);
+		}
 	};
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
