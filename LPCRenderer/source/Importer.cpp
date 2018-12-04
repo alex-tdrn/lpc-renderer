@@ -83,17 +83,32 @@ namespace Importer
 		file.parse_header(fileStream);
 		std::shared_ptr<tinyply::PlyData> plyPositions =
 			file.request_properties_from_element("vertex", {"x", "y", "z"});
-		std::shared_ptr<tinyply::PlyData> plyNormals =
-			file.request_properties_from_element("vertex", {"nx", "ny", "nz"});
+		bool normalsAvailable = true;
+		std::shared_ptr<tinyply::PlyData> plyNormals;
+		try
+		{
+			plyNormals = file.request_properties_from_element("vertex", {"nx", "ny", "nz"});
+		}
+		catch(...)
+		{
+			normalsAvailable = false;
+		}
 		file.read(fileStream);
 
 		std::vector<glm::vec3> positions(plyPositions->count);
 		std::memcpy(positions.data(), plyPositions->buffer.get(), plyPositions->buffer.size_bytes());
+		std::unique_ptr<PointCloud> mesh;
+		if(normalsAvailable)
+		{
+			std::vector<glm::vec3> normals(plyNormals->count);
+			std::memcpy(normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
 
-		std::vector<glm::vec3> normals(plyNormals->count);
-		std::memcpy(normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
-
-		auto mesh = std::make_unique<PointCloud>(std::move(positions), std::move(normals));
+			mesh = std::make_unique<PointCloud>(std::move(positions), std::move(normals));
+		}
+		else
+		{
+			mesh = std::make_unique<PointCloud>(std::move(positions));
+		}
 		mesh->setName(filename.stem().string());
 		return mesh;
 	}
