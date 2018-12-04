@@ -26,10 +26,10 @@ void main()
 
 	n = mat3(transpose(inverse(model))) * n;
 	gl_Position = projection * view * model * p;
-	gs_out.color = diffuseColor;
+	gs_out.color = vec3(0.0f, 0.0f, 0.0f);
 	EmitVertex();
 	gl_Position = projection * view * model * (p + vec4(n * lineLength, 0.0f));
-	gs_out.color = 1.0f - diffuseColor;
+	gs_out.color = diffuseColor;
 	EmitVertex();
 	EndPrimitive();
 }

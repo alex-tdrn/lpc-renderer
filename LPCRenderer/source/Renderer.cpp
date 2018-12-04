@@ -46,7 +46,8 @@ void Renderer::render(Scene* scene) const
 		cloud = cloud->decimated(maxVertices);
 	if(frustumCulling)
 		cloud = cloud->culled(p * v * m);
-	pointCloudRepresentation.updateAndUse(cloud, useNormalsIfAvailable);
+	currentPointCloudBuffer %= pointCloudBufffers.size();
+	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(cloud, useNormalsIfAvailable, bufferOrphaning);
 }
 
 std::string Renderer::getNamePrefix() const
@@ -57,7 +58,15 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	
+	ImGui::Checkbox("Buffer Orphaning", &bufferOrphaning);
+	static int nBuffers = 0;
+	nBuffers = pointCloudBufffers.size();
+	ImGui::SliderInt("# of Buffers", &nBuffers, 1, 8);
+	if(nBuffers != pointCloudBufffers.size())
+	{
+		pointCloudBufffers.resize(nBuffers);
+	}
+
 	ImGui::Checkbox("Decimation", &decimation);
 	if(decimation)
 	{

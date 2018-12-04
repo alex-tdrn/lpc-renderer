@@ -14,7 +14,7 @@ private:
 	unsigned int VBO = 0;
 	std::size_t vertexCount = 0;
 	std::size_t bufferSize = 0;
-	bool normalsAttributeEnabled = false;
+	std::size_t capacity = 0;
 
 public:
 	PointCloudRepresentation();
@@ -28,7 +28,7 @@ private:
 	void freeBuffers();
 
 public:
-	void updateAndUse(PointCloud const* cloud, bool useNormalsIfAvailable);
+	void updateAndUse(PointCloud const* cloud, bool useNormalsIfAvailable, bool orphaning = false);
 	void use() const;
 
 };

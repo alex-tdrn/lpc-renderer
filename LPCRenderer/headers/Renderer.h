@@ -13,13 +13,23 @@ class Renderer : public AutoName<Renderer>
 {
 private:
 	Shader* activeShader = ShaderManager::pcBarebones();
-	mutable PointCloudRepresentation pointCloudRepresentation;
+	mutable std::vector<PointCloudRepresentation> pointCloudBufffers{1};
+	mutable int currentPointCloudBuffer = 0;
+	bool bufferOrphaning = false;
 	float pointSize = 1.0f;
 	bool decimation = true;
-	int maxVertices = 1'000'000;
+	int maxVertices = 100'000;
 	bool frustumCulling = false;
 	bool useNormalsIfAvailable = false;
 	float debugNormalsLineLength = 0.015f;
+
+public:
+	Renderer() = default;
+	Renderer(Renderer const&) = delete;
+	Renderer(Renderer&&) = default;
+	~Renderer() = default;
+	Renderer& operator=(Renderer const&) = delete;
+	Renderer& operator=(Renderer&&) = default;
 
 public:
 	std::string getNamePrefix() const override;
