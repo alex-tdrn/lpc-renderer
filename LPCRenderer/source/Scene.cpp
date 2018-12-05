@@ -75,7 +75,7 @@ void Scene::drawUI()
 	ImGui::ColorEdit3("Diffuse Color", &diffuseColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
 	ImGui::SameLine();
 	ImGui::ColorEdit3("Specular Color", &specularColor.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
-	ImGui::SliderFloat("Shininess", &shininess, 0.0f, 256.0f);
+	ImGui::SliderFloat("Shininess", &shininess, 0.0f, 64.0f);
 	ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0f, 1.0f);
 
 	ImGui::Text("Camera");

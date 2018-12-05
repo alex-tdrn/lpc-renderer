@@ -110,7 +110,7 @@ PointCloud* PointCloud::culled(glm::mat4 mvp) const
 		{
 			_culled->positions.push_back(positions[i]);
 			if(hasNormals())
-				_decimated->normals.push_back(normals[i]);
+				_culled->normals.push_back(normals[i]);
 		}
 	}
 	return _culled.get();

@@ -13,8 +13,8 @@ private:
 	glm::vec3 lightDirection = glm::normalize(glm::vec3{0.0f, -1.0f, -1.0f});
 	glm::vec3 lightColor{0.5f, 0.5f, 0.25f};
 	glm::vec3 diffuseColor{0.0f, 1.0f, 0.5f};
-	glm::vec3 specularColor{0.5f};
-	float shininess = 8.0f;
+	glm::vec3 specularColor{0.25f};
+	float shininess = 64.0f;
 	float ambientStrength = 0.05f;
 	PointCloud* cloud = nullptr;
 	glm::mat4 modelMatrix = glm::mat4(1.0f);

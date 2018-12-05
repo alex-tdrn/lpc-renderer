@@ -23,9 +23,9 @@ private:
 	bool frustumCulling = false;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;
-	float pointSize = 1.0f;
-	float diskRadius = 0.001f;
-	float debugNormalsLineLength = 0.005f;
+	int pointSize = 1;
+	float diskRadius = 0.0005f;
+	float debugNormalsLineLength = 0.001f;
 
 public:
 	Renderer();

@@ -132,17 +132,17 @@ void Renderer::drawUI()
 	}
 	if(activeShader == ShaderManager::pcBarebones() || 
 		activeShader == ShaderManager::pcLit())
-		ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
+		ImGui::SliderInt("Point Size", &pointSize, 1, 16);
 
 	if(activeShader == ShaderManager::pcLit() ||
 		activeShader == ShaderManager::pcLitDisk())
 		ImGui::Checkbox("Backface Culling", &backFaceCulling);
 
 	if(activeShader == ShaderManager::pcLitDisk())
-		ImGui::DragFloat("Disk Radius", &diskRadius, 0.0001f, 0.0f, 0.5f, "%.5f");
+		ImGui::DragFloat("Disk Radius", &diskRadius, 0.00001f, 0.00001f, 0.005f, "%.5f");
 
 	if(activeShader == ShaderManager::pcDebugNormals())
-		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0f, 0.5f, "%.5f");
+		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0001f, 0.01f, "%.4f");
 
 	ImGui::PopID();
 }
