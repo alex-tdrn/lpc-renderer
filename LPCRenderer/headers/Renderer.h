@@ -18,12 +18,14 @@ private:
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
 	static inline bool bufferOrphaning = false;
-	float pointSize = 1.0f;
 	bool decimation = true;
 	int maxVertices = 100'000;
 	bool frustumCulling = false;
 	bool useNormalsIfAvailable = false;
-	float debugNormalsLineLength = 0.015f;
+	bool backFaceCulling = true;
+	float pointSize = 1.0f;
+	float diskRadius = 0.001f;
+	float debugNormalsLineLength = 0.005f;
 
 public:
 	Renderer();

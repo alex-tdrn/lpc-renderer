@@ -68,6 +68,7 @@ void OSWindow::init()
 	}
 #endif
 
+	//glEnable(GL_FRAMEBUFFER_SRGB);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glfwSetFramebufferSizeCallback(handle, callback::framebufferResized);

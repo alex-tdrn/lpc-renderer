@@ -287,6 +287,7 @@ bool ImGui_ImplGlfwGL3_CreateDeviceObjects()
         "void main()\n"
         "{\n"
         "	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
+        //"	Out_Color = pow(Out_Color, vec4(2.2));\n"
         "}\n";
 
     const GLchar* vertex_shader_with_version[2] = { g_GlslVersion, vertex_shader };

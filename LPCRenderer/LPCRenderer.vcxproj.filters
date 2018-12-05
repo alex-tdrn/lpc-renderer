@@ -134,5 +134,8 @@
     <None Include="shaders\pcDebugNormals.vert" />
     <None Include="shaders\pcDebugNormals.geom" />
     <None Include="shaders\pcDebugNormals.frag" />
+    <None Include="shaders\pcLitDisk.frag" />
+    <None Include="shaders\pcLitDisk.geom" />
+    <None Include="shaders\pcLitDisk.vert" />
   </ItemGroup>
 </Project>

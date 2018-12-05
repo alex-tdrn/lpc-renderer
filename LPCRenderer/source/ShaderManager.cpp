@@ -15,6 +15,7 @@ void ShaderManager::initialize()
 	pcDebugNormals();
 	pcBarebones();
 	pcLit();
+	pcLitDisk();
 }
 
 Shader* ShaderManager::pcDebugNormals()
@@ -37,6 +38,14 @@ Shader* ShaderManager::pcLit()
 {
 	static auto ret = load("Lit",
 		"shaders/pcLit.vert", "shaders/pcLit.frag"
+	);
+	return ret;
+}
+
+Shader* ShaderManager::pcLitDisk()
+{
+	static auto ret = load("Lit Disk",
+		"shaders/pcLitDisk.vert", "shaders/pcLitDisk.frag", "shaders/pcLitDisk.geom"
 	);
 	return ret;
 }

@@ -10,4 +10,5 @@ public:
 	static Shader* pcDebugNormals();
 	static Shader* pcBarebones();
 	static Shader* pcLit();
+	static Shader* pcLitDisk();
 };

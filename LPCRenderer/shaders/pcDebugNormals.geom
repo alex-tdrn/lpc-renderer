@@ -22,14 +22,14 @@ out GS_OUT
 void main()
 {
 	vec4 p = gl_in[0].gl_Position;
-	vec3 n = gs_in[0].normal;
 
-	n = mat3(transpose(inverse(model))) * n;
 	gl_Position = projection * view * model * p;
 	gs_out.color = vec3(0.0f, 0.0f, 0.0f);
 	EmitVertex();
-	gl_Position = projection * view * model * (p + vec4(n * lineLength, 0.0f));
+
+	gl_Position = projection * view * model * (p + vec4(gs_in[0].normal * lineLength, 0.0f));
 	gs_out.color = diffuseColor;
 	EmitVertex();
+
 	EndPrimitive();
 }

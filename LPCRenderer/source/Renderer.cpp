@@ -21,7 +21,11 @@ void Renderer::render(Scene* scene) const
 	if(!scene->getPointCloud())
 		return;
 
-	glPointSize(pointSize);
+	if(activeShader == ShaderManager::pcBarebones() ||
+		activeShader == ShaderManager::pcLit())
+		glPointSize(pointSize);
+	else
+		glPointSize(1.0f);
 
 	activeShader->use();
 
@@ -33,14 +37,21 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if(activeShader == ShaderManager::pcLit())
+	if(activeShader == ShaderManager::pcLit() || 
+		activeShader == ShaderManager::pcLitDisk())
 	{
+		activeShader->set("backFaceCulling", backFaceCulling);
 		activeShader->set("specularColor", scene->getSpecularColor());
 		activeShader->set("shininess", scene->getShininess());
 		activeShader->set("ambientStrength", scene->getAmbientStrength());
+		activeShader->set("ambientColor", backgroundColor);
 		activeShader->set("light.color", scene->getLightColor());
-		activeShader->set("light.direction", scene->getLightDirection());
-
+		glm::vec3 viewSpaceLightDirection = v * glm::vec4(scene->getLightDirection(), 0.0f);
+		activeShader->set("light.direction", viewSpaceLightDirection);
+		if(activeShader == ShaderManager::pcLitDisk())
+		{
+			activeShader->set("diskRadius", diskRadius);
+		}
 	}
 	else if(activeShader == ShaderManager::pcDebugNormals())
 	{
@@ -97,17 +108,10 @@ void Renderer::drawUI()
 	}
 
 	ImGui::Text("Rendering Method");
-	ImGui::SameLine();
 	if(ImGui::RadioButton("Barebones", activeShader == ShaderManager::pcBarebones()))
 	{
 		activeShader = ShaderManager::pcBarebones();
 		useNormalsIfAvailable = false;
-	}
-	ImGui::SameLine();
-	if(ImGui::RadioButton("Lit", activeShader == ShaderManager::pcLit()))
-	{
-		activeShader = ShaderManager::pcLit();
-		useNormalsIfAvailable = true;
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Debug Normals", activeShader == ShaderManager::pcDebugNormals()))
@@ -115,8 +119,30 @@ void Renderer::drawUI()
 		activeShader = ShaderManager::pcDebugNormals();
 		useNormalsIfAvailable = true;
 	}
-	ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
+	if(ImGui::RadioButton("Lit", activeShader == ShaderManager::pcLit()))
+	{
+		activeShader = ShaderManager::pcLit();
+		useNormalsIfAvailable = true;
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Lit Disk", activeShader == ShaderManager::pcLitDisk()))
+	{
+		activeShader = ShaderManager::pcLitDisk();
+		useNormalsIfAvailable = true;
+	}
+	if(activeShader == ShaderManager::pcBarebones() || 
+		activeShader == ShaderManager::pcLit())
+		ImGui::SliderFloat("Point Size", &pointSize, 1.0f, 8.0f);
+
+	if(activeShader == ShaderManager::pcLit() ||
+		activeShader == ShaderManager::pcLitDisk())
+		ImGui::Checkbox("Backface Culling", &backFaceCulling);
+
+	if(activeShader == ShaderManager::pcLitDisk())
+		ImGui::DragFloat("Disk Radius", &diskRadius, 0.0001f, 0.0f, 0.5f, "%.5f");
+
 	if(activeShader == ShaderManager::pcDebugNormals())
-		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.001f);
+		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0f, 0.5f, "%.5f");
+
 	ImGui::PopID();
 }
