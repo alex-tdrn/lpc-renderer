@@ -18,6 +18,9 @@ private:
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
 	static inline bool bufferOrphaning = false;
+	static inline bool drawBoundingBox = false;
+	static inline glm::vec3 boundingBoxColor{1.0f};
+	static inline int boundingBoxThickness = 2;
 	bool decimation = true;
 	int maxVertices = 100'000;
 	bool frustumCulling = false;
@@ -26,6 +29,7 @@ private:
 	int pointSize = 1;
 	float diskRadius = 0.0005f;
 	float debugNormalsLineLength = 0.001f;
+	int debugNormalsLineThickness = 2;
 
 public:
 	Renderer();
@@ -34,6 +38,9 @@ public:
 	~Renderer() = default;
 	Renderer& operator=(Renderer const&) = delete;
 	Renderer& operator=(Renderer&&) = default;
+
+private:
+	static void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness);
 
 public:
 	std::string getNamePrefix() const override;

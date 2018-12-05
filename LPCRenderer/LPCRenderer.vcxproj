@@ -117,6 +117,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\$(ProjectName)\libraries;$(SolutionDir)\$(ProjectName)\headers;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -175,6 +176,8 @@
     <ClInclude Include="libraries\tinyply.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="shaders\box.frag" />
+    <None Include="shaders\box.vert" />
     <None Include="shaders\pcBarebones.frag" />
     <None Include="shaders\pcBarebones.vert" />
     <None Include="shaders\pcDebugNormals.frag" />

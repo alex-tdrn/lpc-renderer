@@ -12,10 +12,19 @@ Shader* load(std::string&& name, Sources&&... sources)
 
 void ShaderManager::initialize()
 {
+	box();
 	pcDebugNormals();
 	pcBarebones();
 	pcLit();
 	pcLitDisk();
+}
+
+Shader *ShaderManager::box()
+{
+	static auto ret = load("Box",
+		"shaders/box.vert", "shaders/box.frag"
+	);
+	return ret;
 }
 
 Shader* ShaderManager::pcDebugNormals()

@@ -137,5 +137,7 @@
     <None Include="shaders\pcLitDisk.frag" />
     <None Include="shaders\pcLitDisk.geom" />
     <None Include="shaders\pcLitDisk.vert" />
+    <None Include="shaders\box.vert" />
+    <None Include="shaders\box.frag" />
   </ItemGroup>
 </Project>

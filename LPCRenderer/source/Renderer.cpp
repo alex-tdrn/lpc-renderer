@@ -27,13 +27,18 @@ void Renderer::render(Scene* scene) const
 	else
 		glPointSize(1.0f);
 
-	activeShader->use();
-
 	glm::mat4 m = scene->getModelMatrix();
-	activeShader->set("model", m);
 	glm::mat4 v = scene->getCamera().getViewMatrix();
-	activeShader->set("view", v);
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
+
+	if(drawBoundingBox)
+	{
+		drawBox(p * v * m, boundingBoxColor, boundingBoxThickness);
+	}
+
+	activeShader->use();
+	activeShader->set("model", m);
+	activeShader->set("view", v);
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
@@ -55,6 +60,7 @@ void Renderer::render(Scene* scene) const
 	}
 	else if(activeShader == ShaderManager::pcDebugNormals())
 	{
+		glLineWidth(debugNormalsLineThickness);
 		activeShader->set("lineLength", debugNormalsLineLength);
 	}
 
@@ -67,6 +73,62 @@ void Renderer::render(Scene* scene) const
 	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
 }
 
+void Renderer::drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
+{
+	static unsigned int VAO = []() -> unsigned int{
+		unsigned int VAO;
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		unsigned int VBO;
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		std::array<glm::vec3, 8> vertices = {
+			//front face
+			//top left
+				glm::vec3{-1.0f, +1.0f, +1.0f},
+			//bottom left
+				glm::vec3{-1.0f, -1.0f, +1.0f},
+			//bottom right
+				glm::vec3{+1.0f, -1.0f, +1.0f},
+			//top right
+				glm::vec3{+1.0f, +1.0f, +1.0f},
+
+			//back face
+			//top left
+				glm::vec3{+1.0f, +1.0f, -1.0f},
+			//bottom left
+				glm::vec3{+1.0f, -1.0f, -1.0f},
+			//bottom right
+				glm::vec3{-1.0f, -1.0f, -1.0f},
+			//top right
+				glm::vec3{-1.0f, +1.0f, -1.0f}
+		};
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8 * 3, vertices.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
+
+		unsigned int EBO;
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		std::array<uint8_t, 24> indices = {
+			0, 1,  1, 2,  2, 3,  3, 0,
+			0, 7,  7, 6,  6, 1,  2, 5,
+			5, 4,  4, 3,  7, 4,  5, 6
+		};
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint8_t) * 24, indices.data(), GL_STATIC_DRAW);
+
+		return VAO;
+	}();
+	ShaderManager::box()->use();
+	ShaderManager::box()->set("mvp", mvp);
+	ShaderManager::box()->set("color", color);
+	glBindVertexArray(VAO);
+	glLineWidth(thickness);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_BYTE, 0);
+	
+}
+
 std::string Renderer::getNamePrefix() const
 {
 	return "Renderer";
@@ -75,6 +137,8 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
+	ImGui::Text("Global Settings");
+	ImGui::Separator();
 	ImGui::Checkbox("Buffer Orphaning", &bufferOrphaning);
 	ImGui::SameLine();
 	if(ImGui::Button("Shrink Buffers"))
@@ -86,6 +150,18 @@ void Renderer::drawUI()
 	{
 		pointCloudBufffers.resize(nBuffers);
 	}
+	ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
+	if(drawBoundingBox)
+	{
+		ImGui::SameLine();
+		ImGui::ColorEdit3("###BBColor", &boundingBoxColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
+		ImGui::SliderInt("Thickness", &boundingBoxThickness, 1, 16);
+	}
+
+	ImGui::NewLine();
+	ImGui::NewLine();
+	ImGui::Text("Local Settings");
+	ImGui::Separator();
 	if(currentPointCloud)
 	{
 		ImGui::Text("Rendering %lu Vertices", currentPointCloud->getSize());
@@ -142,7 +218,10 @@ void Renderer::drawUI()
 		ImGui::DragFloat("Disk Radius", &diskRadius, 0.00001f, 0.00001f, 0.005f, "%.5f");
 
 	if(activeShader == ShaderManager::pcDebugNormals())
+	{
 		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0001f, 0.01f, "%.4f");
+		ImGui::SliderInt("Line Thickness", &debugNormalsLineThickness, 1, 16);
+	}
 
 	ImGui::PopID();
 }
