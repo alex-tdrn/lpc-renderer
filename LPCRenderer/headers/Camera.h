@@ -5,9 +5,9 @@
 class Camera : public AutoName<Camera>
 {
 private:
-	glm::vec3 translation{0.0f, 0.0f, 4.0f};
-	float yaw = 0.0f;
-	float pitch = 0.0f;
+	glm::vec3 translation{-2.2f, 1.65f, 2.2f};
+	float yaw = -45.0f;
+	float pitch = -30.0f;
 	float fov = 45.0f;
 	float nearPlane = 0.1f;
 	float farPlane = 100.0f;

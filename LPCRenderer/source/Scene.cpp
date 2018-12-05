@@ -3,10 +3,20 @@
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
+#include <algorithm>
 
 Scene::Scene(PointCloud* cloud)
 	:cloud(cloud)
 {
+	auto bounds = cloud->getBounds();
+	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
+	bounds.first -= center;
+	float scale = -1.0f;
+	for(int i = 0; i < 3; i++)
+		scale = std::max(scale, -bounds.first[i]);
+	glm::mat4 t = glm::translate(glm::mat4{1.0f}, -center);
+	glm::mat4 s = glm::scale(glm::mat4{1.0f}, 1.0f / glm::vec3{scale});
+	cloud->transform(s * t);
 }
 
 std::string Scene::getNamePrefix() const
@@ -100,32 +110,58 @@ void Scene::drawUI()
 	}
 
 	ImGui::DragFloat("Scaling", &scaling, 0.1f);
-	static float rotateAmount = glm::radians(0.1f);
-	ImGui::SliderFloat("Rotation Speed", &rotateAmount, glm::radians(0.1f), glm::radians(10.0f));
-	ImGui::Text("Rotate");
-	ImGui::SameLine();
+
+	static float rotationSpeed = 0.1f;
+	ImGui::Text("Rotate Continuously By %.1f Degrees/Frame", rotationSpeed);
+	ImGui::DragFloat("###RotationSpeed ", &rotationSpeed, 0.01f, 0.01f, 1.0f);
+	ImGui::PushID(1);
 	ImGui::Button("+X");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationSpeed), glm::vec3{1.0f, 0.0f, 0.0f});
 	ImGui::SameLine();
 	ImGui::Button("-X");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{1.0f, 0.0f, 0.0f});
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationSpeed), glm::vec3{1.0f, 0.0f, 0.0f});
 	ImGui::SameLine();
 	ImGui::Button("+Y");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationSpeed), glm::vec3{0.0f, 1.0f, 0.0f});
 	ImGui::SameLine();
 	ImGui::Button("-Y");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{0.0f, 1.0f, 0.0f});
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationSpeed), glm::vec3{0.0f, 1.0f, 0.0f});
 	ImGui::SameLine();
 	ImGui::Button("+Z");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, +rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationSpeed), glm::vec3{0.0f, 0.0f, 1.0f});
 	ImGui::SameLine();
 	ImGui::Button("-Z");
 	if(ImGui::IsItemActive())
-		modelMatrix = glm::rotate(modelMatrix, -rotateAmount, glm::vec3{0.0f, 0.0f, 1.0f});
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationSpeed), glm::vec3{0.0f, 0.0f, 1.0f});
+	ImGui::PopID();
+
+	static float rotationAmount = 90.0f;
+	ImGui::Text("Rotate Once By %.1f Degrees", rotationAmount);
+	ImGui::DragFloat("###RotationAmount ", &rotationAmount, 1.0f, 1.0f, 180.0f);
+	ImGui::PushID(2);
+	if(ImGui::Button("+X"))
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationAmount), glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	if(ImGui::Button("-X"))
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationAmount), glm::vec3{1.0f, 0.0f, 0.0f});
+	ImGui::SameLine();
+	if(ImGui::Button("+Y"))
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationAmount), glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	if(ImGui::Button("-Y"))
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationAmount), glm::vec3{0.0f, 1.0f, 0.0f});
+	ImGui::SameLine();
+	if(ImGui::Button("+Z"))
+		modelMatrix = glm::rotate(modelMatrix, +glm::radians(rotationAmount), glm::vec3{0.0f, 0.0f, 1.0f});
+	ImGui::SameLine();
+	if(ImGui::Button("-Z"))
+		modelMatrix = glm::rotate(modelMatrix, -glm::radians(rotationAmount), glm::vec3{0.0f, 0.0f, 1.0f});
+	ImGui::PopID();
+
 	ImGui::PopID();
 }

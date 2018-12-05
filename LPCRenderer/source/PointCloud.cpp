@@ -1,6 +1,8 @@
 #include "PointCloud.h"
 #include "imgui.h"
 
+#include <algorithm>
+
 PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
 	:positions(std::move(positions)), maxVertices(positions.size()), normals(normals)
 {
@@ -33,6 +35,7 @@ void PointCloud::transform(glm::mat4 t)
 		position = t * glm::vec4{position, 1.0f};
 	_decimated = nullptr;
 	_culled = nullptr;
+	boundsOutOfDate = true;
 }
 
 std::string PointCloud::getNamePrefix() const
@@ -114,6 +117,25 @@ PointCloud* PointCloud::culled(glm::mat4 mvp) const
 		}
 	}
 	return _culled.get();
+}
+
+std::pair<glm::vec3, glm::vec3> const& PointCloud::getBounds() const
+{
+	if(boundsOutOfDate)
+	{
+		bounds.first = {std::numeric_limits<float>::max()};
+		bounds.second = -bounds.first;
+		for(auto const& p : positions)
+		{
+			for(int i = 0; i < 3; i++)
+			{
+				bounds.first[i] = std::min(bounds.first[i], p[i]);
+				bounds.second[i] = std::max(bounds.second[i], p[i]);
+			}
+		}
+		boundsOutOfDate = false;
+	}
+	return bounds;
 }
 
 

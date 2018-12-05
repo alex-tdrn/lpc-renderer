@@ -6,6 +6,10 @@
 #include "ShaderManager.h"
 #include "PointCloud.h"
 
+static void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness);
+static void drawAABB(std::pair<glm::vec3, glm::vec3> bounds, glm::mat4 mvp, glm::vec3 color, float thickness);
+
+
 Renderer::Renderer()
 {
 	if(pointCloudBufffers.empty())
@@ -16,8 +20,10 @@ void Renderer::render(Scene* scene) const
 {
 	if(!scene)
 		return;
+
 	glm::vec3 backgroundColor = scene->getBackgroundColor();
 	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
+
 	if(!scene->getPointCloud())
 		return;
 
@@ -30,10 +36,15 @@ void Renderer::render(Scene* scene) const
 	glm::mat4 m = scene->getModelMatrix();
 	glm::mat4 v = scene->getCamera().getViewMatrix();
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
+	currentPointCloud = scene->getPointCloud();
+	if(decimation)
+		currentPointCloud = currentPointCloud->decimated(maxVertices);
+	if(frustumCulling)
+		currentPointCloud = currentPointCloud->culled(p * v * m);
 
 	if(drawBoundingBox)
 	{
-		drawBox(p * v * m, boundingBoxColor, boundingBoxThickness);
+		drawAABB(currentPointCloud->getBounds(), p * v * m, boundingBoxColor, boundingBoxThickness);
 	}
 
 	activeShader->use();
@@ -63,70 +74,9 @@ void Renderer::render(Scene* scene) const
 		glLineWidth(debugNormalsLineThickness);
 		activeShader->set("lineLength", debugNormalsLineLength);
 	}
-
-	currentPointCloud = scene->getPointCloud();
-	if(decimation)
-		currentPointCloud = currentPointCloud->decimated(maxVertices);
-	if(frustumCulling)
-		currentPointCloud = currentPointCloud->culled(p * v * m);
+	
 	currentPointCloudBuffer %= pointCloudBufffers.size();
 	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
-}
-
-void Renderer::drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
-{
-	static unsigned int VAO = []() -> unsigned int{
-		unsigned int VAO;
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		unsigned int VBO;
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		std::array<glm::vec3, 8> vertices = {
-			//front face
-			//top left
-				glm::vec3{-1.0f, +1.0f, +1.0f},
-			//bottom left
-				glm::vec3{-1.0f, -1.0f, +1.0f},
-			//bottom right
-				glm::vec3{+1.0f, -1.0f, +1.0f},
-			//top right
-				glm::vec3{+1.0f, +1.0f, +1.0f},
-
-			//back face
-			//top left
-				glm::vec3{+1.0f, +1.0f, -1.0f},
-			//bottom left
-				glm::vec3{+1.0f, -1.0f, -1.0f},
-			//bottom right
-				glm::vec3{-1.0f, -1.0f, -1.0f},
-			//top right
-				glm::vec3{-1.0f, +1.0f, -1.0f}
-		};
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8 * 3, vertices.data(), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
-
-		unsigned int EBO;
-		glGenBuffers(1, &EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		std::array<uint8_t, 24> indices = {
-			0, 1,  1, 2,  2, 3,  3, 0,
-			0, 7,  7, 6,  6, 1,  2, 5,
-			5, 4,  4, 3,  7, 4,  5, 6
-		};
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint8_t) * 24, indices.data(), GL_STATIC_DRAW);
-
-		return VAO;
-	}();
-	ShaderManager::box()->use();
-	ShaderManager::box()->set("mvp", mvp);
-	ShaderManager::box()->set("color", color);
-	glBindVertexArray(VAO);
-	glLineWidth(thickness);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_BYTE, 0);
-	
 }
 
 std::string Renderer::getNamePrefix() const
@@ -224,4 +174,72 @@ void Renderer::drawUI()
 	}
 
 	ImGui::PopID();
+}
+
+
+void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
+{
+	static unsigned int VAO = []() -> unsigned int{
+		unsigned int VAO;
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		unsigned int VBO;
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		std::array<glm::vec3, 8> vertices = {
+			//front face
+			//top left
+			glm::vec3{-1.0f, +1.0f, +1.0f},
+			//bottom left
+			glm::vec3{-1.0f, -1.0f, +1.0f},
+			//bottom right
+			glm::vec3{+1.0f, -1.0f, +1.0f},
+			//top right
+			glm::vec3{+1.0f, +1.0f, +1.0f},
+
+			//back face
+			//top left
+			glm::vec3{+1.0f, +1.0f, -1.0f},
+			//bottom left
+			glm::vec3{+1.0f, -1.0f, -1.0f},
+			//bottom right
+			glm::vec3{-1.0f, -1.0f, -1.0f},
+			//top right
+			glm::vec3{-1.0f, +1.0f, -1.0f}
+		};
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8 * 3, vertices.data(), GL_STATIC_DRAW);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
+
+		unsigned int EBO;
+		glGenBuffers(1, &EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		std::array<uint8_t, 24> indices = {
+			0, 1, 1, 2, 2, 3, 3, 0,
+			0, 7, 7, 6, 6, 1, 2, 5,
+			5, 4, 4, 3, 7, 4, 5, 6
+		};
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint8_t) * 24, indices.data(), GL_STATIC_DRAW);
+
+		return VAO;
+	}();
+	ShaderManager::box()->use();
+	ShaderManager::box()->set("mvp", mvp);
+	ShaderManager::box()->set("color", color);
+	glBindVertexArray(VAO);
+	glLineWidth(thickness);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_BYTE, 0);
+
+}
+
+void drawAABB(std::pair<glm::vec3, glm::vec3> bounds, glm::mat4 mvp, glm::vec3 color, float thickness)
+{
+	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
+	bounds.first -= center;
+	glm::vec3 scale = -bounds.first;
+
+	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
+	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
+	drawBox(mvp * t * s, color, thickness);
 }

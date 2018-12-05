@@ -18,7 +18,7 @@ private:
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
 	static inline bool bufferOrphaning = false;
-	static inline bool drawBoundingBox = false;
+	static inline bool drawBoundingBox = true;
 	static inline glm::vec3 boundingBoxColor{1.0f};
 	static inline int boundingBoxThickness = 2;
 	bool decimation = true;
@@ -38,9 +38,6 @@ public:
 	~Renderer() = default;
 	Renderer& operator=(Renderer const&) = delete;
 	Renderer& operator=(Renderer&&) = default;
-
-private:
-	static void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness);
 
 public:
 	std::string getNamePrefix() const override;
