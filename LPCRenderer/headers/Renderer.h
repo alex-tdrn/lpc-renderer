@@ -18,12 +18,12 @@ private:
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
 	static inline bool bufferOrphaning = false;
-	static inline bool drawBoundingBox = true;
-	static inline glm::vec3 boundingBoxColor{1.0f};
-	static inline int boundingBoxThickness = 2;
-	bool decimation = true;
-	int maxVertices = 100'000;
-	bool frustumCulling = false;
+	static inline bool drawOctreeBoundingBoxes = true;
+	static inline int octreeMaxDepth = 1;
+	static inline int octreeMaxVerticesPerNode = 100'000;
+	static inline bool decimation = true;
+	static inline int decimationMaxVertices = 100'000;
+	static inline bool frustumCulling = false;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;
 	int pointSize = 1;

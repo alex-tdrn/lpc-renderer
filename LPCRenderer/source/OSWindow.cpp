@@ -230,8 +230,8 @@ void OSWindow::callback::filesDropped(GLFWwindow* window, int count, const char*
 void APIENTRY OSWindow::callback::debug(GLenum source, GLenum type, GLuint id, GLenum severity,
 	GLsizei length, const GLchar *message, const void* userParam)
 {
-	//if(type == GL_DEBUG_TYPE_PERFORMANCE || type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
-	//	return;
+	if(type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR)
+		return;
 	std::cout << "-----------------------------------\n"
 		<< "OpenGL Debug Message (" << id << "): \n" << message << '\n';
 	std::cout << "Source: ";

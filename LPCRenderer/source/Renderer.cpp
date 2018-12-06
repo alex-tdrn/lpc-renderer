@@ -6,9 +6,7 @@
 #include "ShaderManager.h"
 #include "PointCloud.h"
 
-static void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness);
-static void drawAABB(std::pair<glm::vec3, glm::vec3> bounds, glm::mat4 mvp, glm::vec3 color, float thickness);
-
+static void drawOctree(Octree const* octree, glm::mat4 mvp);
 
 Renderer::Renderer()
 {
@@ -38,14 +36,10 @@ void Renderer::render(Scene* scene) const
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
 	currentPointCloud = scene->getPointCloud();
 	if(decimation)
-		currentPointCloud = currentPointCloud->decimated(maxVertices);
-	if(frustumCulling)
-		currentPointCloud = currentPointCloud->culled(p * v * m);
+		currentPointCloud = currentPointCloud->decimated(decimationMaxVertices);
 
-	if(drawBoundingBox)
-	{
-		drawAABB(currentPointCloud->getBounds(), p * v * m, boundingBoxColor, boundingBoxThickness);
-	}
+	if(drawOctreeBoundingBoxes)
+		drawOctree(currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth), p * v * m);
 
 	activeShader->use();
 	activeShader->set("model", m);
@@ -87,31 +81,28 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	ImGui::Text("Global Settings");
-	ImGui::Separator();
 	ImGui::Checkbox("Buffer Orphaning", &bufferOrphaning);
 	ImGui::SameLine();
 	if(ImGui::Button("Shrink Buffers"))
 		for(auto& buffer : pointCloudBufffers)
 			buffer.shrink();
 	nBuffers = pointCloudBufffers.size();
-	ImGui::SliderInt("# of Buffers", &nBuffers, 1, 8);
+	ImGui::InputInt("# of Buffers", &nBuffers, 1);
+	if(nBuffers <= 0)
+		nBuffers = 1;
 	if(nBuffers != pointCloudBufffers.size())
 	{
 		pointCloudBufffers.resize(nBuffers);
 	}
-	ImGui::Checkbox("Draw Bounding Box", &drawBoundingBox);
-	if(drawBoundingBox)
+	ImGui::Checkbox("Draw Octree", &drawOctreeBoundingBoxes);
+	if(drawOctreeBoundingBoxes)
 	{
-		ImGui::SameLine();
-		ImGui::ColorEdit3("###BBColor", &boundingBoxColor.r, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_Float);
-		ImGui::SliderInt("Thickness", &boundingBoxThickness, 1, 16);
+		ImGui::Text("Max Vertices Per Node");
+		ImGui::DragInt("###InputMaxVerticesPerNode", &octreeMaxVerticesPerNode, 1'000, 1, std::numeric_limits<int>::max());
+		ImGui::InputInt("Max Depth", &octreeMaxDepth, 1);
+		if(octreeMaxDepth <= 0)
+			octreeMaxDepth = 1;
 	}
-
-	ImGui::NewLine();
-	ImGui::NewLine();
-	ImGui::Text("Local Settings");
-	ImGui::Separator();
 	if(currentPointCloud)
 	{
 		ImGui::Text("Rendering %lu Vertices", currentPointCloud->getSize());
@@ -128,11 +119,12 @@ void Renderer::drawUI()
 	{
 		ImGui::Text("Max Vertices");
 		ImGui::SameLine();
-		ImGui::DragInt("###InputMaxVertices", &maxVertices, 10'000, 1, std::numeric_limits<int>::max());
-		if(maxVertices < 1)
-			maxVertices = 1;
+		ImGui::DragInt("###InputMaxVertices", &decimationMaxVertices, 10'000, 1, std::numeric_limits<int>::max());
+		if(decimationMaxVertices < 1)
+			decimationMaxVertices = 1;
 	}
 
+	ImGui::Separator();
 	ImGui::Text("Rendering Method");
 	if(ImGui::RadioButton("Barebones", activeShader == ShaderManager::pcBarebones()))
 	{
@@ -176,8 +168,7 @@ void Renderer::drawUI()
 	ImGui::PopID();
 }
 
-
-void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
+void drawOctree(glm::mat4 mvp, std::optional<std::vector<glm::mat4>> nodeAttributes = std::nullopt)
 {
 	static unsigned int VAO = []() -> unsigned int{
 		unsigned int VAO;
@@ -210,7 +201,7 @@ void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
 		};
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 8 * 3, vertices.data(), GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
 		unsigned int EBO;
 		glGenBuffers(1, &EBO);
@@ -224,16 +215,45 @@ void drawBox(glm::mat4 mvp, glm::vec3 color, float thickness)
 
 		return VAO;
 	}();
+	glBindVertexArray(VAO);
+
+	static unsigned int instanceVBO = [](){
+		unsigned int VBO;
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(0));
+		glVertexAttribDivisor(1, 1);
+
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*) (4 * sizeof(float)));
+		glVertexAttribDivisor(2, 1);
+
+		glEnableVertexAttribArray(3);
+		glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*) (8 * sizeof(float)));
+		glVertexAttribDivisor(3, 1);
+
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*) (12 * sizeof(float)));
+		glVertexAttribDivisor(4, 1);
+		return VBO;
+
+	}();
+	static int nodeCount = 0;
+	if(nodeAttributes)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * nodeCount, nullptr, GL_STATIC_DRAW);
+		nodeCount = nodeAttributes->size();
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * nodeCount, nodeAttributes->data(), GL_STATIC_DRAW);
+	}
 	ShaderManager::box()->use();
 	ShaderManager::box()->set("mvp", mvp);
-	ShaderManager::box()->set("color", color);
-	glBindVertexArray(VAO);
-	glLineWidth(thickness);
-	glDrawElements(GL_LINES, 24, GL_UNSIGNED_BYTE, 0);
+	glDrawElementsInstanced(GL_LINES, 24, GL_UNSIGNED_BYTE, 0, nodeCount);
 
 }
 
-void drawAABB(std::pair<glm::vec3, glm::vec3> bounds, glm::mat4 mvp, glm::vec3 color, float thickness)
+glm::mat4 calculateBoundsTransfom(std::pair<glm::vec3, glm::vec3> bounds)
 {
 	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
 	bounds.first -= center;
@@ -241,5 +261,46 @@ void drawAABB(std::pair<glm::vec3, glm::vec3> bounds, glm::mat4 mvp, glm::vec3 c
 
 	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
 	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
-	drawBox(mvp * t * s, color, thickness);
+	return t * s;
+}
+
+void drawOctree(Octree const* octree, glm::mat4 mvp)
+{
+	static Octree const* cachedOctree = nullptr;
+	static int cachedMaxDepth = 1;
+	static std::size_t cachedMaxVerticesPerNode = 100'000;
+	static std::size_t cachedTotalVerticesCount = 0;
+	if(octree != cachedOctree ||
+		octree->getMaxVerticesPerNode() != cachedMaxVerticesPerNode ||
+		octree->getTotalVerticesCount() != cachedTotalVerticesCount ||
+		octree->getMaxDepth() != cachedMaxDepth)
+	{
+		cachedOctree = octree;
+		cachedMaxVerticesPerNode = octree->getMaxVerticesPerNode();
+		cachedTotalVerticesCount = octree->getTotalVerticesCount();
+		cachedMaxDepth = octree->getMaxDepth();
+
+		std::vector<glm::mat4> nodeAttributes;
+
+		std::vector<Octree const*> leafNodes;
+		octree->getAllLeafNodes(leafNodes);
+		for(auto const& leafNode : leafNodes)
+		{
+			std::size_t totalVertices = leafNode->getTotalVerticesCount();
+			if(totalVertices > 0)
+			{
+				glm::mat4 attribute = calculateBoundsTransfom(leafNode->getBounds());
+
+				if(totalVertices < leafNode->getMaxVerticesPerNode())
+					attribute[0][3] = 1.0f;
+
+				nodeAttributes.push_back(attribute);
+			}
+		}
+		drawOctree(mvp, nodeAttributes);
+	}
+	else
+	{
+		drawOctree(mvp);
+	}
 }

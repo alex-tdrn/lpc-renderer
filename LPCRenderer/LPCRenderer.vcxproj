@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\Octree.cpp" />
     <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Shader.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="headers\RendererManager.h" />
     <ClInclude Include="headers\SceneManager.h" />
     <ClInclude Include="libraries\tinyply.h" />
+    <ClInclude Include="headers\Octree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\box.frag" />

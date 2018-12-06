@@ -4,9 +4,24 @@
 #include <algorithm>
 
 PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
-	:positions(std::move(positions)), maxVertices(positions.size()), normals(normals)
+	:positions(std::move(positions)), maxVerticesDecimated(positions.size()), normals(normals)
 {
 
+}
+
+PointCloud::PointCloud(PointCloud const& other)
+	: positions(other.positions), normals(other.normals)
+{
+}
+
+PointCloud& PointCloud::operator=(PointCloud const& other)
+{
+	positions = other.positions;
+	normals = other.normals;
+	maxVerticesDecimated = 0;
+	_decimated = nullptr;
+	boundsOutOfDate = true;
+	return *this;
 }
 
 int PointCloud::getSize() const
@@ -19,14 +34,16 @@ bool PointCloud::hasNormals() const
 	return !normals.empty();
 }
 
-std::vector<glm::vec3> const& PointCloud::getPositions() const
+void PointCloud::addPoint(glm::vec3 position, std::optional<glm::vec3> normal)
 {
-	return positions;
-}
-
-std::vector<glm::vec3> const& PointCloud::getNormals() const
-{
-	return normals;
+	if(hasNormals())
+		assert(normal.has_value());
+	positions.push_back(position);
+	if(hasNormals())
+		normals.push_back(*normal);
+	maxVerticesDecimated = 0;
+	_decimated = nullptr;
+	boundsOutOfDate = true;
 }
 
 void PointCloud::transform(glm::mat4 t)
@@ -34,7 +51,6 @@ void PointCloud::transform(glm::mat4 t)
 	for(auto& position : positions)
 		position = t * glm::vec4{position, 1.0f};
 	_decimated = nullptr;
-	_culled = nullptr;
 	boundsOutOfDate = true;
 }
 
@@ -76,9 +92,9 @@ std::unique_ptr<PointCloud> PointCloud::join(std::vector<std::unique_ptr<PointCl
 
 PointCloud* PointCloud::decimated(int maxVertices) const
 {
-	if(maxVertices != this->maxVertices || !_decimated)
+	if(maxVertices != maxVerticesDecimated || !_decimated)
 	{
-		this->maxVertices = maxVertices;
+		maxVerticesDecimated = maxVertices;
 		if(!_decimated )
 			_decimated = std::make_unique<PointCloud>();
 		_decimated->positions.clear();
@@ -93,31 +109,22 @@ PointCloud* PointCloud::decimated(int maxVertices) const
 			if(hasNormals())
 				_decimated->normals.push_back(normals[i]);
 		}
+		_decimated->_octree = nullptr;
 	}
 	return _decimated.get();
 }
 
-PointCloud* PointCloud::culled(glm::mat4 mvp) const
+Octree* PointCloud::octree(std::size_t maxVerticesPerNode, int maxDepth) const
 {
-	if(!_culled)
-		_culled = std::make_unique<PointCloud>();
-	_culled->positions.clear();
-	_culled->normals.clear();
-	for(std::size_t i = 0; i < positions.size(); i++)
+	if(!_octree || maxVerticesPerNode != _octree->getMaxVerticesPerNode() || maxDepth != _octree->getMaxDepth())
 	{
-		glm::vec4 clippedPosition = mvp * glm::vec4{positions[i], 1.0f};
-		clippedPosition /= clippedPosition.w;
-		if(std::abs(clippedPosition.x) <= 1.0f &&
-		   std::abs(clippedPosition.y) <= 1.0f &&
-		   std::abs(clippedPosition.z) <= 1.0f)
-		{
-			_culled->positions.push_back(positions[i]);
-			if(hasNormals())
-				_culled->normals.push_back(normals[i]);
-		}
+		if(!_octree)
+			_octree = std::make_unique<Octree>(*this);
+		_octree->update(maxDepth, maxVerticesPerNode);
 	}
-	return _culled.get();
+	return _octree.get();
 }
+
 
 std::pair<glm::vec3, glm::vec3> const& PointCloud::getBounds() const
 {
@@ -166,12 +173,6 @@ void PointCloud::drawUI() const
 	{
 		ImGui::Indent();
 		_decimated->drawUI();
-		ImGui::Unindent();
-	}
-	if(_culled && ImGui::CollapsingHeader("Culled Cloud"))
-	{
-		ImGui::Indent();
-		_culled->drawUI();
 		ImGui::Unindent();
 	}
 	ImGui::PopID();

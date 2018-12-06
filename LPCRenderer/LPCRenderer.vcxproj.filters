@@ -58,6 +58,7 @@
     <ClCompile Include="source\PointCloudRepresentation.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="source\Octree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -125,6 +126,7 @@
     <ClInclude Include="headers\PointCloudRepresentation.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="headers\Octree.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBarebones.frag" />
