@@ -77,11 +77,18 @@ void Renderer::render(Scene* scene) const
 	{
 		static std::vector<PointCloud const*> clouds;
 		clouds.clear();
-		currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getAllPointClouds(clouds);
+		renderedVertices = 0;
+		if(frustumCulling)
+			currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getPointCloudsInsideFrustum(clouds, p * v * m);
+		else
+			currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getAllPointClouds(clouds);
+		for(auto cloud : clouds)
+			renderedVertices += cloud->getSize();
 		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(clouds, useNormalsIfAvailable, bufferOrphaning);
 	}
 	else
 	{
+		renderedVertices = currentPointCloud->getSize();
 		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
 	}
 	currentPointCloudBuffer++;
@@ -117,10 +124,11 @@ void Renderer::drawUI()
 		ImGui::InputInt("Max Depth", &octreeMaxDepth, 1);
 		if(octreeMaxDepth <= 0)
 			octreeMaxDepth = 1;
+		ImGui::Checkbox("Frustum Culling", &frustumCulling);
 	}
 	if(currentPointCloud)
 	{
-		ImGui::Text("Rendering %lu Vertices", currentPointCloud->getSize());
+		ImGui::Text("Rendering %lu Vertices", renderedVertices);
 		ImGui::SameLine();
 		if(currentPointCloud->hasNormals() && useNormalsIfAvailable)
 			ImGui::Text("With Normals");
@@ -129,7 +137,6 @@ void Renderer::drawUI()
 	}
 	ImGui::Checkbox("Decimation", &decimation);
 	ImGui::SameLine();
-	ImGui::Checkbox("Frustum Culling", &frustumCulling);
 	if(decimation)
 	{
 		ImGui::Text("Max Vertices");
@@ -268,17 +275,6 @@ void drawOctree(glm::mat4 mvp, std::optional<std::vector<glm::mat4>> nodeAttribu
 
 }
 
-glm::mat4 calculateBoundsTransfom(std::pair<glm::vec3, glm::vec3> bounds)
-{
-	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
-	bounds.first -= center;
-	glm::vec3 scale = -bounds.first;
-
-	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
-	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
-	return t * s;
-}
-
 void drawOctree(Octree const* octree, glm::mat4 mvp)
 {
 	static Octree const* cachedOctree = nullptr;
@@ -304,7 +300,7 @@ void drawOctree(Octree const* octree, glm::mat4 mvp)
 			std::size_t totalVertices = leafNode->getTotalVerticesCount();
 			if(totalVertices > 0)
 			{
-				glm::mat4 attribute = calculateBoundsTransfom(leafNode->getBounds());
+				glm::mat4 attribute = leafNode->getBoundsTransform();
 
 				if(totalVertices < leafNode->getMaxVerticesPerNode())
 					attribute[0][3] = 1.0f;

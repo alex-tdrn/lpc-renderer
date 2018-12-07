@@ -1,5 +1,6 @@
 #include "Octree.h"
 #include "PointCloud.h"
+#include "glm/gtc/matrix_transform.hpp"
 
 #include <array>
 
@@ -157,6 +158,39 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 			childNode.getAllPointClouds(pointClouds);
 }
 
+void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointClouds, glm::mat4 mvp) const
+{
+	glm::mat4 t = mvp * getBoundsTransform();
+
+	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
+	float s = (bounds.second.x - bounds.first.x) / 2.0f;
+
+	for(float x : {center.x - s, center.x + s})
+	{
+		for(float y : {center.y - s, center.y + s})
+		{
+			for(float z : {center.z - s, center.z + s})
+			{
+				glm::vec4 clippedCorner = t * glm::vec4{x, y, z, 1.0f};
+				clippedCorner /= clippedCorner.w;
+				if(std::abs(clippedCorner.x) <= 1.0f &&
+					std::abs(clippedCorner.y) <= 1.0f &&
+					std::abs(clippedCorner.z) <= 1.0f)
+				{
+					if(isLeaf && cloud)
+						pointClouds.push_back(cloud);
+					else
+						for(auto const& childNode : *children)
+							childNode.getPointCloudsInsideFrustum(pointClouds, mvp);
+					return;
+				}
+
+			}
+		}
+	}
+	
+}
+
 void Octree::getAllLeafNodes(std::vector<Octree*>& leafNodes)
 {
 	if(isLeaf)
@@ -164,6 +198,18 @@ void Octree::getAllLeafNodes(std::vector<Octree*>& leafNodes)
 	else
 		for(auto &childNode : *children)
 			childNode.getAllLeafNodes(leafNodes);
+}
+
+glm::mat4 Octree::getBoundsTransform() const
+{
+	auto bounds = this->bounds;
+	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
+	bounds.first -= center;
+	glm::vec3 scale = -bounds.first;
+
+	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
+	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
+	return t * s;
 }
 
 void Octree::update(int maxDepth, std::size_t maxVerticesPerNode)

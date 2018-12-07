@@ -112,6 +112,8 @@ void PointCloudRepresentation::updateAndUse(PointCloud const* cloud, bool useNor
 
 void PointCloudRepresentation::updateAndUse(std::vector<PointCloud const*>& clouds, bool useNormalsIfAvailable, bool orphaning)
 {
+	if(clouds.empty())
+		return;
 	glBindVertexArray(VAO);
 	vertexCount = 0;
 	for(auto cloud : clouds)
