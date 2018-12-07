@@ -160,18 +160,17 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 
 void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointClouds, glm::mat4 mvp) const
 {
-	glm::mat4 t = mvp * getBoundsTransform();
+	glm::mat4 t = getBoundsTransform();
 
 	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
 	float s = (bounds.second.x - bounds.first.x) / 2.0f;
-
 	for(float x : {center.x - s, center.x + s})
 	{
 		for(float y : {center.y - s, center.y + s})
 		{
 			for(float z : {center.z - s, center.z + s})
 			{
-				glm::vec4 clippedCorner = t * glm::vec4{x, y, z, 1.0f};
+				glm::vec4 clippedCorner = mvp * glm::vec4{x, y, z, 1.0f};
 				clippedCorner /= clippedCorner.w;
 				if(std::abs(clippedCorner.x) <= 1.0f &&
 					std::abs(clippedCorner.y) <= 1.0f &&
@@ -188,7 +187,7 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 			}
 		}
 	}
-	
+	float x = 2;
 }
 
 void Octree::getAllLeafNodes(std::vector<Octree*>& leafNodes)
