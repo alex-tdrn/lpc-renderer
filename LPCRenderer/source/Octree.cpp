@@ -108,7 +108,7 @@ void Octree::join()
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::size_t nVertices = 0;
-	std::vector<Octree*> leafNodes;
+	std::vector<Octree const*> leafNodes;
 	getAllLeafNodes(leafNodes);
 	bool hasNormals = false;
 	for(auto &leafNode : leafNodes)
@@ -144,7 +144,7 @@ void Octree::getAllLeafNodes(std::vector<Octree const*>& leafNodes) const
 {
 	if(isLeaf && cloud->getSize() > 0)
 		leafNodes.push_back(this);
-	else
+	else if(!isLeaf)
 		for(auto const& childNode : *children)
 			childNode.getAllLeafNodes(leafNodes);
 }
@@ -153,7 +153,7 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 {
 	if(isLeaf && cloud->getSize() > 0)
 		pointClouds.push_back(cloud);
-	else
+	else if(!isLeaf)
 		for(auto const& childNode : *children)
 			childNode.getAllPointClouds(pointClouds);
 }
@@ -188,15 +188,6 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 		}
 	}
 	float x = 2;
-}
-
-void Octree::getAllLeafNodes(std::vector<Octree*>& leafNodes)
-{
-	if(isLeaf)
-		leafNodes.push_back(this);
-	else
-		for(auto &childNode : *children)
-			childNode.getAllLeafNodes(leafNodes);
 }
 
 glm::mat4 Octree::getBoundsTransform() const

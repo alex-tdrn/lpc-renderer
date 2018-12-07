@@ -38,15 +38,15 @@ PointCloudRepresentation& PointCloudRepresentation::operator=(PointCloudRepresen
 
 void PointCloudRepresentation::growAndBindBuffer()
 {
-	if(buffer)
+	if(fence)
 	{
 		GLenum waitReturn = GL_UNSIGNALED;
 		Profiler::beginFenceWait();
 		while(waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
 			waitReturn = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 1);
 		Profiler::endFenceWait();
+		glDeleteSync(fence);
 	}
-	glDeleteSync(fence);
 
 	if(bufferSize > capacity)
 	{
@@ -94,6 +94,9 @@ void PointCloudRepresentation::updateAndUse(PointCloud const* cloud, bool useNor
 	{
 		bufferSize *= 2;
 		growAndBindBuffer();
+		
+		std::memcpy(buffer, cloud->getPositions().data(), bufferSize / 2);
+		std::memcpy(buffer + bufferSize/2, cloud->getNormals().data(), bufferSize / 2);
 
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (bufferSize / 2));
@@ -138,12 +141,12 @@ void PointCloudRepresentation::updateAndUse(std::vector<PointCloud const*>& clou
 			std::memcpy((char*) (buffer) + offset, cloud->getNormals().data(), cloudSize);
 			offset += cloudSize;
 		}
-		glDisableVertexAttribArray(1);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (bufferSize / 2));
 	}
 	else
 	{
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (bufferSize / 2));
+		glDisableVertexAttribArray(1);
 	}
 
 	glDrawArrays(GL_POINTS, 0, vertexCount);

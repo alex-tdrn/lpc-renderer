@@ -15,7 +15,7 @@ private:
 	std::size_t vertexCount = 0;
 	std::size_t bufferSize = 0;
 	std::size_t capacity = 0;
-	GLsync fence;
+	GLsync fence = nullptr;
 	std::byte* buffer = nullptr;
 
 public:
