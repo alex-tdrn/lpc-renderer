@@ -8,30 +8,51 @@
 #include <numeric>
 
 //TIME
-static float frametime = 0.0f;
-static float averageFrametime = 0.0f;
-static float fps = 0.0f;
-static float averageFPS = 0.0f;
 static const int frameSamples = 200;
-static std::array<float, frameSamples> frametimePlot;
 static unsigned int currentFrameIndex = 0;
-static float longestFrame = 100.0f;
+
+static std::array<float, frameSamples> frametimes;
+static float averageFrametime = 0.0f;
+static float longestFrametime = 100.0f;
+static std::array<float, frameSamples> fenceWaitDurations;
+static std::chrono::system_clock::time_point fenceWaitStart;
+static float currentFenceWaitDuration = 0.0f;
+static float averageFenceWaitDuration = 0.0f;
+static float longestFenceWaitDuration = 10.0f;
 
 void Profiler::recordFrame()
 {
 	static auto lastFrame = std::chrono::system_clock::now();
 	auto currentFrame = std::chrono::system_clock::now();
+
 	currentFrameIndex = (currentFrameIndex + 1) % frameSamples;
-	frametime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrame - lastFrame).count();
-	averageFrametime -= frametimePlot[currentFrameIndex] / frameSamples;
-	if(std::abs(longestFrame - frametimePlot[currentFrameIndex]) < 0.01f)
-		longestFrame = 100.0f;
-	frametimePlot[currentFrameIndex] = frametime;
-	averageFrametime += frametimePlot[currentFrameIndex] / frameSamples;
-	longestFrame = std::max(longestFrame, frametime);
-	fps = 1000.0f / frametime;
-	averageFPS = 1000.0f / averageFrametime;
+
+	auto updateStats = [](float& current, float& average, float& longest, float longestMin, std::array<float, frameSamples>& lastSamples){
+		average -= lastSamples[currentFrameIndex] / frameSamples;
+		if(std::abs(longest - lastSamples[currentFrameIndex]) < 0.01f)
+			longest = longestMin;
+		lastSamples[currentFrameIndex] = current;
+		average += lastSamples[currentFrameIndex] / frameSamples;
+		longest = std::max(longest, current);
+	};
+
+	float currentFrametime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrame - lastFrame).count();
+	updateStats(currentFrametime, averageFrametime, longestFrametime, 100.0f, frametimes);
 	lastFrame = currentFrame;
+
+	updateStats(currentFenceWaitDuration, averageFenceWaitDuration, longestFenceWaitDuration, 10.0f, fenceWaitDurations);
+	currentFenceWaitDuration = 0.0f;
+
+}
+
+void Profiler::beginFenceWait()
+{
+	fenceWaitStart = std::chrono::system_clock::now();
+}
+
+void Profiler::endFenceWait()
+{
+	currentFenceWaitDuration += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - fenceWaitStart).count();
 }
 
 //MEMORY
@@ -64,12 +85,18 @@ void Profiler::drawUI()
 	if(ImGui::CollapsingHeader("Time", ImGuiTreeNodeFlags_DefaultOpen)) 
 	{
 		static float const plotHeight = 100;
-		ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFrame);
-		ImGui::Text("Total Frametime: %.1f ms", frametime);
-		ImGui::Text("Average Total Frametime: %.1f ms", averageFrametime);
-		ImGui::PlotLines("###Frametimes", frametimePlot.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFrame, {ImGui::GetContentRegionAvailWidth(), plotHeight});
-		ImGui::Text("FPS: %.1f", fps);
-		ImGui::Text("Average FPS: %.1f", averageFPS);
+		ImGui::Text("Total Frametime: %.1f ms", frametimes[currentFrameIndex]);
+		ImGui::Text("Average: %.1f ms", averageFrametime);
+		ImGui::Text("FPS: %.1f", 1000.0f / frametimes[currentFrameIndex]);
+		ImGui::Text("Average FPS: %.1f", 1000.0f / averageFrametime);
+		ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFrametime);
+		ImGui::PlotLines("###Frametimes", frametimes.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFrametime, {ImGui::GetContentRegionAvailWidth(), plotHeight});
+		
+		ImGui::NewLine();
+		ImGui::Text("Time Waiting On Fences: %.1f ms", fenceWaitDurations[currentFrameIndex]);
+		ImGui::Text("Average: %.1f ms", averageFenceWaitDuration);
+		ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFenceWaitDuration);
+		ImGui::PlotLines("###FenceWaitDuration", fenceWaitDurations.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFenceWaitDuration, {ImGui::GetContentRegionAvailWidth(), plotHeight});
 	}
 
 	ImGui::NewLine();

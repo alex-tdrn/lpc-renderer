@@ -38,8 +38,11 @@ void Renderer::render(Scene* scene) const
 	if(decimation)
 		currentPointCloud = currentPointCloud->decimated(decimationMaxVertices);
 
-	if(drawOctreeBoundingBoxes)
+	if(useOctree && drawOctreeBoundingBoxes)
+	{
+		glLineWidth(2.0f);
 		drawOctree(currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth), p * v * m);
+	}
 
 	activeShader->use();
 	activeShader->set("model", m);
@@ -68,9 +71,20 @@ void Renderer::render(Scene* scene) const
 		glLineWidth(debugNormalsLineThickness);
 		activeShader->set("lineLength", debugNormalsLineLength);
 	}
-	
+
 	currentPointCloudBuffer %= pointCloudBufffers.size();
-	pointCloudBufffers[currentPointCloudBuffer++].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
+	if(useOctree)
+	{
+		static std::vector<PointCloud const*> clouds;
+		clouds.clear();
+		currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getAllPointClouds(clouds);
+		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(clouds, useNormalsIfAvailable, bufferOrphaning);
+	}
+	else
+	{
+		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
+	}
+	currentPointCloudBuffer++;
 }
 
 std::string Renderer::getNamePrefix() const
@@ -94,9 +108,10 @@ void Renderer::drawUI()
 	{
 		pointCloudBufffers.resize(nBuffers);
 	}
-	ImGui::Checkbox("Draw Octree", &drawOctreeBoundingBoxes);
-	if(drawOctreeBoundingBoxes)
+	ImGui::Checkbox("Use Octree", &useOctree);
+	if(useOctree)
 	{
+		ImGui::Checkbox("Draw Octree", &drawOctreeBoundingBoxes);
 		ImGui::Text("Max Vertices Per Node");
 		ImGui::DragInt("###InputMaxVerticesPerNode", &octreeMaxVerticesPerNode, 1'000, 1, std::numeric_limits<int>::max());
 		ImGui::InputInt("Max Depth", &octreeMaxDepth, 1);

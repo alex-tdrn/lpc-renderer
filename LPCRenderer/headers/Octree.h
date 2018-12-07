@@ -38,6 +38,7 @@ private:
 
 public:
 	void getAllLeafNodes(std::vector<Octree const*>&) const;
+	void getAllPointClouds(std::vector<PointCloud const*>&) const;
 	void getAllLeafNodes(std::vector<Octree*>&);
 	void update(int maxDepth, std::size_t maxVerticesPerNode);
 	std::size_t getMaxVerticesPerNode() const;

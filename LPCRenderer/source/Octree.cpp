@@ -142,27 +142,28 @@ void Octree::join()
 void Octree::getAllLeafNodes(std::vector<Octree const*>& leafNodes) const
 {
 	if(isLeaf)
-	{
 		leafNodes.push_back(this);
-	}
 	else
-	{
 		for(auto const& childNode : *children)
 			childNode.getAllLeafNodes(leafNodes);
-	}
+}
+
+void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) const
+{
+	if(isLeaf && cloud)
+		pointClouds.push_back(cloud);
+	else
+		for(auto const& childNode : *children)
+			childNode.getAllPointClouds(pointClouds);
 }
 
 void Octree::getAllLeafNodes(std::vector<Octree*>& leafNodes)
 {
 	if(isLeaf)
-	{
 		leafNodes.push_back(this);
-	}
 	else
-	{
 		for(auto &childNode : *children)
 			childNode.getAllLeafNodes(leafNodes);
-	}
 }
 
 void Octree::update(int maxDepth, std::size_t maxVerticesPerNode)

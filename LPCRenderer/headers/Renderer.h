@@ -18,6 +18,7 @@ private:
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
 	static inline bool bufferOrphaning = false;
+	static inline bool useOctree = false;
 	static inline bool drawOctreeBoundingBoxes = true;
 	static inline int octreeMaxDepth = 1;
 	static inline int octreeMaxVerticesPerNode = 100'000;
