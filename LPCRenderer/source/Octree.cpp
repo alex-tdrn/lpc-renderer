@@ -142,7 +142,7 @@ void Octree::join()
 
 void Octree::getAllLeafNodes(std::vector<Octree const*>& leafNodes) const
 {
-	if(isLeaf)
+	if(isLeaf && cloud->getSize() > 0)
 		leafNodes.push_back(this);
 	else
 		for(auto const& childNode : *children)
@@ -151,7 +151,7 @@ void Octree::getAllLeafNodes(std::vector<Octree const*>& leafNodes) const
 
 void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) const
 {
-	if(isLeaf && cloud)
+	if(isLeaf && cloud->getSize() > 0)
 		pointClouds.push_back(cloud);
 	else
 		for(auto const& childNode : *children)
@@ -160,8 +160,8 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 
 void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointClouds, glm::mat4 mvp) const
 {
-	glm::mat4 t = getBoundsTransform();
-
+	if(isLeaf && cloud->getSize() == 0)
+		return;
 	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
 	float s = (bounds.second.x - bounds.first.x) / 2.0f;
 	for(float x : {center.x - s, center.x + s})
@@ -176,7 +176,7 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 					std::abs(clippedCorner.y) <= 1.0f &&
 					std::abs(clippedCorner.z) <= 1.0f)
 				{
-					if(isLeaf && cloud)
+					if(isLeaf)
 						pointClouds.push_back(cloud);
 					else
 						for(auto const& childNode : *children)
