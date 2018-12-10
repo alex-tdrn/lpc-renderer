@@ -5,16 +5,12 @@ layout(location = 1) in mat4 t;
 
 uniform mat4 mvp;
 
-out vec3 color;
+out float occupancy;
 
 void main()
 {
-	color = vec3(1.0f, 0.0f, 0.0f);
+	occupancy = t[0][3];
 	mat4 transform = t;
-	if(t[0][3] > 0.5f)
-	{
-		color = vec3(1.0f);
-		transform[0][3] = 0.0f;
-	}
+	transform[0][3] = 0.0f;
 	gl_Position = mvp * transform * vec4(position, 1);	
 }

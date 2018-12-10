@@ -302,8 +302,7 @@ void drawOctree(Octree const* octree, glm::mat4 mvp)
 			{
 				glm::mat4 attribute = leafNode->getBoundsTransform();
 
-				if(totalVertices < leafNode->getMaxVerticesPerNode())
-					attribute[0][3] = 1.0f;
+				attribute[0][3] = leafNode->getOccupancy();
 
 				nodeAttributes.push_back(attribute);
 			}

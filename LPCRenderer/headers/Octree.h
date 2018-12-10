@@ -44,6 +44,8 @@ public:
 	void update(int maxDepth, std::size_t maxVerticesPerNode);
 	std::size_t getMaxVerticesPerNode() const;
 	std::size_t getTotalVerticesCount() const;
+	std::size_t getVerticesCount() const;
+	float getOccupancy() const;
 	int getMaxDepth() const;
 	std::pair<glm::vec3, glm::vec3> getBounds() const;
 

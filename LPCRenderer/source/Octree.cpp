@@ -260,6 +260,19 @@ std::size_t Octree::getTotalVerticesCount() const
 	return totalVerticesCount;
 }
 
+std::size_t Octree::getVerticesCount() const
+{
+	if(cloud)
+		return cloud->getSize();
+	else
+		return 0;
+}
+
+float Octree::getOccupancy() const
+{
+	return float(getVerticesCount()) / maxVerticesPerNode;
+}
+
 int Octree::getMaxDepth() const
 {
 	return maxDepth;
