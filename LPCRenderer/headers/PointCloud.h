@@ -32,7 +32,7 @@ protected:
 	std::string getNamePrefix() const;
 
 public:
-	int getSize() const;
+	std::size_t getSize() const;
 	bool hasNormals() const;
 	std::vector<glm::vec3> const& getPositions() const
 	{

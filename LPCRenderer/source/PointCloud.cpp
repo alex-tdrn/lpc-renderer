@@ -24,7 +24,7 @@ PointCloud& PointCloud::operator=(PointCloud const& other)
 	return *this;
 }
 
-int PointCloud::getSize() const
+std::size_t PointCloud::getSize() const
 {
 	return positions.size();
 }

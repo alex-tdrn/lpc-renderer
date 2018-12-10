@@ -6,7 +6,7 @@
 #include "ShaderManager.h"
 #include "PointCloud.h"
 
-static void drawOctree(Octree const* octree, glm::mat4 mvp);
+static void drawOctree(Octree const* octree, glm::mat4 mvp, int drawDepth = -1);
 
 Renderer::Renderer()
 {
@@ -41,7 +41,10 @@ void Renderer::render(Scene* scene) const
 	if(useOctree && drawOctreeBoundingBoxes)
 	{
 		glLineWidth(2.0f);
-		drawOctree(currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth), p * v * m);
+		if(drawAllOctreeDepths)
+			drawOctree(currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth), p * v * m);
+		else
+			drawOctree(currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth), p * v * m, drawOnlyOctreeDepth);
 	}
 
 	activeShader->use();
@@ -79,9 +82,16 @@ void Renderer::render(Scene* scene) const
 		clouds.clear();
 		renderedVertices = 0;
 		if(frustumCulling)
-			currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getPointCloudsInsideFrustum(clouds, p * v * m);
+		{
+			if(LOD)
+				currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getPointCloudsInsideFrustum(clouds, p * v * m, LODPixelArea, LODVertices);
+			else
+				currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getPointCloudsInsideFrustum(clouds, p * v * m);
+		}
 		else
+		{
 			currentPointCloud->octree(octreeMaxVerticesPerNode, octreeMaxDepth)->getAllPointClouds(clouds);
+		}
 		for(auto cloud : clouds)
 			renderedVertices += cloud->getSize();
 		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(clouds, useNormalsIfAvailable, bufferOrphaning);
@@ -124,6 +134,16 @@ void Renderer::drawUI()
 		ImGui::InputInt("Max Depth", &octreeMaxDepth, 1);
 		if(octreeMaxDepth <= 0)
 			octreeMaxDepth = 1;
+		ImGui::Checkbox("Draw All Octree Depths", &drawAllOctreeDepths);
+		if(!drawAllOctreeDepths)
+		{
+			ImGui::InputInt("Draw Only Depth", &drawOnlyOctreeDepth, 1);
+			if(drawOnlyOctreeDepth < 0)
+				drawOnlyOctreeDepth = 0;
+			if(drawOnlyOctreeDepth > octreeMaxDepth)
+				drawOnlyOctreeDepth = octreeMaxDepth;
+		}
+
 		ImGui::Checkbox("Frustum Culling", &frustumCulling);
 	}
 	if(currentPointCloud)
@@ -144,6 +164,18 @@ void Renderer::drawUI()
 		ImGui::DragInt("###InputMaxVertices", &decimationMaxVertices, 10'000, 1, std::numeric_limits<int>::max());
 		if(decimationMaxVertices < 1)
 			decimationMaxVertices = 1;
+	}
+	ImGui::Checkbox("LOD", &LOD);
+	if(LOD)
+	{
+		ImGui::Text("Pixel Area Threshold");
+		ImGui::DragInt("###InputLODPixelArea", &LODPixelArea, 1.0f, 1.0f);
+		if(LODPixelArea < 1)
+			LODPixelArea = 1;
+		ImGui::Text("LOD Vertices");
+		ImGui::DragInt("###InputLODVertices", &LODVertices, 100, 1, std::numeric_limits<int>::max());
+		if(LODVertices < 1)
+			LODVertices = 1;
 	}
 
 	ImGui::Separator();
@@ -275,7 +307,7 @@ void drawOctree(glm::mat4 mvp, std::optional<std::vector<glm::mat4>> nodeAttribu
 
 }
 
-void drawOctree(Octree const* octree, glm::mat4 mvp)
+void drawOctree(Octree const* octree, glm::mat4 mvp, int drawDepth)
 {
 	static Octree const* cachedOctree = nullptr;
 	static int cachedMaxDepth = 1;
@@ -297,6 +329,8 @@ void drawOctree(Octree const* octree, glm::mat4 mvp)
 		octree->getAllLeafNodes(leafNodes);
 		for(auto const& leafNode : leafNodes)
 		{
+			if(drawDepth != -1 && leafNode->getDepth() != drawDepth)
+				continue;
 			std::size_t totalVertices = leafNode->getTotalVerticesCount();
 			if(totalVertices > 0)
 			{

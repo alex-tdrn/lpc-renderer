@@ -22,10 +22,15 @@ private:
 	static inline bool useOctree = true;
 	static inline bool drawOctreeBoundingBoxes = true;
 	static inline int octreeMaxDepth = 1;
-	static inline int octreeMaxVerticesPerNode = 100'000;
+	static inline int octreeMaxVerticesPerNode = 10'000;
+	static inline bool drawAllOctreeDepths = true;
+	static inline int drawOnlyOctreeDepth = 0;
 	static inline bool frustumCulling = true;
 	static inline bool decimation = true;
 	static inline int decimationMaxVertices = 100'000;
+	static inline bool LOD = false;
+	static inline int LODVertices = 100;
+	static inline int LODPixelArea = 1'024;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;
 	int pointSize = 1;

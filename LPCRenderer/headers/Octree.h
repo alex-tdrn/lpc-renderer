@@ -39,7 +39,7 @@ private:
 public:
 	void getAllLeafNodes(std::vector<Octree const*>&) const;
 	void getAllPointClouds(std::vector<PointCloud const*>&) const;
-	void getPointCloudsInsideFrustum(std::vector<PointCloud const*>&, glm::mat4) const;
+	void getPointCloudsInsideFrustum(std::vector<PointCloud const*>&, glm::mat4, int LODPixelArea = 0, std::size_t LODVertices = 0) const;
 	glm::mat4 getBoundsTransform() const;
 	void update(int maxDepth, std::size_t maxVerticesPerNode);
 	std::size_t getMaxVerticesPerNode() const;
@@ -47,6 +47,7 @@ public:
 	std::size_t getVerticesCount() const;
 	float getOccupancy() const;
 	int getMaxDepth() const;
+	int getDepth() const;
 	std::pair<glm::vec3, glm::vec3> getBounds() const;
 
 };

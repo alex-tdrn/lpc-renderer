@@ -1,6 +1,7 @@
 #include "Octree.h"
 #include "PointCloud.h"
 #include "glm/gtc/matrix_transform.hpp"
+#include "OSWindow.h"
 
 #include <array>
 
@@ -158,7 +159,7 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 			childNode.getAllPointClouds(pointClouds);
 }
 
-void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointClouds, glm::mat4 mvp) const
+void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointClouds, glm::mat4 mvp, int LODPixelArea, std::size_t LODVertices) const
 {
 	if(isLeaf && cloud->getSize() == 0)
 		return;
@@ -205,17 +206,27 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 						maxAxisProjection[i] = std::max(maxAxisProjection[i], clippedCorner[i]);
 					}
 				}
-				if(testOverlap())//conservatively let the box pass
+				if((LODPixelArea == 0 || !isLeaf) && testOverlap())//conservatively let the box pass, LOD disabled
 				{
 					if(isLeaf)
 						pointClouds.push_back(cloud);
 					else
 						for(auto const& childNode : *children)
-							childNode.getPointCloudsInsideFrustum(pointClouds, mvp);
+							childNode.getPointCloudsInsideFrustum(pointClouds, mvp, LODPixelArea, LODVertices);
 					return;
 				}
 			}
 		}
+	}
+	if(testOverlap())
+	{
+		if(LODVertices == 0)
+			return;
+		glm::vec2 pixels = glm::vec2(OSWindow::getSize()) * glm::vec2(maxAxisProjection - minAxisProjection);
+		if(pixels.x * pixels.y <= LODPixelArea)
+			pointClouds.push_back(cloud->decimated(LODVertices));
+		else
+			pointClouds.push_back(cloud);
 	}
 }
 
@@ -276,6 +287,11 @@ float Octree::getOccupancy() const
 int Octree::getMaxDepth() const
 {
 	return maxDepth;
+}
+
+int Octree::getDepth() const
+{
+	return currentDepth;
 }
 
 std::pair<glm::vec3, glm::vec3> Octree::getBounds() const
