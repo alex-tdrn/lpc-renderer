@@ -164,6 +164,25 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 		return;
 	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
 	float s = (bounds.second.x - bounds.first.x) / 2.0f;
+
+	glm::vec3 minAxisProjection;
+	glm::vec3 maxAxisProjection;
+	auto testOverlap = [&minAxisProjection, &maxAxisProjection]() -> bool{
+		for(int i = 0; i < 3; i++)
+		{
+			float min = minAxisProjection[i];
+			float max = maxAxisProjection[i];
+			if(min >= -1.0f && min <= +1.0f
+				|| max >= -1.0f && max <= +1.0f
+				|| min <= +1.0f && max >= -1.0f)
+				continue;
+			else
+				return false;
+		}
+		return true;
+
+	};
+	bool firstCorner = true;
 	for(float x : {center.x - s, center.x + s})
 	{
 		for(float y : {center.y - s, center.y + s})
@@ -172,9 +191,21 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 			{
 				glm::vec4 clippedCorner = mvp * glm::vec4{x, y, z, 1.0f};
 				clippedCorner /= clippedCorner.w;
-				if(std::abs(clippedCorner.x) <= 1.0f &&
-					std::abs(clippedCorner.y) <= 1.0f &&
-					std::abs(clippedCorner.z) <= 1.0f)
+				if(firstCorner)
+				{
+					minAxisProjection = clippedCorner;
+					maxAxisProjection = clippedCorner;
+					firstCorner = false;
+				}
+				else
+				{
+					for(int i = 0; i < 3; i++)
+					{
+						minAxisProjection[i] = std::min(minAxisProjection[i], clippedCorner[i]);
+						maxAxisProjection[i] = std::max(maxAxisProjection[i], clippedCorner[i]);
+					}
+				}
+				if(testOverlap())//conservatively let the box pass
 				{
 					if(isLeaf)
 						pointClouds.push_back(cloud);
@@ -183,11 +214,9 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 							childNode.getPointCloudsInsideFrustum(pointClouds, mvp);
 					return;
 				}
-
 			}
 		}
 	}
-	float x = 2;
 }
 
 glm::mat4 Octree::getBoundsTransform() const
