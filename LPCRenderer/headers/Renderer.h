@@ -18,7 +18,7 @@ private:
 	static inline std::vector<PointCloudRepresentation> pointCloudBufffers{0};
 	static inline int currentPointCloudBuffer = 0;
 	static inline int nBuffers = 1;
-	static inline bool bufferOrphaning = false;
+	static inline bool shrinkBuffersToFit = false;
 	static inline bool useOctree = true;
 	static inline bool drawOctreeBoundingBoxes = true;
 	static inline int octreeMaxDepth = 1;

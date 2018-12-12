@@ -7,6 +7,13 @@
 #include <memory>
 #include <optional>
 
+struct PointCloudBlock
+{
+	glm::vec3 origin;
+	glm::vec3 size;
+	std::vector<glm::u8vec3> offsets;
+};
+
 class PointCloud : public AutoName<PointCloud>
 {
 	friend class std::unique_ptr<PointCloud>;
@@ -19,6 +26,7 @@ private:
 	mutable std::unique_ptr<Octree> _octree = nullptr;
 	mutable std::pair<glm::vec3, glm::vec3> bounds;
 	mutable bool boundsOutOfDate = true;
+	mutable std::unique_ptr<PointCloudBlock> _block = nullptr;
 public:
 	PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals = {});
 	PointCloud() = default;
@@ -55,6 +63,7 @@ public:
 	static std::unique_ptr<PointCloud> join(std::vector<std::unique_ptr<PointCloud>>&& meshes);
 	PointCloud* decimated(int maxVertices) const;
 	Octree* octree(std::size_t maxVerticesPerNode, int maxDepth) const;
+	PointCloudBlock* asBlock() const;
 	std::pair<glm::vec3, glm::vec3> const& getBounds() const;
 	void drawUI() const;
 

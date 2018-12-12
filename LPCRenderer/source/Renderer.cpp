@@ -76,10 +76,10 @@ void Renderer::render(Scene* scene) const
 	}
 
 	currentPointCloudBuffer %= pointCloudBufffers.size();
+	static std::vector<PointCloud const*> clouds;
+	clouds.clear();
 	if(useOctree)
 	{
-		static std::vector<PointCloud const*> clouds;
-		clouds.clear();
 		renderedVertices = 0;
 		if(frustumCulling)
 		{
@@ -94,12 +94,13 @@ void Renderer::render(Scene* scene) const
 		}
 		for(auto cloud : clouds)
 			renderedVertices += cloud->getSize();
-		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(clouds, useNormalsIfAvailable, bufferOrphaning);
+		pointCloudBufffers[currentPointCloudBuffer].update(shrinkBuffersToFit, useNormalsIfAvailable, clouds);
 	}
 	else
 	{
+		clouds.push_back(currentPointCloud);
 		renderedVertices = currentPointCloud->getSize();
-		pointCloudBufffers[currentPointCloudBuffer].updateAndUse(currentPointCloud, useNormalsIfAvailable, bufferOrphaning);
+		pointCloudBufffers[currentPointCloudBuffer].update(shrinkBuffersToFit, useNormalsIfAvailable, clouds);
 	}
 	currentPointCloudBuffer++;
 }
@@ -112,11 +113,7 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	ImGui::Checkbox("Buffer Orphaning", &bufferOrphaning);
-	ImGui::SameLine();
-	if(ImGui::Button("Shrink Buffers"))
-		for(auto& buffer : pointCloudBufffers)
-			buffer.shrink();
+	ImGui::Checkbox("Shrink Buffers To Fit", &shrinkBuffersToFit);
 	nBuffers = pointCloudBufffers.size();
 	ImGui::InputInt("# of Buffers", &nBuffers, 1);
 	if(nBuffers <= 0)

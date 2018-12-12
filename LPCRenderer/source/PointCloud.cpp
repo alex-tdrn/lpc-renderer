@@ -1,5 +1,6 @@
 #include "PointCloud.h"
 #include "imgui.h"
+#include "glm/gtc/packing.hpp"
 
 #include <algorithm>
 
@@ -123,6 +124,26 @@ Octree* PointCloud::octree(std::size_t maxVerticesPerNode, int maxDepth) const
 		_octree->update(maxDepth, maxVerticesPerNode);
 	}
 	return _octree.get();
+}
+
+PointCloudBlock* PointCloud::asBlock() const
+{
+	if(!_block)
+	{
+		_block = std::make_unique<PointCloudBlock>();
+		_block->origin = getBounds().first;
+		_block->size = bounds.second - bounds.first;
+		_block->offsets.reserve(positions.size());
+		for(auto const&p : positions)
+		{
+			_block->offsets.push_back({
+				glm::packUnorm1x8(p.x),
+				glm::packUnorm1x8(p.y),
+				glm::packUnorm1x8(p.z)
+			});
+		}
+	}
+	return _block.get();
 }
 
 

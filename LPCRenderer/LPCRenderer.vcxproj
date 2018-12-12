@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\GPUBuffer.cpp" />
     <ClCompile Include="source\Octree.cpp" />
     <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\Camera.cpp" />
@@ -148,6 +149,7 @@
     <ClCompile Include="source\OSWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\GPUBuffer.h" />
     <ClInclude Include="headers\Camera.h" />
     <ClInclude Include="headers\PointCloudRepresentation.h" />
     <ClInclude Include="headers\AutoName.h" />

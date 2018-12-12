@@ -59,6 +59,7 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="source\Octree.cpp" />
+    <ClCompile Include="source\GPUBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -127,6 +128,7 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="headers\Octree.h" />
+    <ClInclude Include="headers\GPUBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBarebones.frag" />

@@ -1,4 +1,5 @@
 #pragma once
+#include "GPUBuffer.h"
 #include "glm/glm.hpp"
 #include "glad/glad.h"
 #include <optional>
@@ -11,12 +12,7 @@ class PointCloudRepresentation
 {
 private:
 	unsigned int VAO = 0;
-	unsigned int VBO = 0;
-	std::size_t vertexCount = 0;
-	std::size_t bufferSize = 0;
-	std::size_t capacity = 0;
-	GLsync fence = nullptr;
-	std::byte* buffer = nullptr;
+	GPUBuffer VBO{GL_ARRAY_BUFFER};
 
 public:
 	PointCloudRepresentation();
@@ -27,13 +23,9 @@ public:
 	PointCloudRepresentation& operator=(PointCloudRepresentation&&);
 
 private:
-	void growAndBindBuffer();
-	void freeBuffers();
+	void free();
 
 public:
-	void shrink();
-	void updateAndUse(PointCloud const* cloud, bool useNormalsIfAvailable, bool orphaning = false);
-	void updateAndUse(std::vector<PointCloud const*>& clouds, bool useNormalsIfAvailable, bool orphaning = false);
-	void use() const;
+	void update(bool shrinkToFit, bool useNormals, std::vector<PointCloud const*>& clouds);
 
 };
