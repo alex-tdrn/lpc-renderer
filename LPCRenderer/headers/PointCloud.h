@@ -62,7 +62,7 @@ public:
 	void transform(glm::mat4 t);
 	static std::unique_ptr<PointCloud> join(std::vector<std::unique_ptr<PointCloud>>&& meshes);
 	PointCloud* decimated(int maxVertices) const;
-	Octree* octree(std::size_t maxVerticesPerNode, int maxDepth) const;
+	Octree* octree(std::size_t preferredVerticesPerNode, int maxDepth) const;
 	PointCloudBlock* asBlock() const;
 	std::pair<glm::vec3, glm::vec3> const& getBounds() const;
 	void drawUI() const;

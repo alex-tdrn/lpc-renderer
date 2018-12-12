@@ -7,11 +7,11 @@
 
 Octree::Octree(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals,
 	std::pair<glm::vec3, glm::vec3> bounds, int depth,
-	int maxDepth, std::size_t maxVerticesPerNode)
+	int maxDepth, std::size_t preferredVerticesPerNode)
 	:bounds(bounds), currentDepth(depth), maxDepth(maxDepth), 
-	maxVerticesPerNode(maxVerticesPerNode), totalVerticesCount(positions.size())
+	preferredVerticesPerNode(preferredVerticesPerNode), totalVerticesCount(positions.size())
 {
-	if(currentDepth < maxDepth && positions.size() > maxVerticesPerNode)
+	if(currentDepth < maxDepth && positions.size() > preferredVerticesPerNode)
 	{
 		isLeaf = false;
 		split(std::move(positions), std::move(normals));
@@ -21,6 +21,9 @@ Octree::Octree(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& norm
 		isLeaf = true;
 		cloud = new PointCloud(std::move(positions), std::move(normals));
 	}
+	std::vector<Octree const*> leafNodes;
+	getAllLeafNodes(leafNodes);
+	totalLeafNodesCount = leafNodes.size();
 }
 
 Octree::Octree(PointCloud const& cloud)
@@ -32,7 +35,7 @@ Octree::Octree(PointCloud const& cloud)
 
 Octree::Octree(Octree&& other)
 	:isLeaf(other.isLeaf), children(std::move(other.children)), cloud(other.cloud),
-	bounds(std::move(other.bounds)), maxVerticesPerNode(other.maxVerticesPerNode), 
+	bounds(std::move(other.bounds)), preferredVerticesPerNode(other.preferredVerticesPerNode), 
 	currentDepth(other.currentDepth), maxDepth(other.maxDepth), totalVerticesCount(other.totalVerticesCount)
 {
 	other.cloud = nullptr;
@@ -98,7 +101,7 @@ void Octree::split(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& 
 	for(auto i = 0; i < 8; i++)
 	{
 		children->push_back({std::move(childrenPositions[i]), std::move(childrenNormals[i]),
-			childrenBounds[i], currentDepth + 1, maxDepth, maxVerticesPerNode});
+			childrenBounds[i], currentDepth + 1, maxDepth, preferredVerticesPerNode});
 	}
 }
 
@@ -242,33 +245,41 @@ glm::mat4 Octree::getBoundsTransform() const
 	return t * s;
 }
 
-void Octree::update(int maxDepth, std::size_t maxVerticesPerNode)
+void Octree::update(int maxDepth, std::size_t preferredVerticesPerNode)
 {
 	this->maxDepth = maxDepth;
-	this->maxVerticesPerNode = maxVerticesPerNode;
+	this->preferredVerticesPerNode = preferredVerticesPerNode;
 	if(isLeaf)
 	{
-		if(currentDepth < maxDepth && cloud->getSize() > maxVerticesPerNode)
+		if(currentDepth < maxDepth && cloud->getSize() > preferredVerticesPerNode)
 			split(std::move(cloud->getPositions()), std::move(cloud->getNormals()));
 	}
 	else
 	{
-		if(currentDepth >= maxDepth || getTotalVerticesCount() <= maxVerticesPerNode)
+		if(currentDepth >= maxDepth || getTotalVerticesCount() <= preferredVerticesPerNode)
 			join();
 		else
 			for(auto& childNode : *children)
-				childNode.update(maxDepth, maxVerticesPerNode);
+				childNode.update(maxDepth, preferredVerticesPerNode);
 	}
+	std::vector<Octree const*> leafNodes;
+	getAllLeafNodes(leafNodes);
+	totalLeafNodesCount = leafNodes.size();
 }
 
-std::size_t Octree::getMaxVerticesPerNode() const
+std::size_t Octree::getPrefferedVerticesPerNode() const
 {
-	return maxVerticesPerNode;
+	return preferredVerticesPerNode;
 }
 
 std::size_t Octree::getTotalVerticesCount() const
 {
 	return totalVerticesCount;
+}
+
+std::size_t Octree::getTotalLeafNodesCount() const
+{
+	return totalLeafNodesCount;
 }
 
 std::size_t Octree::getVerticesCount() const
@@ -281,7 +292,7 @@ std::size_t Octree::getVerticesCount() const
 
 float Octree::getOccupancy() const
 {
-	return float(getVerticesCount()) / maxVerticesPerNode;
+	return float(getVerticesCount()) / preferredVerticesPerNode;
 }
 
 int Octree::getMaxDepth() const

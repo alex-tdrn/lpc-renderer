@@ -115,13 +115,13 @@ PointCloud* PointCloud::decimated(int maxVertices) const
 	return _decimated.get();
 }
 
-Octree* PointCloud::octree(std::size_t maxVerticesPerNode, int maxDepth) const
+Octree* PointCloud::octree(std::size_t preferredVerticesPerNode, int maxDepth) const
 {
-	if(!_octree || maxVerticesPerNode != _octree->getMaxVerticesPerNode() || maxDepth != _octree->getMaxDepth())
+	if(!_octree || preferredVerticesPerNode != _octree->getPrefferedVerticesPerNode() || maxDepth != _octree->getMaxDepth())
 	{
 		if(!_octree)
 			_octree = std::make_unique<Octree>(*this);
-		_octree->update(maxDepth, maxVerticesPerNode);
+		_octree->update(maxDepth, preferredVerticesPerNode);
 	}
 	return _octree.get();
 }
