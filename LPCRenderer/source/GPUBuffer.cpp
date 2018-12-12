@@ -88,7 +88,8 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 
 	if(totalSize != currentSize && (shrinkToFit || totalSize > currentSize))
 		resize(totalSize);
-
+	else
+		unlock();
 	std::size_t offset = 0;
 	for(auto const& buffer : data)
 	{
