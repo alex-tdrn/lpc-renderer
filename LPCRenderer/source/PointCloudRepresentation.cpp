@@ -58,14 +58,17 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, std::ve
 			vertexData.emplace_back((std::byte const*)cloud->getNormals().data(), cloudSize);
 			bufferSize += cloudSize;
 		}
+		VBO.write(shrinkToFit, std::move(vertexData));
+		VBO.bind();
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (bufferSize / 2));
 	}
 	else
 	{
+		VBO.write(shrinkToFit, std::move(vertexData));
+		VBO.bind();
 		glDisableVertexAttribArray(1);
 	}
-	VBO.write(shrinkToFit, std::move(vertexData));
 	glDrawArrays(GL_POINTS, 0, vertexCount);
 	VBO.lock();
 }

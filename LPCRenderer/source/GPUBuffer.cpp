@@ -4,7 +4,6 @@
 GPUBuffer::GPUBuffer(GLenum target)
 	:target(target)
 {
-	glGenBuffers(1, &ID);
 }
 
 GPUBuffer::GPUBuffer(GPUBuffer&& other)
@@ -14,6 +13,7 @@ GPUBuffer::GPUBuffer(GPUBuffer&& other)
 {
 	other.ID = 0;
 	other.fence = nullptr;
+	other.currentSize = 0;
 }
 
 GPUBuffer& GPUBuffer::operator=(GPUBuffer&& other)
@@ -26,6 +26,7 @@ GPUBuffer& GPUBuffer::operator=(GPUBuffer&& other)
 	data = other.data;
 	other.ID = 0;
 	other.fence = nullptr;
+	other.currentSize = 0;
 	return *this;
 }
 
@@ -36,14 +37,19 @@ GPUBuffer::~GPUBuffer()
 
 void GPUBuffer::resize(std::size_t newSize)
 {
-	unlock();
 	if(newSize > currentSize)
 		Profiler::recordGPUAllocation(newSize - currentSize);
 	else
 		Profiler::recordGPUDeallocation(currentSize - newSize);
 
-	glUnmapBuffer(target);
-	glDeleteBuffers(1, &ID);
+	if(ID != 0)
+	{
+		unlock();
+		glBindBuffer(target, ID);
+		glUnmapBuffer(target);
+		glDeleteBuffers(1, &ID);
+	}
+
 	glGenBuffers(1, &ID);
 	glBindBuffer(target, ID);
 	glBufferStorage(target, newSize, nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT);
@@ -80,7 +86,7 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 	for(auto const& buffer : data)
 		totalSize += buffer.second;
 
-	if(totalSize != currentSize && (!shrinkToFit || totalSize > currentSize))
+	if(totalSize != currentSize && (shrinkToFit || totalSize > currentSize))
 		resize(totalSize);
 
 	std::size_t offset = 0;
@@ -89,6 +95,11 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 		std::memcpy(this->data + offset, buffer.first, buffer.second);
 		offset += buffer.second;
 	}
+}
+
+void GPUBuffer::bind()
+{
+	glBindBuffer(target, ID);
 }
 
 void GPUBuffer::free()

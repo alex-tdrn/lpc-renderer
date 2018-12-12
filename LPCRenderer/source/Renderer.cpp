@@ -153,11 +153,10 @@ void Renderer::drawUI()
 			ImGui::Text("Without Normals");
 	}
 	ImGui::Checkbox("Decimation", &decimation);
-	ImGui::SameLine();
 	if(decimation)
 	{
-		ImGui::Text("Max Vertices");
 		ImGui::SameLine();
+		ImGui::Text("Max Vertices");
 		ImGui::DragInt("###InputMaxVertices", &decimationMaxVertices, 10'000, 1, std::numeric_limits<int>::max());
 		if(decimationMaxVertices < 1)
 			decimationMaxVertices = 1;
@@ -166,11 +165,11 @@ void Renderer::drawUI()
 	if(LOD)
 	{
 		ImGui::Text("Pixel Area Threshold");
-		ImGui::DragInt("###InputLODPixelArea", &LODPixelArea, 1.0f, 1.0f);
+		ImGui::DragInt("###InputLODPixelArea", &LODPixelArea, 100, 1, std::numeric_limits<int>::max());
 		if(LODPixelArea < 1)
 			LODPixelArea = 1;
 		ImGui::Text("LOD Vertices");
-		ImGui::DragInt("###InputLODVertices", &LODVertices, 100, 1, std::numeric_limits<int>::max());
+		ImGui::DragInt("###InputLODVertices", &LODVertices, 10, 1, std::numeric_limits<int>::max());
 		if(LODVertices < 1)
 			LODVertices = 1;
 	}

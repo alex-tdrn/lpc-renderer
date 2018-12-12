@@ -6,7 +6,7 @@
 class GPUBuffer
 {
 private:
-	unsigned int ID;
+	unsigned int ID = 0;
 	GLenum target;
 	GLsync fence = nullptr;
 	std::byte* data = nullptr;
@@ -27,6 +27,7 @@ private:
 public:
 	void lock();
 	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
+	void bind();
 	void free();
 };
 
