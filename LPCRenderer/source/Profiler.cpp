@@ -196,6 +196,7 @@ void Profiler::drawUI()
 			int maxGeometryTotalOutputComponents;
 			int maxGeometryOutputVertices;
 			int maxGeometryShaderInvocations;
+			int maxGeometryVertexStreams;
 			int maxVertices;
 			int maxVertexAttributes;
 			int maxVertexTextureUnits;
@@ -223,6 +224,7 @@ void Profiler::drawUI()
 			glGetIntegerv(GL_MAX_GEOMETRY_TOTAL_OUTPUT_COMPONENTS, &ret.maxGeometryTotalOutputComponents);
 			glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &ret.maxGeometryOutputVertices);
 			glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, &ret.maxGeometryShaderInvocations);
+			glGetIntegerv(GL_MAX_VERTEX_STREAMS, &ret.maxGeometryVertexStreams);
 
 			glGetIntegerv(GL_MAX_VERTEX_UNIFORM_BLOCKS, &ret.maxVertexUniforms);
 			glGetIntegerv(GL_MAX_GEOMETRY_UNIFORM_BLOCKS, &ret.maxGeometryUniforms);
@@ -303,6 +305,7 @@ void Profiler::drawUI()
 		ImGui::Text("Max Geometry Total Output Components: %i", context.maxGeometryTotalOutputComponents);
 		ImGui::Text("Max Geometry Output Vertices: %i", context.maxGeometryOutputVertices);
 		ImGui::Text("Max Geometry Shader Invocations: %i", context.maxGeometryShaderInvocations);
+		ImGui::Text("Max Geometry Shader Vertex Streams: %i", context.maxGeometryVertexStreams);
 		ImGui::NewLine();
 		ImGui::Text("Max VAO Vertices: %i", context.maxVertices);
 		ImGui::Text("Max Vertex Attributes: %i", context.maxVertexAttributes);

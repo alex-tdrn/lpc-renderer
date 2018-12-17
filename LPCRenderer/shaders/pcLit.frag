@@ -20,12 +20,14 @@ in VS_OUT
 
 out vec4 fragColor;
 
-const vec3 normal = normalize(fs_in.normal);
-const vec3 viewDirection = normalize(-fs_in.position);
-const vec3 lightDirection = normalize(-light.direction);
 
 void main()
 {
+	if(length(gl_PointCoord - vec2(0.5f)) > 0.5f)
+		discard;
+	const vec3 normal = normalize(fs_in.normal);
+	const vec3 viewDirection = normalize(-fs_in.position);
+	const vec3 lightDirection = normalize(-light.direction);
 	vec3 diffuse = diffuseColor * max(dot(normal, lightDirection), 0.0);
 	vec3 halfwayDir = normalize(lightDirection + viewDirection);
 	vec3 specular =  specularColor * pow(max(dot(normal, halfwayDir), 0.0), shininess);
