@@ -28,6 +28,7 @@ public:
 	void lock();
 	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
 	void bind();
+	unsigned int getID();
 	void free();
 };
 

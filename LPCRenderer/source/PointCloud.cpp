@@ -133,13 +133,11 @@ PointCloudBlock* PointCloud::asBlock() const
 		_block = std::make_unique<PointCloudBlock>();
 		_block->origin = getBounds().first;
 		_block->size = bounds.second - bounds.first;
-		_block->offsets.reserve(positions.size());
+		_block->positions.reserve(positions.size());
 		for(auto const&p : positions)
 		{
-			_block->offsets.push_back({
-				glm::packUnorm1x8(p.x),
-				glm::packUnorm1x8(p.y),
-				glm::packUnorm1x8(p.z)
+			_block->positions.push_back({
+				glm::packUnorm4x8(glm::vec4((p - _block->origin) / _block->size, 0.0f))
 			});
 		}
 	}

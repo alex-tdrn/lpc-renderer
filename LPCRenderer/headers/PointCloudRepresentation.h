@@ -13,6 +13,7 @@ class PointCloudRepresentation
 private:
 	unsigned int VAO = 0;
 	GPUBuffer VBO{GL_ARRAY_BUFFER};
+	GPUBuffer SSBO{GL_SHADER_STORAGE_BUFFER};
 
 public:
 	PointCloudRepresentation();
@@ -26,6 +27,6 @@ private:
 	void free();
 
 public:
-	void update(bool shrinkToFit, bool useNormals, std::vector<PointCloud const*>& clouds);
+	void update(bool shrinkToFit, bool useNormals, bool compress, std::vector<PointCloud const*>& clouds);
 
 };

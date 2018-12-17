@@ -6,53 +6,61 @@
 #include <array>
 #include <vector>
 #include <numeric>
+#include <string>
+
+using namespace std::literals::chrono_literals;
 
 //TIME
 static const int frameSamples = 200;
 static unsigned int currentFrameIndex = 0;
 
-static std::array<float, frameSamples> frametimes;
-static float averageFrametime = 0.0f;
-static float longestFrametime = 100.0f;
-static std::array<float, frameSamples> fenceWaitDurations;
-static std::chrono::system_clock::time_point fenceWaitStart;
-static float currentFenceWaitDuration = 0.0f;
-static float averageFenceWaitDuration = 0.0f;
-static float longestFenceWaitDuration = 10.0f;
+static std::array<std::chrono::nanoseconds, frameSamples> frametimes;
+static std::chrono::nanoseconds averageFrametime = 0ns;
+static std::chrono::nanoseconds longestFrametime = 100ms;
+static std::array<std::chrono::nanoseconds, frameSamples> fenceWaitDurations;
+static std::chrono::steady_clock::time_point fenceWaitStart;
+static std::chrono::nanoseconds currentFenceWaitDuration = 0ns;
+static std::chrono::nanoseconds averageFenceWaitDuration = 0ns;
+static std::chrono::nanoseconds longestFenceWaitDuration = 5ms;
 
 void Profiler::recordFrame()
 {
-	static auto lastFrame = std::chrono::system_clock::now();
-	auto currentFrame = std::chrono::system_clock::now();
+	static auto lastFrame = std::chrono::steady_clock::now();
+	auto currentFrame = std::chrono::steady_clock::now();
 
 	currentFrameIndex = (currentFrameIndex + 1) % frameSamples;
 
-	auto updateStats = [](float& current, float& average, float& longest, float longestMin, std::array<float, frameSamples>& lastSamples){
+	auto updateStats = [](auto& current, auto& average, auto& longest, auto longestMin, std::array<std::chrono::nanoseconds, frameSamples>& lastSamples){
 		average -= lastSamples[currentFrameIndex] / frameSamples;
-		if(std::abs(longest - lastSamples[currentFrameIndex]) < 0.01f)
+		if(longest == lastSamples[currentFrameIndex])
 			longest = longestMin;
 		lastSamples[currentFrameIndex] = current;
 		average += lastSamples[currentFrameIndex] / frameSamples;
-		longest = std::max(longest, current);
+		if(current > longest)
+			longest = current;
 	};
 
-	float currentFrametime = std::chrono::duration_cast<std::chrono::milliseconds>(currentFrame - lastFrame).count();
-	updateStats(currentFrametime, averageFrametime, longestFrametime, 100.0f, frametimes);
+	std::chrono::nanoseconds currentFrametime = currentFrame - lastFrame;
+	updateStats(currentFrametime, averageFrametime, longestFrametime, 100ms, frametimes);
 	lastFrame = currentFrame;
 
-	updateStats(currentFenceWaitDuration, averageFenceWaitDuration, longestFenceWaitDuration, 10.0f, fenceWaitDurations);
-	currentFenceWaitDuration = 0.0f;
+	//if(currentFenceWaitDuration >= 100)
+	//	currentFenceWaitDuration /= 1000.0f;//us
+	//if(currentFenceWaitDuration >= 100)
+	//	currentFenceWaitDuration /= 1000.0f;//ms
+	updateStats(currentFenceWaitDuration, averageFenceWaitDuration, longestFenceWaitDuration, 5ms, fenceWaitDurations);
+	currentFenceWaitDuration = 0ns;
 
 }
 
 void Profiler::beginFenceWait()
 {
-	fenceWaitStart = std::chrono::system_clock::now();
+	fenceWaitStart = std::chrono::steady_clock::now();
 }
 
 void Profiler::endFenceWait()
 {
-	currentFenceWaitDuration += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - fenceWaitStart).count();
+	currentFenceWaitDuration += std::chrono::steady_clock::now() - fenceWaitStart;
 }
 
 //MEMORY
@@ -80,23 +88,56 @@ void Profiler::recordGPUDeallocation(std::size_t size)
 	updateAllocatedSizes();
 }
 
+template<typename T, typename Ratio>
+std::string printDuration(std::chrono::duration<T, Ratio> duration)
+{
+	static int const threshold = 1'000;
+	if constexpr(std::is_same_v<Ratio, std::nano>)
+	{
+		if(duration.count() < threshold)
+			return std::to_string(duration.count()) + "ns";
+		else
+			return printDuration(std::chrono::duration_cast<std::chrono::microseconds>(duration));
+	}
+	else if constexpr(std::is_same_v<Ratio, std::micro>)
+	{
+		if(duration.count() < threshold)
+			return std::to_string(duration.count()) + "us";
+		else
+			return printDuration(std::chrono::duration_cast<std::chrono::milliseconds>(duration));
+	}
+	else if constexpr(std::is_same_v<Ratio, std::milli>)
+	{
+		if(duration.count() < threshold)
+			return std::to_string(duration.count()) + "ms";
+		else
+			return printDuration(std::chrono::duration_cast<std::chrono::seconds>(duration));
+	}
+	else if constexpr(std::is_same_v<Ratio, std::ratio<1, 1>>)
+	{
+		return std::to_string(duration.count()) + "s";
+	}
+}
+
 void Profiler::drawUI()
 {
 	if(ImGui::CollapsingHeader("Time", ImGuiTreeNodeFlags_DefaultOpen)) 
 	{
 		static float const plotHeight = 100;
-		ImGui::Text("Total Frametime: %.1f ms", frametimes[currentFrameIndex]);
-		ImGui::Text("Average: %.1f ms", averageFrametime);
-		ImGui::Text("FPS: %.1f", 1000.0f / frametimes[currentFrameIndex]);
-		ImGui::Text("Average FPS: %.1f", 1000.0f / averageFrametime);
-		ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFrametime);
-		ImGui::PlotLines("###Frametimes", frametimes.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFrametime, {ImGui::GetContentRegionAvailWidth(), plotHeight});
-		
+		ImGui::Text("Total Frametime: %s", printDuration(frametimes[currentFrameIndex]).data());
+		ImGui::Text("Average: %s", printDuration(averageFrametime).data());
+		ImGui::Text("Longest: %s", printDuration(longestFrametime).data());
+		ImGui::PlotLines("###Frametimes", [](void* data, int idx) -> float{
+				return reinterpret_cast<std::chrono::nanoseconds*>(data)[idx].count();
+		},frametimes.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFrametime.count(), {ImGui::GetContentRegionAvailWidth(), plotHeight});
+
 		ImGui::NewLine();
-		ImGui::Text("Time Waiting On Fences: %.1f ms", fenceWaitDurations[currentFrameIndex]);
-		ImGui::Text("Average: %.1f ms", averageFenceWaitDuration);
-		ImGui::Text("Plot Range (%.1fms) - (%.1fms)", 0.0f, longestFenceWaitDuration);
-		ImGui::PlotLines("###FenceWaitDuration", fenceWaitDurations.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFenceWaitDuration, {ImGui::GetContentRegionAvailWidth(), plotHeight});
+		ImGui::Text("Time Waiting On Fences: %s", printDuration(fenceWaitDurations[currentFrameIndex]).data());
+		ImGui::Text("Average: %s", printDuration(averageFenceWaitDuration).data());
+		ImGui::Text("Longest: %s", printDuration(longestFenceWaitDuration).data());
+		ImGui::PlotLines("###FenceWaitDuration", [](void* data, int idx) -> float{
+			return reinterpret_cast<std::chrono::nanoseconds*>(data)[idx].count();
+		}, fenceWaitDurations.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFenceWaitDuration.count(), {ImGui::GetContentRegionAvailWidth(), plotHeight});
 	}
 
 	ImGui::NewLine();

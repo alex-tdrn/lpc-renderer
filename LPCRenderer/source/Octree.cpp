@@ -93,14 +93,9 @@ void Octree::split(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& 
 		delete cloud;
 		cloud = nullptr;
 	}
-	/*positions.clear();
-	positions.shrink_to_fit();
-	normals.clear();
-	normals.shrink_to_fit();*/
-	children = std::vector<Octree>{};
 	for(auto i = 0; i < 8; i++)
 	{
-		children->push_back({std::move(childrenPositions[i]), std::move(childrenNormals[i]),
+		children.push_back({std::move(childrenPositions[i]), std::move(childrenNormals[i]),
 			childrenBounds[i], currentDepth + 1, maxDepth, preferredVerticesPerNode});
 	}
 }
@@ -139,7 +134,7 @@ void Octree::join()
 		}
 	}
 
-	children = std::nullopt;
+	children.clear();
 	isLeaf = true;
 	cloud = new PointCloud(std::move(positions), std::move(normals));
 }
@@ -149,7 +144,7 @@ void Octree::getAllLeafNodes(std::vector<Octree const*>& leafNodes) const
 	if(isLeaf && cloud->getSize() > 0)
 		leafNodes.push_back(this);
 	else if(!isLeaf)
-		for(auto const& childNode : *children)
+		for(auto const& childNode : children)
 			childNode.getAllLeafNodes(leafNodes);
 }
 
@@ -158,7 +153,7 @@ void Octree::getAllPointClouds(std::vector<PointCloud const*>& pointClouds) cons
 	if(isLeaf && cloud->getSize() > 0)
 		pointClouds.push_back(cloud);
 	else if(!isLeaf)
-		for(auto const& childNode : *children)
+		for(auto const& childNode : children)
 			childNode.getAllPointClouds(pointClouds);
 }
 
@@ -211,10 +206,10 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 				}
 				if((LODPixelArea == 0 || !isLeaf) && testOverlap())//conservatively let the box pass, LOD disabled
 				{
-					if(isLeaf)
+					if(isLeaf && cloud->getSize() != 0)
 						pointClouds.push_back(cloud);
 					else
-						for(auto const& childNode : *children)
+						for(auto const& childNode : children)
 							childNode.getPointCloudsInsideFrustum(pointClouds, mvp, LODPixelArea, LODVertices);
 					return;
 				}
@@ -226,24 +221,17 @@ void Octree::getPointCloudsInsideFrustum(std::vector<PointCloud const*>& pointCl
 		if(LODVertices == 0)
 			return;
 		glm::vec2 pixels = glm::vec2(OSWindow::getSize()) * glm::vec2(maxAxisProjection - minAxisProjection);
+		PointCloud const* ret;
 		if(pixels.x * pixels.y <= LODPixelArea)
-			pointClouds.push_back(cloud->decimated(LODVertices));
+			ret = cloud->decimated(LODVertices);
 		else
-			pointClouds.push_back(cloud);
+			ret = cloud;
+		if(ret->getSize() != 0)
+			pointClouds.push_back(ret);
 	}
 }
 
-glm::mat4 Octree::getBoundsTransform() const
-{
-	auto bounds = this->bounds;
-	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
-	bounds.first -= center;
-	glm::vec3 scale = -bounds.first;
 
-	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
-	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
-	return t * s;
-}
 
 void Octree::update(int maxDepth, std::size_t preferredVerticesPerNode)
 {
@@ -259,7 +247,7 @@ void Octree::update(int maxDepth, std::size_t preferredVerticesPerNode)
 		if(currentDepth >= maxDepth || getTotalVerticesCount() <= preferredVerticesPerNode)
 			join();
 		else
-			for(auto& childNode : *children)
+			for(auto& childNode : children)
 				childNode.update(maxDepth, preferredVerticesPerNode);
 	}
 	std::vector<Octree const*> leafNodes;
@@ -310,24 +298,7 @@ std::pair<glm::vec3, glm::vec3> Octree::getBounds() const
 	return bounds;
 }
 
-//PointCloud* PointCloud::culled(glm::mat4 mvp) const
-//{
-//	if(!_culled)
-//		_culled = std::make_unique<PointCloud>();
-//	_culled->positions.clear();
-//	_culled->normals.clear();
-//	for(std::size_t i = 0; i < positions.size(); i++)
-//	{
-//		glm::vec4 clippedPosition = mvp * glm::vec4{positions[i], 1.0f};
-//		clippedPosition /= clippedPosition.w;
-//		if(std::abs(clippedPosition.x) <= 1.0f &&
-//		   std::abs(clippedPosition.y) <= 1.0f &&
-//		   std::abs(clippedPosition.z) <= 1.0f)
-//		{
-//			_culled->positions.push_back(positions[i]);
-//			if(hasNormals())
-//				_culled->normals.push_back(normals[i]);
-//		}
-//	}
-//	return _culled.get();
-//}
+PointCloud const * Octree::getPointCloud() const
+{
+	return cloud;
+}

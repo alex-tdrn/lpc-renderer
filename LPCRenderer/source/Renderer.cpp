@@ -6,7 +6,7 @@
 #include "ShaderManager.h"
 #include "PointCloud.h"
 
-static void drawOctree(Octree const* octree, glm::mat4 mvp, int drawDepth = -1);
+static void drawOctree(Octree const* octree, glm::mat4 mvp, bool drawOctreeBB, bool drawPointCloudBB, int drawDepth = -1);
 
 Renderer::Renderer()
 {
@@ -24,9 +24,24 @@ void Renderer::render(Scene* scene) const
 
 	if(!scene->getPointCloud())
 		return;
+	auto activeShader = [&](){
+		switch(renderMode)
+		{
+			case Renderer::RenderMode::debugNormals:
+				return ShaderManager::pcDebugNormals();
+			case Renderer::RenderMode::lit:
+				return ShaderManager::pcLit();
+			case Renderer::RenderMode::litDisk:
+				return ShaderManager::pcLitDisk();
+			default:
+				if(compressPointClouds)
+					return ShaderManager::pcBarebonesCompressed();
+				else
+					return ShaderManager::pcBarebones();
+		}
+	}();
 
-	if(activeShader == ShaderManager::pcBarebones() ||
-		activeShader == ShaderManager::pcLit())
+	if(renderMode == RenderMode::barebones || renderMode == RenderMode::lit)
 		glPointSize(pointSize);
 	else
 		glPointSize(1.0f);
@@ -38,13 +53,13 @@ void Renderer::render(Scene* scene) const
 	if(decimation)
 		currentPointCloud = currentPointCloud->decimated(decimationMaxVertices);
 
-	if(useOctree && drawOctreeBoundingBoxes)
+	if(useOctree && (drawOctreeBoundingBoxes || drawPointCloudBoundingBoxes))
 	{
 		glLineWidth(2.0f);
 		if(drawAllOctreeDepths)
-			drawOctree(currentPointCloud->octree(octreePreferredVerticesPerNode, octreeMaxDepth), p * v * m);
+			drawOctree(currentPointCloud->octree(octreePreferredVerticesPerNode, octreeMaxDepth), p * v * m, drawOctreeBoundingBoxes, drawPointCloudBoundingBoxes);
 		else
-			drawOctree(currentPointCloud->octree(octreePreferredVerticesPerNode, octreeMaxDepth), p * v * m, drawOnlyOctreeDepth);
+			drawOctree(currentPointCloud->octree(octreePreferredVerticesPerNode, octreeMaxDepth), p * v * m, drawOctreeBoundingBoxes, drawPointCloudBoundingBoxes, drawOnlyOctreeDepth);
 	}
 
 	activeShader->use();
@@ -53,8 +68,7 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if(activeShader == ShaderManager::pcLit() || 
-		activeShader == ShaderManager::pcLitDisk())
+	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
 		activeShader->set("backFaceCulling", backFaceCulling);
 		activeShader->set("specularColor", scene->getSpecularColor());
@@ -64,12 +78,12 @@ void Renderer::render(Scene* scene) const
 		activeShader->set("light.color", scene->getLightColor());
 		glm::vec3 viewSpaceLightDirection = v * glm::vec4(scene->getLightDirection(), 0.0f);
 		activeShader->set("light.direction", viewSpaceLightDirection);
-		if(activeShader == ShaderManager::pcLitDisk())
+		if(renderMode == RenderMode::litDisk)
 		{
 			activeShader->set("diskRadius", diskRadius);
 		}
 	}
-	else if(activeShader == ShaderManager::pcDebugNormals())
+	else if(renderMode == RenderMode::debugNormals)
 	{
 		glLineWidth(debugNormalsLineThickness);
 		activeShader->set("lineLength", debugNormalsLineLength);
@@ -94,14 +108,14 @@ void Renderer::render(Scene* scene) const
 		}
 		for(auto cloud : clouds)
 			renderedVertices += cloud->getSize();
-		pointCloudBufffers[currentPointCloudBuffer].update(shrinkBuffersToFit, useNormalsIfAvailable, clouds);
 	}
 	else
 	{
 		clouds.push_back(currentPointCloud);
 		renderedVertices = currentPointCloud->getSize();
-		pointCloudBufffers[currentPointCloudBuffer].update(shrinkBuffersToFit, useNormalsIfAvailable, clouds);
 	}
+
+	pointCloudBufffers[currentPointCloudBuffer].update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, clouds);
 	currentPointCloudBuffer++;
 }
 
@@ -129,6 +143,7 @@ void Renderer::drawUI()
 			ImGui::Text("Leaf Nodes: %lu", currentPointCloud->octree(octreePreferredVerticesPerNode, octreeMaxDepth)->getTotalLeafNodesCount());
 		ImGui::Text("Preferred Vertices Per Node");
 		ImGui::Checkbox("Draw Octree", &drawOctreeBoundingBoxes);
+		ImGui::Checkbox("Draw Tight Bounds", &drawPointCloudBoundingBoxes);
 		ImGui::Text("Preferred Vertices Per Node");
 		ImGui::DragInt("###InputPreferredVerticesPerNode", &octreePreferredVerticesPerNode, 1'000, 1, std::numeric_limits<int>::max());
 		ImGui::InputInt("Max Depth", &octreeMaxDepth, 1);
@@ -178,41 +193,40 @@ void Renderer::drawUI()
 	}
 
 	ImGui::Separator();
-	ImGui::Text("Rendering Method");
-	if(ImGui::RadioButton("Barebones", activeShader == ShaderManager::pcBarebones()))
+	ImGui::Checkbox("Compress Pointclouds", &compressPointClouds);
+	ImGui::Text("Rendering Mode");
+	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))
 	{
-		activeShader = ShaderManager::pcBarebones();
+		renderMode = RenderMode::barebones;
 		useNormalsIfAvailable = false;
 	}
 	ImGui::SameLine();
-	if(ImGui::RadioButton("Debug Normals", activeShader == ShaderManager::pcDebugNormals()))
+	if(ImGui::RadioButton("Debug Normals", renderMode == RenderMode::debugNormals))
 	{
-		activeShader = ShaderManager::pcDebugNormals();
+		renderMode = RenderMode::debugNormals;
 		useNormalsIfAvailable = true;
 	}
-	if(ImGui::RadioButton("Lit", activeShader == ShaderManager::pcLit()))
+	if(ImGui::RadioButton("Lit", renderMode == RenderMode::lit))
 	{
-		activeShader = ShaderManager::pcLit();
+		renderMode = RenderMode::lit;
 		useNormalsIfAvailable = true;
 	}
 	ImGui::SameLine();
-	if(ImGui::RadioButton("Lit Disk", activeShader == ShaderManager::pcLitDisk()))
+	if(ImGui::RadioButton("Lit Disk", renderMode == RenderMode::litDisk))
 	{
-		activeShader = ShaderManager::pcLitDisk();
+		renderMode = RenderMode::litDisk;
 		useNormalsIfAvailable = true;
 	}
-	if(activeShader == ShaderManager::pcBarebones() || 
-		activeShader == ShaderManager::pcLit())
+	if(renderMode == RenderMode::barebones || renderMode == RenderMode::lit)
 		ImGui::SliderInt("Point Size", &pointSize, 1, 16);
 
-	if(activeShader == ShaderManager::pcLit() ||
-		activeShader == ShaderManager::pcLitDisk())
+	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 		ImGui::Checkbox("Backface Culling", &backFaceCulling);
 
-	if(activeShader == ShaderManager::pcLitDisk())
+	if(renderMode == RenderMode::litDisk)
 		ImGui::DragFloat("Disk Radius", &diskRadius, 0.00001f, 0.00001f, 0.005f, "%.5f");
 
-	if(activeShader == ShaderManager::pcDebugNormals())
+	if(renderMode == RenderMode::debugNormals)
 	{
 		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0001f, 0.01f, "%.4f");
 		ImGui::SliderInt("Line Thickness", &debugNormalsLineThickness, 1, 16);
@@ -306,25 +320,41 @@ void drawOctree(glm::mat4 mvp, std::optional<std::vector<glm::mat4>> nodeAttribu
 
 }
 
-void drawOctree(Octree const* octree, glm::mat4 mvp, int drawDepth)
+glm::mat4 getBoundsTransform(std::pair<glm::vec3, glm::vec3> bounds)
+{
+	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
+	bounds.first -= center;
+	glm::vec3 scale = -bounds.first;
+
+	glm::mat4 t = glm::translate(glm::mat4{1.0f}, center);
+	glm::mat4 s = glm::scale(glm::mat4{1.0f}, glm::vec3{scale});
+	return t * s;
+}
+
+void drawOctree(Octree const* octree, glm::mat4 mvp, bool drawOctreeBB, bool drawPointCloudsBB, int drawDepth)
 {
 	static Octree const* cachedOctree = nullptr;
 	static int cachedMaxDepth = 1;
 	static int cachedDrawDepth = -1;
+	static bool cachedDrawOctreeBB = false;
+	static bool cachedDrawPCBB = false;
 	static std::size_t cachedMaxVerticesPerNode = 100'000;
 	static std::size_t cachedTotalVerticesCount = 0;
 	if(octree != cachedOctree ||
 		octree->getPrefferedVerticesPerNode() != cachedMaxVerticesPerNode ||
 		octree->getTotalVerticesCount() != cachedTotalVerticesCount ||
 		octree->getMaxDepth() != cachedMaxDepth ||
-		drawDepth != cachedDrawDepth)
+		drawDepth != cachedDrawDepth ||
+		drawOctreeBB != cachedDrawOctreeBB || 
+		drawPointCloudsBB != cachedDrawPCBB)
 	{
 		cachedOctree = octree;
 		cachedMaxVerticesPerNode = octree->getPrefferedVerticesPerNode();
 		cachedTotalVerticesCount = octree->getTotalVerticesCount();
 		cachedMaxDepth = octree->getMaxDepth();
 		cachedDrawDepth = drawDepth;
-
+		cachedDrawOctreeBB = drawOctreeBB;
+		cachedDrawPCBB = drawPointCloudsBB;
 		std::vector<glm::mat4> nodeAttributes;
 
 		std::vector<Octree const*> leafNodes;
@@ -336,11 +366,22 @@ void drawOctree(Octree const* octree, glm::mat4 mvp, int drawDepth)
 			std::size_t totalVertices = leafNode->getTotalVerticesCount();
 			if(totalVertices > 0)
 			{
-				glm::mat4 attribute = leafNode->getBoundsTransform();
+				if(drawOctreeBB)
+				{
+					glm::mat4 attribute = getBoundsTransform(leafNode->getBounds());
 
-				attribute[0][3] = leafNode->getOccupancy();
+					attribute[0][3] = leafNode->getOccupancy();
 
-				nodeAttributes.push_back(attribute);
+					nodeAttributes.push_back(attribute);
+				}
+				if(drawPointCloudsBB)
+				{
+					glm::mat4 attribute = getBoundsTransform(leafNode->getPointCloud()->getBounds());
+					
+					attribute[0][3] = -1.0f;
+
+					nodeAttributes.push_back(attribute);
+				}
 			}
 		}
 		drawOctree(mvp, nodeAttributes);

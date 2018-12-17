@@ -100,6 +100,11 @@ void GPUBuffer::bind()
 	glBindBuffer(target, ID);
 }
 
+unsigned int GPUBuffer::getID()
+{
+	return ID;
+}
+
 void GPUBuffer::free()
 {
 	glDeleteBuffers(1, &ID);

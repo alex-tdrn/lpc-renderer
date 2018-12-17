@@ -11,7 +11,7 @@ struct PointCloudBlock
 {
 	glm::vec3 origin;
 	glm::vec3 size;
-	std::vector<glm::u8vec3> offsets;
+	std::vector<std::uint32_t> positions;
 };
 
 class PointCloud : public AutoName<PointCloud>
