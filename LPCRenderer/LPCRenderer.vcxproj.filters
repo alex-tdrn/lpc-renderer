@@ -56,7 +56,7 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="source\GPUBuffer.cpp" />
-    <ClCompile Include="PointCloud.cpp" />
+    <ClCompile Include="source\PointCloud.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -122,9 +122,6 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="headers\GPUBuffer.h" />
-    <ClInclude Include="headers\PointCloudBrick.h">
-      <Filter>Resource Management</Filter>
-    </ClInclude>
     <ClInclude Include="headers\PointCloud.h" />
   </ItemGroup>
   <ItemGroup>

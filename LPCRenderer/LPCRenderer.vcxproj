@@ -126,7 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="PointCloud.cpp" />
+    <ClCompile Include="source\PointCloud.cpp" />
     <ClCompile Include="source\GPUBuffer.cpp" />
     <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\Camera.cpp" />
@@ -168,7 +168,6 @@
     <ClInclude Include="libraries\stb_truetype.h" />
     <ClInclude Include="headers\UIWindow.h" />
     <ClInclude Include="headers\Profiler.h" />
-    <ClInclude Include="headers\PointCloudBrick.h" />
     <ClInclude Include="headers\Manager.h" />
     <ClInclude Include="headers\Scene.h" />
     <ClInclude Include="headers\ShaderManager.h" />

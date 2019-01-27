@@ -5,9 +5,11 @@
 
 #include <glm/glm.hpp>
 #include <string_view>
+#include <vector>
 
 class Scene;
 class Shader;
+class PointCloud;
 
 class Renderer : public AutoName<Renderer>
 {
@@ -20,6 +22,7 @@ private:
 		litDisk
 	} renderMode = RenderMode::barebones;
 	mutable PointCloud const* currentPointCloud = nullptr;
+	mutable bool refreshBuffers = false;
 	mutable std::size_t renderedVertices = 0;
 	static inline std::vector<PointCloudRepresentation> pointCloudBufffers{0};
 	static inline int currentPointCloudBuffer = 0;
@@ -27,6 +30,12 @@ private:
 	static inline bool shrinkBuffersToFit = false;
 	static inline bool decimation = true;
 	static inline int decimationMaxVertices = 100'000;
+	enum class DrawBricksMode
+	{
+		disabled,
+		all,
+		nonEmpty
+	} drawBricksMode = DrawBricksMode::disabled;
 	bool compressPointClouds = false;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;

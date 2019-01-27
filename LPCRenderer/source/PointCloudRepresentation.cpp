@@ -37,29 +37,32 @@ void PointCloudRepresentation::free()
 
 void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool compress, PointCloud const* cloud)
 {
-	auto const& bricks = cloud->getBricks();
+	auto const& bricks = cloud->getAllBricks();
 	glBindVertexArray(VAO);
-	auto vertexCount = 0;
+	vertexCount = 0;
 
 	if(!compress)
 	{
 		auto bufferSize = 0;
 		static std::vector<std::pair<std::byte const*, std::size_t>> vertexData;
 		vertexData.clear();
-
+		static std::vector<glm::vec3> globalPositions;
+		globalPositions.clear();
 		for(auto const& brick : bricks)
 		{	
-			std::size_t brickSize = brick.getPositions().size() * 3 * sizeof(float);
-			vertexData.emplace_back((std::byte const*)brick.getPositions().data(), brickSize);
+			std::size_t brickSize = brick.positions.size() * 3 * sizeof(float);
+			vertexData.emplace_back((std::byte const*)brick.positions.data(), brickSize);
+			for (glm::vec3 position : brick.positions)
+				globalPositions.push_back(std::move(position) + cloud->getOffsetAt(brick.indices));
 			bufferSize += brickSize;
-			vertexCount += brick.getPositions().size();
+			vertexCount += brick.positions.size();
 		}
-		if(useNormals && !bricks.front().getNormals().empty())
+		if(useNormals && !bricks.front().normals.empty())
 		{
 			for(auto const& brick : bricks)
 			{
-				std::size_t brickSize = brick.getNormals().size() * 3 * sizeof(float);
-				vertexData.emplace_back((std::byte const*)brick.getNormals().data(), brickSize);
+				std::size_t brickSize = brick.normals.size() * 3 * sizeof(float);
+				vertexData.emplace_back((std::byte const*)brick.normals.data(), brickSize);
 				bufferSize += brickSize;
 			}
 			VBO.write(shrinkToFit, std::move(vertexData));
@@ -125,8 +128,13 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 	//	//TODO
 	//}
 
+	
+}
+
+void PointCloudRepresentation::render()
+{
 	glDrawArrays(GL_POINTS, 0, vertexCount);
 	VBO.lock();
-	if(compress)
-		SSBO.lock();
+	/*if (compress)
+		SSBO.lock();*/
 }
