@@ -27,6 +27,6 @@ private:
 	void free();
 
 public:
-	void update(bool shrinkToFit, bool useNormals, bool compress, std::vector<PointCloud const*>& clouds);
+	void update(bool shrinkToFit, bool useNormals, bool compress, PointCloud const* cloud);
 
 };

@@ -126,8 +126,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PointCloud.cpp" />
     <ClCompile Include="source\GPUBuffer.cpp" />
-    <ClCompile Include="source\Octree.cpp" />
     <ClCompile Include="source\Importer.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Shader.cpp" />
@@ -137,7 +137,6 @@
     <ClCompile Include="source\ShaderManager.cpp" />
     <ClCompile Include="source\Scene.cpp" />
     <ClCompile Include="source\PointCloudRepresentation.cpp" />
-    <ClCompile Include="source\PointCloud.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="libraries\glad\glad.c" />
     <ClCompile Include="libraries\imgui.cpp" />
@@ -169,7 +168,7 @@
     <ClInclude Include="libraries\stb_truetype.h" />
     <ClInclude Include="headers\UIWindow.h" />
     <ClInclude Include="headers\Profiler.h" />
-    <ClInclude Include="headers\PointCloud.h" />
+    <ClInclude Include="headers\PointCloudBrick.h" />
     <ClInclude Include="headers\Manager.h" />
     <ClInclude Include="headers\Scene.h" />
     <ClInclude Include="headers\ShaderManager.h" />
@@ -177,7 +176,7 @@
     <ClInclude Include="headers\RendererManager.h" />
     <ClInclude Include="headers\SceneManager.h" />
     <ClInclude Include="libraries\tinyply.h" />
-    <ClInclude Include="headers\Octree.h" />
+    <ClInclude Include="headers\PointCloud.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBarebonesCompressed.frag" />

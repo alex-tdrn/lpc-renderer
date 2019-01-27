@@ -51,15 +51,12 @@
     <ClCompile Include="source\SceneManager.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Importer.cpp" />
-    <ClCompile Include="source\PointCloud.cpp">
-      <Filter>Resource Management</Filter>
-    </ClCompile>
     <ClCompile Include="source\PointCloudManager.cpp" />
     <ClCompile Include="source\PointCloudRepresentation.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="source\Octree.cpp" />
     <ClCompile Include="source\GPUBuffer.cpp" />
+    <ClCompile Include="PointCloud.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -120,15 +117,15 @@
     <ClInclude Include="headers\Camera.h" />
     <ClInclude Include="libraries\tinyply.h" />
     <ClInclude Include="headers\Importer.h" />
-    <ClInclude Include="headers\PointCloud.h">
-      <Filter>Resource Management</Filter>
-    </ClInclude>
     <ClInclude Include="headers\PointCloudManager.h" />
     <ClInclude Include="headers\PointCloudRepresentation.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="headers\Octree.h" />
     <ClInclude Include="headers\GPUBuffer.h" />
+    <ClInclude Include="headers\PointCloudBrick.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PointCloud.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBarebones.frag" />

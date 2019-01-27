@@ -9,14 +9,21 @@
 #include <fstream>
 #include <iostream>
 
+struct MeshData
+{
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec3> normals;
+};
+
 namespace Importer
 {
-	static std::vector<std::unique_ptr<PointCloud>> importCONF(std::filesystem::path const& filename);
-	static std::unique_ptr<PointCloud> importPLY(std::filesystem::path const& filename);
+	static std::vector<MeshData> importCONF(std::filesystem::path const& filename);
+	static MeshData importPLY(std::filesystem::path const& filename);
 
 	void import(std::vector<std::filesystem::path> const& filenames)
 	{
-		std::vector<std::unique_ptr<PointCloud>> meshes;
+		std::vector<MeshData> meshes;
+		std::string name = filenames.front().filename().string();
 		for(auto& filename : filenames)
 		{
 			if(filename.extension().string() == ".ply")
@@ -32,13 +39,40 @@ namespace Importer
 				);
 			}
 		}
-		auto cloud = PointCloudManager::add(PointCloud::join(std::move(meshes)));
+
+		std::size_t verticesCount = 0;
+		for (auto const& mesh : meshes)
+			verticesCount += mesh.positions.size();
+		std::vector<glm::vec3> allPositions;
+		allPositions.reserve(verticesCount);
+		bool useNormals = true;
+		for (auto& mesh : meshes)
+		{
+			allPositions.insert(allPositions.end(),
+				std::make_move_iterator(mesh.positions.begin()),
+				std::make_move_iterator(mesh.positions.end())
+			);
+			useNormals = useNormals && !mesh.normals.empty();
+		}
+		std::vector<glm::vec3> allNormals;
+		if (useNormals)
+		{
+			allNormals.reserve(verticesCount);
+			for (auto& mesh : meshes)
+			{
+				allNormals.insert(allNormals.end(),
+					std::make_move_iterator(mesh.normals.begin()),
+					std::make_move_iterator(mesh.normals.end())
+				);
+			}
+		}
+		auto cloud = PointCloudManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals)));
 		SceneManager::add(std::make_unique<Scene>(cloud));
 	}
 
-	std::vector<std::unique_ptr<PointCloud>> importCONF(std::filesystem::path const& filename)
+	std::vector<MeshData> importCONF(std::filesystem::path const& filename)
 	{
-		std::vector<std::unique_ptr<PointCloud>> meshes;
+		std::vector<MeshData> meshes;
 		std::ifstream filestream{filename};
 		if(filestream.fail())
 		{
@@ -64,13 +98,14 @@ namespace Importer
 				glm::mat4 rotationMatrix = glm::transpose(glm::mat4_cast(rotation));
 				glm::mat4 translationMatrix = glm::translate(glm::mat4{1.0f}, translation);
 				meshes.push_back(importPLY(filename.parent_path() / meshName));
-				meshes.back()->transform(translationMatrix * rotationMatrix);
+				for (auto& position : meshes.back().positions)
+					position = translationMatrix * rotationMatrix * glm::vec4{ position, 1.0f };
 			}
 		}
 		return meshes;
 	}
 
-	std::unique_ptr<PointCloud> importPLY(std::filesystem::path const& filename)
+	MeshData importPLY(std::filesystem::path const& filename)
 	{
 		std::ifstream fileStream{filename, std::ios::binary};
 		if(fileStream.fail())
@@ -95,21 +130,14 @@ namespace Importer
 		}
 		file.read(fileStream);
 
-		std::vector<glm::vec3> positions(plyPositions->count);
-		std::memcpy(positions.data(), plyPositions->buffer.get(), plyPositions->buffer.size_bytes());
-		std::unique_ptr<PointCloud> mesh;
+		MeshData mesh;
+		mesh.positions.resize(plyPositions->count);
+		std::memcpy(mesh.positions.data(), plyPositions->buffer.get(), plyPositions->buffer.size_bytes());
 		if(normalsAvailable)
 		{
-			std::vector<glm::vec3> normals(plyNormals->count);
-			std::memcpy(normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
-
-			mesh = std::make_unique<PointCloud>(std::move(positions), std::move(normals));
+			mesh.normals.resize(plyNormals->count);
+			std::memcpy(mesh.normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
 		}
-		else
-		{
-			mesh = std::make_unique<PointCloud>(std::move(positions));
-		}
-		mesh->setName(filename.stem().string());
 		return mesh;
 	}
 

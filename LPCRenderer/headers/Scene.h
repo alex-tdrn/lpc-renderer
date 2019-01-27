@@ -1,9 +1,10 @@
 #pragma once
-#include "PointCloud.h"
 #include "AutoName.h"
 #include "Camera.h"
 
 #include <vector>
+
+class PointCloud;
 
 class Scene : public AutoName<Scene>
 {
@@ -21,7 +22,7 @@ private:
 	float scaling = 1.0f;
 
 public:
-	Scene(PointCloud* cloud = nullptr);
+	Scene(PointCloud* cloud);
 
 public:
 	std::string getNamePrefix() const override;
