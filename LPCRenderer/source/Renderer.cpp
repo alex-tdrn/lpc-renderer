@@ -70,7 +70,7 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("view", v);
 	activeShader->set("projection", p);
 
-	activeShader->set("diffuseColor", scene->getDiffuseColor());
+	//activeShader->set("diffuseColor", scene->getDiffuseColor());
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
 		activeShader->set("backFaceCulling", backFaceCulling);
@@ -94,9 +94,12 @@ void Renderer::render(Scene* scene) const
 
 	currentPointCloudBuffer %= pointCloudBufffers.size();
 
-	if(refreshBuffers)
+	if (true || refreshBuffers)
+	{
 		pointCloudBufffers[currentPointCloudBuffer]
 			.update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, currentPointCloud);
+		refreshBuffers = false;
+	}
 	pointCloudBufffers[currentPointCloudBuffer].render();
 	currentPointCloudBuffer++;
 }
@@ -109,6 +112,8 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
+	if (ImGui::Button("Refresh Buffers"))
+		refreshBuffers = true;
 	ImGui::Checkbox("Shrink Buffers To Fit", &shrinkBuffersToFit);
 	nBuffers = pointCloudBufffers.size();
 	ImGui::InputInt("# of Buffers", &nBuffers, 1);
@@ -295,10 +300,12 @@ void drawBricks(PointCloud const* cloud, glm::mat4 mvp, bool drawEmptyBricks)
 	auto isDrawDataOutdated = [&]() {
 		static PointCloud const* lastCloud = nullptr;
 		static bool lastDrawEmptyBricks = false;
-		if(lastCloud != cloud || lastDrawEmptyBricks != drawEmptyBricks)
+		static glm::ivec3 lastSubdivsions{-1};
+		if(lastCloud != cloud || lastDrawEmptyBricks != drawEmptyBricks || lastSubdivsions != cloud->getSubdivisions())
 		{
 			lastCloud = cloud;
 			lastDrawEmptyBricks = drawEmptyBricks;
+			lastSubdivsions = cloud->getSubdivisions();
 			return true;
 		}
 		return false;

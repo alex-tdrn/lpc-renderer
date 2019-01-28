@@ -43,19 +43,23 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 
 	if(!compress)
 	{
-		auto bufferSize = 0;
+		std::size_t bufferSize = 0;
 		static std::vector<std::pair<std::byte const*, std::size_t>> vertexData;
 		vertexData.clear();
 		static std::vector<glm::vec3> globalPositions;
+		for (auto const& brick : bricks)
+			vertexCount += brick.positions.size();
+
 		globalPositions.clear();
+		globalPositions.reserve(vertexCount);
 		for(auto const& brick : bricks)
 		{	
+			std::byte const* startAddress = (std::byte const*)(globalPositions.data());
 			std::size_t brickSize = brick.positions.size() * 3 * sizeof(float);
-			vertexData.emplace_back((std::byte const*)brick.positions.data(), brickSize);
+			vertexData.emplace_back((std::byte const*)(globalPositions.data() + bufferSize / 3 / sizeof(float)), brickSize);
 			for (glm::vec3 position : brick.positions)
-				globalPositions.push_back(std::move(position) + cloud->getOffsetAt(brick.indices));
+				globalPositions.push_back(cloud->convertToWorldPosition(brick.indices, position));
 			bufferSize += brickSize;
-			vertexCount += brick.positions.size();
 		}
 		if(useNormals && !bricks.front().normals.empty())
 		{
@@ -74,12 +78,27 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 		}
 		else
 		{
+			for (auto const& brick : bricks)
+			{
+				std::size_t brickSize = brick.positions.size() * 3 * sizeof(float);
+				vertexData.emplace_back((std::byte const*)brick.positions.data(), brickSize);
+				bufferSize += brickSize;
+			}
 			VBO.write(shrinkToFit, std::move(vertexData));
 			VBO.bind();
 			glEnableVertexAttribArray(0);//Positions
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
-			glDisableVertexAttribArray(1);//Normals
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+			glEnableVertexAttribArray(1);//Normals
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(bufferSize / 2));
 		}
+		//else
+		//{
+		//	VBO.write(shrinkToFit, std::move(vertexData));
+		//	VBO.bind();
+		//	glEnableVertexAttribArray(0);//Positions
+		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
+		//	glDisableVertexAttribArray(1);//Normals
+		//}
 	}
 	//else
 	//{
@@ -133,6 +152,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 
 void PointCloudRepresentation::render()
 {
+	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, vertexCount);
 	VBO.lock();
 	/*if (compress)
