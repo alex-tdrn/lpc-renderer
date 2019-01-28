@@ -54,6 +54,8 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 		globalPositions.reserve(vertexCount);
 		for(auto const& brick : bricks)
 		{	
+			if (brick.positions.empty())
+				continue;
 			std::byte const* startAddress = (std::byte const*)(globalPositions.data());
 			std::size_t brickSize = brick.positions.size() * 3 * sizeof(float);
 			vertexData.emplace_back((std::byte const*)(globalPositions.data() + bufferSize / 3 / sizeof(float)), brickSize);
@@ -61,10 +63,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 				globalPositions.push_back(cloud->convertToWorldPosition(brick.indices, position));
 			bufferSize += brickSize;
 		}
-		if(useNormals && !bricks.front().normals.empty())
+		if(useNormals && cloud->hasNormals())
 		{
 			for(auto const& brick : bricks)
 			{
+				if (brick.positions.empty())
+					continue;
 				std::size_t brickSize = brick.normals.size() * 3 * sizeof(float);
 				vertexData.emplace_back((std::byte const*)brick.normals.data(), brickSize);
 				bufferSize += brickSize;
@@ -78,27 +82,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 		}
 		else
 		{
-			for (auto const& brick : bricks)
-			{
-				std::size_t brickSize = brick.positions.size() * 3 * sizeof(float);
-				vertexData.emplace_back((std::byte const*)brick.positions.data(), brickSize);
-				bufferSize += brickSize;
-			}
 			VBO.write(shrinkToFit, std::move(vertexData));
 			VBO.bind();
 			glEnableVertexAttribArray(0);//Positions
 			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-			glEnableVertexAttribArray(1);//Normals
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(bufferSize / 2));
+			glDisableVertexAttribArray(1);//Normals
 		}
-		//else
-		//{
-		//	VBO.write(shrinkToFit, std::move(vertexData));
-		//	VBO.bind();
-		//	glEnableVertexAttribArray(0);//Positions
-		//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
-		//	glDisableVertexAttribArray(1);//Normals
-		//}
 	}
 	//else
 	//{

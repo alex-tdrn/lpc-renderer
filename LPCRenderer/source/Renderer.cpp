@@ -70,7 +70,7 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("view", v);
 	activeShader->set("projection", p);
 
-	//activeShader->set("diffuseColor", scene->getDiffuseColor());
+	activeShader->set("diffuseColor", scene->getDiffuseColor());
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
 		activeShader->set("backFaceCulling", backFaceCulling);
@@ -94,7 +94,7 @@ void Renderer::render(Scene* scene) const
 
 	currentPointCloudBuffer %= pointCloudBufffers.size();
 
-	if (true || refreshBuffers)
+	if (refreshBuffers)
 	{
 		pointCloudBufffers[currentPointCloudBuffer]
 			.update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, currentPointCloud);
