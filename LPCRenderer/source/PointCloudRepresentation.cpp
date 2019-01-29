@@ -40,6 +40,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 	auto const& bricks = cloud->getAllBricks();
 	glBindVertexArray(VAO);
 	vertexCount = 0;
+	compressed = compress;
 
 	if(!compress)
 	{
@@ -89,52 +90,54 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 			glDisableVertexAttribArray(1);//Normals
 		}
 	}
-	//else
-	//{
-	//	vertexCount = clouds.size();
-	//	static std::vector<glm::vec3> origins;
-	//	static std::vector<glm::vec3> sizes;
-	//	static std::vector<std::uint32_t> bufferOffsets;
-	//	static std::vector<std::uint32_t> bufferLengths;
-	//	static std::vector<std::pair<std::byte const*, std::size_t>> positionsData;
+	else
+	{
+		vertexCount = 0;
+		static std::vector<glm::ivec3> brickIndices;
+		static std::vector<std::pair<std::byte const*, std::size_t>> pointPositions;
+		static std::vector<std::uint32_t> bufferOffsets;
+		static std::vector<std::uint32_t> bufferLengths;
+		brickIndices.clear();
+		pointPositions.clear();
+		bufferOffsets.clear();
+		bufferLengths.clear();
+		bufferOffsets.push_back(0);
+		static std::vector<std::uint32_t> compressedPositions;
+		compressedPositions.clear();
 
-	//	origins.clear();
-	//	sizes.clear();
-	//	bufferOffsets.clear();
-	//	bufferOffsets.push_back(0);
-	//	bufferLengths.clear();
-	//	positionsData.clear();
-	//	for(auto cloud : clouds)
-	//	{
-	//		origins.push_back(cloud->asBlock()->origin);
-	//		sizes.push_back(cloud->asBlock()->size);
-	//		bufferOffsets.push_back(cloud->asBlock()->positions.size() + bufferOffsets.back());
-	//		bufferLengths.push_back(cloud->asBlock()->positions.size());
-	//		positionsData.emplace_back((std::byte const*)cloud->asBlock()->positions.data(), cloud->asBlock()->positions.size() * sizeof(std::uint32_t));
-	//	}
-	//	bufferOffsets.pop_back();
-	//	std::size_t bufferSize = origins.size() * sizeof(float) * 3;
-	//	VBO.write(shrinkToFit, {
-	//		{(std::byte const*)origins.data(), bufferSize},
-	//		{(std::byte const*)sizes.data(), bufferSize},
-	//		{(std::byte const*)bufferOffsets.data(), bufferOffsets.size() * sizeof(std::uint32_t)},
-	//		{(std::byte const*)bufferLengths.data(), bufferLengths.size() * sizeof(std::uint32_t)}
-	//	});
-	//	VBO.bind();
-	//	glEnableVertexAttribArray(0);//Origins
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*) (0));
-	//	glEnableVertexAttribArray(1);//Sizes
-	//	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) (bufferSize));
-	//	glEnableVertexAttribArray(2);//Offsets
-	//	glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 0, (void*) (bufferSize * 2));
-	//	glEnableVertexAttribArray(3);//Lengths
-	//	glVertexAttribIPointer(3, 1, GL_UNSIGNED_INT, 0, (void*) (bufferSize * 2 + bufferOffsets.size() * sizeof(std::uint32_t)));
+		for(auto brick : bricks)
+		{
+			if (brick.positions.empty())
+				continue;
+			vertexCount++;
+			brickIndices.push_back(brick.indices);
+			std::size_t brickSize = brick.positions.size() * sizeof(brick.positions.front());
+			bufferOffsets.push_back(bufferOffsets.back() + brickSize);
+			bufferLengths.push_back(brickSize);
+			for (auto const& position : brick.positions)
+				compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
+		}
+		bufferOffsets.pop_back();
+		std::size_t brickIndicesBufferSize = brickIndices.size() * sizeof(brickIndices.front());
+		std::size_t bufferOffsetsBufferSize = bufferOffsets.size() * sizeof(bufferOffsets.front());
+		VBO.write(shrinkToFit, {
+			{(std::byte const*)brickIndices.data(), brickIndicesBufferSize },
+			{(std::byte const*)bufferOffsets.data(), bufferOffsetsBufferSize },
+			{(std::byte const*)bufferLengths.data(), bufferLengths.size() * sizeof(bufferLengths.front())}
+		});
+		VBO.bind();
+		glEnableVertexAttribArray(0);//Indices
+		glVertexAttribIPointer(0, 3, GL_UNSIGNED_INT, 0, (void*) (0));
+		glEnableVertexAttribArray(1);//Buffer Offsets
+		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*) (brickIndicesBufferSize));
+		glEnableVertexAttribArray(2);//Buffer Lengths
+		glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 0, (void*) (brickIndicesBufferSize + bufferOffsetsBufferSize));
 
-	//	SSBO.write(shrinkToFit, std::move(positionsData));
-	//	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO.getID());
+		SSBO.write(shrinkToFit, {{(std::byte const*)compressedPositions.data(), compressedPositions.size() * sizeof(compressedPositions.front())}});
+		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO.getID());
 
-	//	//TODO
-	//}
+		//TODO
+	}
 
 	
 }
@@ -144,6 +147,6 @@ void PointCloudRepresentation::render()
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, vertexCount);
 	VBO.lock();
-	/*if (compress)
-		SSBO.lock();*/
+	if (compressed)
+		SSBO.lock();
 }

@@ -35,7 +35,7 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 	std::vector<PointCloudBrick> oldBricks;
 	for (int k = 0; k <= subdivisions.z; k++)
 		for (int j = 0; j <= subdivisions.y; j++)
-			for (int i = 0; i <= subdivisions.x; i++)
+		for (int i = 0; i <= subdivisions.x; i++)
 				oldBricks.push_back(PointCloudBrick{ { i, j, k } });
 	std::swap(oldBricks, bricks);
 	glm::vec3 oldBrickSize = brickSize;

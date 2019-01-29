@@ -71,6 +71,12 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
+	if (compressPointClouds)
+	{
+		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
+		activeShader->set("brickSize", currentPointCloud->getBrickSize());
+
+	}
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
 		activeShader->set("backFaceCulling", backFaceCulling);
@@ -94,7 +100,7 @@ void Renderer::render(Scene* scene) const
 
 	currentPointCloudBuffer %= pointCloudBufffers.size();
 
-	if (refreshBuffers)
+	if (true || refreshBuffers)
 	{
 		pointCloudBufffers[currentPointCloudBuffer]
 			.update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, currentPointCloud);
@@ -155,7 +161,8 @@ void Renderer::drawUI()
 		drawBricksMode = DrawBricksMode::nonEmpty;
 
 	ImGui::Separator();
-	ImGui::Checkbox("Compress Pointclouds", &compressPointClouds);
+	if (ImGui::Checkbox("Compress Pointclouds", &compressPointClouds))
+		refreshBuffers = true;
 	ImGui::Text("Rendering Mode");
 	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))
 	{

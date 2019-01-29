@@ -15,7 +15,8 @@ private:
 	GPUBuffer VBO{GL_ARRAY_BUFFER};
 	GPUBuffer SSBO{GL_SHADER_STORAGE_BUFFER};
 	std::size_t vertexCount = 0;
-	
+	bool compressed = false;
+
 public:
 	PointCloudRepresentation();
 	PointCloudRepresentation(PointCloudRepresentation const&) = delete;

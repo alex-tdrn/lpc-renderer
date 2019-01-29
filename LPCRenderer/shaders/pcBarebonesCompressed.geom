@@ -8,13 +8,13 @@ layout(std430, binding = 0) buffer PositionsBuffer
 	uint positions[];
 };
 
+uniform vec3 brickSize;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 in VS_OUT
 {
-	vec3 size;
 	uint bufferOffset;
 	uint bufferLength;
 } gs_in[];
@@ -28,7 +28,7 @@ void main()
 			return;
 		index += gs_in[0].bufferOffset;
 		vec3 position = unpackUnorm4x8(positions[index]).xyz;
-		position *= gs_in[0].size;
+		position *= brickSize;
 		gl_Position = projection * view * model * vec4(gl_in[0].gl_Position.xyz + position, 1.0f);
 		EmitVertex();
 		EndPrimitive();	
