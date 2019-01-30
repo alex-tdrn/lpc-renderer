@@ -27,6 +27,7 @@ public:
 	void use();
 	void set(std::string_view const name, int value) const;
 	void set(std::string_view const name, float value) const;
+	void set(std::string_view const name, glm::uvec3 const& value) const;
 	void set(std::string_view const name, glm::vec2 const& value) const;
 	void set(std::string_view const name, glm::vec3 const& value) const;
 	void set(std::string_view const name, glm::vec4 const& value) const;

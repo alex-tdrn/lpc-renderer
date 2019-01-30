@@ -185,9 +185,9 @@
     <None Include="shaders\box.vert" />
     <None Include="shaders\pcBarebones.frag" />
     <None Include="shaders\pcBarebones.vert" />
-    <None Include="shaders\pcBarebonesBrickVS.frag" />
+    <None Include="shaders\pcBarebonesBrickIndirect.frag" />
     <None Include="shaders\pcBarebonesBrickVS.geom" />
-    <None Include="shaders\pcBarebonesBrickVS.vert" />
+    <None Include="shaders\pcBarebonesBrickIndirect.vert" />
     <None Include="shaders\pcDebugNormals.frag" />
     <None Include="shaders\pcDebugNormals.geom" />
     <None Include="shaders\pcDebugNormals.vert" />

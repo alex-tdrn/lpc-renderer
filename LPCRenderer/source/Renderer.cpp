@@ -38,8 +38,8 @@ void Renderer::render(Scene* scene) const
 				{
 					case Compression::brickGS:
 						return ShaderManager::pcBarebonesBrickGS();
-					case Compression::brickVS:
-						return ShaderManager::pcBarebonesBrickVS();
+					case Compression::brickIndirect:
+						return ShaderManager::pcBarebonesBrickIndirect();
 					default:
 						return ShaderManager::pcBarebones();
 				}
@@ -74,10 +74,14 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if (compression == Compression::brickGS || compression == Compression::brickVS)
+	if (compression == Compression::brickGS || compression == Compression::brickIndirect)
 	{
 		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
 		activeShader->set("brickSize", currentPointCloud->getBrickSize());
+	}
+	if (compression == Compression::brickIndirect)
+	{
+		activeShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
 	}
 
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
@@ -169,8 +173,8 @@ void Renderer::drawUI()
 	if (ImGui::RadioButton("BrickGS", compression == Compression::brickGS))
 		compression = Compression::brickGS;
 	ImGui::SameLine();
-	if (ImGui::RadioButton("BrickVS", compression == Compression::brickVS))
-		compression = Compression::brickVS;
+	if (ImGui::RadioButton("BrickVS", compression == Compression::brickIndirect))
+		compression = Compression::brickIndirect;
 
 	ImGui::Text("Rendering Mode");
 	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))

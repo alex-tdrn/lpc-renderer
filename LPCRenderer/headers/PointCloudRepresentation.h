@@ -11,7 +11,7 @@ enum class Compression
 {
 	none,
 	brickGS,
-	brickVS
+	brickIndirect
 };
 
 class PointCloudRepresentation
@@ -20,7 +20,9 @@ private:
 	unsigned int VAO = 0;
 	GPUBuffer VBO{GL_ARRAY_BUFFER};
 	GPUBuffer SSBO{GL_SHADER_STORAGE_BUFFER};
+	GPUBuffer DrawBuffer{GL_DRAW_INDIRECT_BUFFER};
 	std::size_t vertexCount = 0;
+	std::size_t indirectDrawCount = 0;
 	Compression compression = Compression::none;
 
 public:

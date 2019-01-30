@@ -90,6 +90,10 @@ void Shader::set(std::string_view const name, float value) const
 {
 	glUniform1f(getLocation(name), value);
 }
+void Shader::set(std::string_view const name, glm::uvec3 const & value) const
+{
+	glUniform3ui(getLocation(name), value.x, value.y, value.z);
+}
 void Shader::set(std::string_view const name, glm::vec2 const& value) const
 {
 	glUniform2f(getLocation(name), value.x, value.y);

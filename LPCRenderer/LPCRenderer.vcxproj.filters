@@ -140,8 +140,8 @@
     <None Include="shaders\pcBarebonesBrickGS.vert" />
     <None Include="shaders\pcBarebonesBrickGS.frag" />
     <None Include="shaders\pcBarebonesBrickGS.geom" />
-    <None Include="shaders\pcBarebonesBrickVS.frag" />
     <None Include="shaders\pcBarebonesBrickVS.geom" />
-    <None Include="shaders\pcBarebonesBrickVS.vert" />
+    <None Include="shaders\pcBarebonesBrickIndirect.vert" />
+    <None Include="shaders\pcBarebonesBrickIndirect.frag" />
   </ItemGroup>
 </Project>

@@ -3,6 +3,14 @@
 #include "glad/glad.h"
 #include "Profiler.h"
 
+struct DrawCommand
+{
+	unsigned int count = 0;
+	unsigned int instanceCount = 1;
+	unsigned int first = 0;
+	unsigned int baseInstance = 0;
+};
+
 PointCloudRepresentation::PointCloudRepresentation()
 {
 	glGenVertexArrays(1, &VAO);
@@ -10,7 +18,7 @@ PointCloudRepresentation::PointCloudRepresentation()
 }
 
 PointCloudRepresentation::PointCloudRepresentation(PointCloudRepresentation&& other)
-	:VAO(other.VAO), VBO(std::move(other.VBO)), SSBO(std::move(other.SSBO))
+	:VAO(other.VAO), VBO(std::move(other.VBO)), SSBO(std::move(other.SSBO)), DrawBuffer(std::move(other.DrawBuffer))
 {
 	other.VAO = 0;
 }
@@ -26,6 +34,7 @@ PointCloudRepresentation& PointCloudRepresentation::operator=(PointCloudRepresen
 	VAO = other.VAO;
 	VBO = std::move(other.VBO);
 	SSBO = std::move(other.SSBO);
+	DrawBuffer = std::move(other.DrawBuffer);
 	other.VAO = 0;
 	return *this;
 }
@@ -95,7 +104,6 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		}
 		case Compression::brickGS:
 		{
-			vertexCount = 0;
 			static std::vector<glm::u8vec3> brickIndices;
 			static std::vector<std::uint32_t> bufferOffsets;
 			static std::vector<std::uint32_t> bufferLengths;
@@ -138,21 +146,30 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO.getID());
 			break;
 		}
-		case Compression::brickVS:
+		case Compression::brickIndirect:
 		{
 			SSBO.resize(0);
-			vertexCount = 0;
+			std::vector<DrawCommand> indirectDraws;
 			static std::vector<std::uint32_t> compressedPositions;
 			compressedPositions.clear();
-
+			int brickIndex = -1;
 			for (auto brick : bricks)
 			{
-				if (brick.positions.empty())
-					continue;
+				brickIndex++;
+				//if (brick.positions.empty())
+					//continue;
 				vertexCount+= brick.positions.size();
+				DrawCommand brickDrawCommand{};
+				brickDrawCommand.count = brick.positions.size();
+				brickDrawCommand.first = compressedPositions.size();
+				brickDrawCommand.baseInstance = brickIndex;
+				indirectDraws.push_back(std::move(brickDrawCommand));
 				for (auto const& position : brick.positions)
 					compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
 			}
+			indirectDrawCount = indirectDraws.size();
+			DrawBuffer.write(shrinkToFit, {{(std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front())}});
+			DrawBuffer.bind();
 			VBO.write(shrinkToFit, {{(std::byte const*)compressedPositions.data(), compressedPositions.size() * sizeof(compressedPositions.front()) }});
 			VBO.bind();
 			glEnableVertexAttribArray(0);//Compressed Positions
@@ -171,12 +188,16 @@ void PointCloudRepresentation::render()
 	{
 	case Compression::none:
 	case Compression::brickGS:
-	case Compression::brickVS:
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_POINTS, 0, vertexCount);
 		VBO.lock();
 		SSBO.lock();
 		break;
+	case Compression::brickIndirect:
+		glBindVertexArray(VAO);
+		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
+		VBO.lock();
+		DrawBuffer.lock();
 		break;
 	}
 }

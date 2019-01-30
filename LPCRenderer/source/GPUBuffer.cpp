@@ -48,14 +48,17 @@ void GPUBuffer::resize(std::size_t newSize)
 		glBindBuffer(target, ID);
 		glUnmapBuffer(target);
 		glDeleteBuffers(1, &ID);
+		ID = 0;
 	}
+	currentSize = newSize;
+	if (newSize == 0)
+		return;
 
 	glGenBuffers(1, &ID);
 	glBindBuffer(target, ID);
 	glBufferStorage(target, newSize, nullptr, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT);
 	data = (std::byte*)(glMapBufferRange(target, 0, newSize, GL_MAP_PERSISTENT_BIT | GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT));
 
-	currentSize = newSize;
 }
 
 void GPUBuffer::unlock()
