@@ -14,7 +14,7 @@ void main()
 	vec3 relativePosition = unpackUnorm4x8(compressedPosition).xyz;
 	relativePosition *= brickSize;
 	
-	uint index = gl_DrawIDARB;
+	uint index = gl_BaseInstanceARB;
 	uvec3 indices;
 	indices.z = index / ((subdivisions.x + 1) * (subdivisions.y + 1));//count surfaces
 	index  = index % ((subdivisions.x + 1) * (subdivisions.y + 1));

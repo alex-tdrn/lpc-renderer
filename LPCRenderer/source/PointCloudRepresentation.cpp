@@ -156,8 +156,8 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			for (auto brick : bricks)
 			{
 				brickIndex++;
-				//if (brick.positions.empty())
-					//continue;
+				if (brick.positions.empty())
+					continue;
 				vertexCount+= brick.positions.size();
 				DrawCommand brickDrawCommand{};
 				brickDrawCommand.count = brick.positions.size();
