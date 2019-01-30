@@ -49,8 +49,6 @@ void Renderer::render(Scene* scene) const
 	glm::mat4 m = scene->getModelMatrix();
 	glm::mat4 v = scene->getCamera().getViewMatrix();
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
-	if (currentPointCloud != scene->getPointCloud())
-		refreshBuffers = true;
 	currentPointCloud = scene->getPointCloud();
 	switch (drawBricksMode)
 	{
@@ -100,11 +98,10 @@ void Renderer::render(Scene* scene) const
 
 	currentPointCloudBuffer %= pointCloudBufffers.size();
 
-	if (true || refreshBuffers)
+	if (refreshBuffers)
 	{
 		pointCloudBufffers[currentPointCloudBuffer]
 			.update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, currentPointCloud);
-		refreshBuffers = false;
 	}
 	pointCloudBufffers[currentPointCloudBuffer].render();
 	currentPointCloudBuffer++;
@@ -118,8 +115,7 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	if (ImGui::Button("Refresh Buffers"))
-		refreshBuffers = true;
+	ImGui::Checkbox("Refresh Buffers", &refreshBuffers);
 	ImGui::Checkbox("Shrink Buffers To Fit", &shrinkBuffersToFit);
 	nBuffers = pointCloudBufffers.size();
 	ImGui::InputInt("# of Buffers", &nBuffers, 1);
@@ -161,8 +157,7 @@ void Renderer::drawUI()
 		drawBricksMode = DrawBricksMode::nonEmpty;
 
 	ImGui::Separator();
-	if (ImGui::Checkbox("Compress Pointclouds", &compressPointClouds))
-		refreshBuffers = true;
+	ImGui::Checkbox("Compress Pointclouds", &compressPointClouds);
 	ImGui::Text("Rendering Mode");
 	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))
 	{

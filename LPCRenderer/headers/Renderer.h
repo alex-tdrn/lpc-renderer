@@ -22,7 +22,7 @@ private:
 		litDisk
 	} renderMode = RenderMode::barebones;
 	mutable PointCloud const* currentPointCloud = nullptr;
-	mutable bool refreshBuffers = false;
+	mutable bool refreshBuffers = true;
 	mutable std::size_t renderedVertices = 0;
 	static inline std::vector<PointCloudRepresentation> pointCloudBufffers{0};
 	static inline int currentPointCloudBuffer = 0;

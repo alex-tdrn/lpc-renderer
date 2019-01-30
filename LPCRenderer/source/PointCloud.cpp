@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
+	:vertexCount(positions.size())
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -116,6 +117,7 @@ void PointCloud::drawUI()
 {
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
+	ImGui::Text("Vertex Count: %i", vertexCount);
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);
 	glm::clamp(tmpSubdivisions, glm::ivec3{ 0 }, tmpSubdivisions);
