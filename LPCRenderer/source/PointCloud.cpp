@@ -55,6 +55,10 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 				getBrickAt(indices).normals.push_back(brick.normals[i]);
 		}
 	}
+	emptyBrickCount = 0;
+	for (auto const& brick : bricks)
+		if (brick.positions.empty())
+			emptyBrickCount++;
 }
 
 bool PointCloud::hasNormals() const
@@ -123,6 +127,7 @@ void PointCloud::drawUI()
 	glm::clamp(tmpSubdivisions, glm::ivec3{ 0 }, tmpSubdivisions);
 	if (tmpSubdivisions != subdivisions)
 		setSubDivisions(tmpSubdivisions);
-	ImGui::Text("Brick Count: %i", (subdivisions.x + 1) * (subdivisions.y + 1) * (subdivisions.z + 1));
+	ImGui::Text("Total Brick Count: %i", bricks.size());
+	ImGui::Text("Empty Brick Count: %i, (%.0f%%)", emptyBrickCount, 100 * static_cast<float>(emptyBrickCount) / bricks.size());
 }
 
