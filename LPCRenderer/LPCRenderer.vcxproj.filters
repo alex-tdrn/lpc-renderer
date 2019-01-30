@@ -137,8 +137,8 @@
     <None Include="shaders\pcLitDisk.vert" />
     <None Include="shaders\box.vert" />
     <None Include="shaders\box.frag" />
-    <None Include="shaders\pcBarebonesCompressed.vert" />
-    <None Include="shaders\pcBarebonesCompressed.geom" />
-    <None Include="shaders\pcBarebonesCompressed.frag" />
+    <None Include="shaders\pcBarebonesBrickGS.vert" />
+    <None Include="shaders\pcBarebonesBrickGS.frag" />
+    <None Include="shaders\pcBarebonesBrickGS.geom" />
   </ItemGroup>
 </Project>

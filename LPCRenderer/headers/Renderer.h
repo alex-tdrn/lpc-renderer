@@ -36,7 +36,7 @@ private:
 		all,
 		nonEmpty
 	} drawBricksMode = DrawBricksMode::disabled;
-	bool compressPointClouds = false;
+	Compression compression = Compression::none;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;
 	int pointSize = 2;

@@ -15,7 +15,7 @@ void ShaderManager::initialize()
 	box();
 	pcDebugNormals();
 	pcBarebones();
-	pcBarebonesCompressed();
+	pcBarebonesBrickGS();
 	pcLit();
 	pcLitDisk();
 }
@@ -44,10 +44,10 @@ Shader* ShaderManager::pcBarebones()
 	return ret;
 }
 
-Shader* ShaderManager::pcBarebonesCompressed()
+Shader* ShaderManager::pcBarebonesBrickGS()
 {
-	static auto ret = load("Barebones Compressed",
-		"shaders/pcBarebonesCompressed.vert", "shaders/pcBarebonesCompressed.frag", "shaders/pcBarebonesCompressed.geom"
+	static auto ret = load("Barebones BrickGS",
+		"shaders/pcBarebonesBrickGS.vert", "shaders/pcBarebonesBrickGS.frag", "shaders/pcBarebonesBrickGS.geom"
 	);
 	return ret;
 }

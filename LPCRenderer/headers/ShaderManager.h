@@ -10,7 +10,7 @@ public:
 	static Shader* box();
 	static Shader* pcDebugNormals();
 	static Shader* pcBarebones();
-	static Shader* pcBarebonesCompressed();
+	static Shader* pcBarebonesBrickGS();
 	static Shader* pcLit();
 	static Shader* pcLitDisk();
 };

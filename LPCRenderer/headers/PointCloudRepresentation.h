@@ -7,6 +7,12 @@
 #include <vector>
 
 class PointCloud;
+enum class Compression
+{
+	none,
+	brickGS,
+	brickVS
+};
 
 class PointCloudRepresentation
 {
@@ -15,7 +21,7 @@ private:
 	GPUBuffer VBO{GL_ARRAY_BUFFER};
 	GPUBuffer SSBO{GL_SHADER_STORAGE_BUFFER};
 	std::size_t vertexCount = 0;
-	bool compressed = false;
+	Compression compression = Compression::none;
 
 public:
 	PointCloudRepresentation();
@@ -29,6 +35,6 @@ private:
 	void free();
 
 public:
-	void update(bool shrinkToFit, bool useNormals, bool compress, PointCloud const* cloud);
+	void update(bool shrinkToFit, bool useNormals, Compression compression, PointCloud const* cloud);
 	void render();
 };

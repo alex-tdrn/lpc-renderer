@@ -34,10 +34,15 @@ void Renderer::render(Scene* scene) const
 			case Renderer::RenderMode::litDisk:
 				return ShaderManager::pcLitDisk();
 			default:
-				if(compressPointClouds)
-					return ShaderManager::pcBarebonesCompressed();
-				else
-					return ShaderManager::pcBarebones();
+				switch (compression)
+				{
+					case Compression::none:
+						return ShaderManager::pcBarebones();
+					case Compression::brickGS:
+						return ShaderManager::pcBarebonesBrickGS();
+					case Compression::brickVS:
+						return ShaderManager::pcBarebones();
+				}
 		}
 	}();
 
@@ -69,7 +74,7 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if (compressPointClouds)
+	if (compression == Compression::brickGS)
 	{
 		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
 		activeShader->set("brickSize", currentPointCloud->getBrickSize());
@@ -101,7 +106,7 @@ void Renderer::render(Scene* scene) const
 	if (refreshBuffers)
 	{
 		pointCloudBufffers[currentPointCloudBuffer]
-			.update(shrinkBuffersToFit, useNormalsIfAvailable, compressPointClouds, currentPointCloud);
+			.update(shrinkBuffersToFit, useNormalsIfAvailable, compression, currentPointCloud);
 	}
 	pointCloudBufffers[currentPointCloudBuffer].render();
 	currentPointCloudBuffer++;
@@ -157,7 +162,16 @@ void Renderer::drawUI()
 		drawBricksMode = DrawBricksMode::nonEmpty;
 
 	ImGui::Separator();
-	ImGui::Checkbox("Compress Pointclouds", &compressPointClouds);
+	ImGui::Text("Compression");
+	if (ImGui::RadioButton("None", compression == Compression::none))
+		compression = Compression::none;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("BrickGS", compression == Compression::brickGS))
+		compression = Compression::brickGS;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("BrickVS", compression == Compression::brickVS))
+		compression = Compression::brickVS;
+
 	ImGui::Text("Rendering Mode");
 	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))
 	{
