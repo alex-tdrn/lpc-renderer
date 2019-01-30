@@ -115,11 +115,12 @@ glm::vec3 PointCloud::getOffsetAt(glm::ivec3 indices) const
 void PointCloud::drawUI()
 {
 	glm::ivec3 tmpSubdivisions = subdivisions;
-	static int maxSubdivisions = 8;
+	static int maxSubdivisions = 7;
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);
 	glm::clamp(tmpSubdivisions, glm::ivec3{ 0 }, tmpSubdivisions);
 	if (tmpSubdivisions != subdivisions)
 		setSubDivisions(tmpSubdivisions);
+	ImGui::Text("Brick Count: %i", (subdivisions.x + 1) * (subdivisions.y + 1) * (subdivisions.z + 1));
 }
 

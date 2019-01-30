@@ -93,7 +93,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 	else
 	{
 		vertexCount = 0;
-		static std::vector<glm::ivec3> brickIndices;
+		static std::vector<glm::u8vec3> brickIndices;
 		static std::vector<std::pair<std::byte const*, std::size_t>> pointPositions;
 		static std::vector<std::uint32_t> bufferOffsets;
 		static std::vector<std::uint32_t> bufferLengths;
@@ -111,11 +111,11 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 				continue;
 			vertexCount++;
 			brickIndices.push_back(brick.indices);
-			std::size_t brickSize = brick.positions.size() * sizeof(brick.positions.front());
-			bufferOffsets.push_back(bufferOffsets.back() + brickSize);
-			bufferLengths.push_back(brickSize);
 			for (auto const& position : brick.positions)
 				compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
+
+			bufferOffsets.push_back(bufferOffsets.back() + brick.positions.size());
+			bufferLengths.push_back(brick.positions.size());
 		}
 		bufferOffsets.pop_back();
 		std::size_t brickIndicesBufferSize = brickIndices.size() * sizeof(brickIndices.front());
@@ -127,7 +127,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, bool co
 		});
 		VBO.bind();
 		glEnableVertexAttribArray(0);//Indices
-		glVertexAttribIPointer(0, 3, GL_UNSIGNED_INT, 0, (void*) (0));
+		glVertexAttribIPointer(0, 3, GL_UNSIGNED_BYTE, 0, (void*) (0));
 		glEnableVertexAttribArray(1);//Buffer Offsets
 		glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, 0, (void*) (brickIndicesBufferSize));
 		glEnableVertexAttribArray(2);//Buffer Lengths
