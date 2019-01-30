@@ -36,11 +36,11 @@ void Renderer::render(Scene* scene) const
 			default:
 				switch (compression)
 				{
-					case Compression::none:
-						return ShaderManager::pcBarebones();
 					case Compression::brickGS:
 						return ShaderManager::pcBarebonesBrickGS();
 					case Compression::brickVS:
+						return ShaderManager::pcBarebonesBrickVS();
+					default:
 						return ShaderManager::pcBarebones();
 				}
 		}
@@ -74,12 +74,12 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if (compression == Compression::brickGS)
+	if (compression == Compression::brickGS || compression == Compression::brickVS)
 	{
 		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
 		activeShader->set("brickSize", currentPointCloud->getBrickSize());
-
 	}
+
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
 		activeShader->set("backFaceCulling", backFaceCulling);

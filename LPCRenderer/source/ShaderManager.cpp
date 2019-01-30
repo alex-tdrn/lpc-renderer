@@ -16,6 +16,7 @@ void ShaderManager::initialize()
 	pcDebugNormals();
 	pcBarebones();
 	pcBarebonesBrickGS();
+	pcBarebonesBrickVS();
 	pcLit();
 	pcLitDisk();
 }
@@ -48,6 +49,14 @@ Shader* ShaderManager::pcBarebonesBrickGS()
 {
 	static auto ret = load("Barebones BrickGS",
 		"shaders/pcBarebonesBrickGS.vert", "shaders/pcBarebonesBrickGS.frag", "shaders/pcBarebonesBrickGS.geom"
+	);
+	return ret;
+}
+
+Shader* ShaderManager::pcBarebonesBrickVS()
+{
+	static auto ret = load("Barebones BrickVS",
+		"shaders/pcBarebonesBrickVS.vert", "shaders/pcBarebonesBrickVS.frag"
 	);
 	return ret;
 }

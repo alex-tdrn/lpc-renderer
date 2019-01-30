@@ -35,7 +35,7 @@ private:
 		disabled,
 		all,
 		nonEmpty
-	} drawBricksMode = DrawBricksMode::disabled;
+	} drawBricksMode = DrawBricksMode::all;
 	Compression compression = Compression::none;
 	bool useNormalsIfAvailable = false;
 	bool backFaceCulling = true;
