@@ -143,12 +143,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 0, (void*)(brickIndicesBufferSize + bufferOffsetsBufferSize));
 
 			SSBO.write(shrinkToFit, { { (std::byte const*)compressedPositions.data(), compressedPositions.size() * sizeof(compressedPositions.front()) } });
-			SSBO.bind(0);
+			SSBO.bindBase(0);
 			break;
 		}
 		case Compression::brickIndirect:
 		{
-			SSBO.resize(0);
+			SSBO.free();
 			std::vector<DrawCommand> indirectDraws;
 			static std::vector<std::uint32_t> compressedPositions;
 			compressedPositions.clear();
@@ -190,14 +190,10 @@ void PointCloudRepresentation::render()
 	case Compression::brickGS:
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_POINTS, 0, vertexCount);
-		VBO.lock();
-		SSBO.lock();
 		break;
 	case Compression::brickIndirect:
 		glBindVertexArray(VAO);
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
-		VBO.lock();
-		DrawBuffer.lock();
 		break;
 	}
 }

@@ -44,10 +44,6 @@ void Profiler::recordFrame()
 	updateStats(currentFrametime, averageFrametime, longestFrametime, 100ms, frametimes);
 	lastFrame = currentFrame;
 
-	//if(currentFenceWaitDuration >= 100)
-	//	currentFenceWaitDuration /= 1000.0f;//us
-	//if(currentFenceWaitDuration >= 100)
-	//	currentFenceWaitDuration /= 1000.0f;//ms
 	updateStats(currentFenceWaitDuration, averageFenceWaitDuration, longestFenceWaitDuration, 5ms, fenceWaitDurations);
 	currentFenceWaitDuration = 0ns;
 
