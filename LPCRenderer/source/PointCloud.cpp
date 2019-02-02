@@ -1,6 +1,7 @@
 #include "PointCloud.h"
 #include <algorithm>
 #include <imgui.h>
+#include <unordered_map>
 
 PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
 	:vertexCount(positions.size())
@@ -56,9 +57,24 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 		}
 	}
 	emptyBrickCount = 0;
+	redundantPointsIfCompressed = 0;
 	for (auto const& brick : bricks)
+	{
 		if (brick.positions.empty())
 			emptyBrickCount++;
+		std::unordered_map<std::uint32_t, std::size_t> occurences;
+		for (auto const& position : brick.positions)
+			occurences[glm::packUnorm4x8(glm::vec4(position, 1.0f))]++;
+		for (auto n : occurences)
+			redundantPointsIfCompressed += n.second - 1;
+	}
+	pointsPerBrickAverage = 0;
+	for (auto const& brick : bricks)
+	{
+		if (brick.positions.empty())
+			continue;
+		pointsPerBrickAverage += static_cast<float>(brick.positions.size()) / (bricks.size() - emptyBrickCount);
+	}
 }
 
 bool PointCloud::hasNormals() const
@@ -121,13 +137,16 @@ void PointCloud::drawUI()
 {
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
-	ImGui::Text("Vertex Count: %i", vertexCount);
+	ImGui::Text("Total Point Count: %i", vertexCount);
+	ImGui::Text("Average Point Count Per Brick: %.2f", pointsPerBrickAverage);
+	ImGui::Text("Redundant Points if compressed: %i, (%.2f%%)", redundantPointsIfCompressed, 100 * static_cast<float>(redundantPointsIfCompressed) / vertexCount);
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);
 	glm::clamp(tmpSubdivisions, glm::ivec3{ 0 }, tmpSubdivisions);
 	if (tmpSubdivisions != subdivisions)
 		setSubDivisions(tmpSubdivisions);
 	ImGui::Text("Total Brick Count: %i", bricks.size());
-	ImGui::Text("Empty Brick Count: %i, (%.0f%%)", emptyBrickCount, 100 * static_cast<float>(emptyBrickCount) / bricks.size());
+	ImGui::Text("Empty Brick Count: %i, (%.2f%%)", emptyBrickCount, 100 * static_cast<float>(emptyBrickCount) / bricks.size());
+
 }
 

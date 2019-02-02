@@ -20,6 +20,8 @@ private:
 	std::vector<PointCloudBrick> bricks;
 	std::size_t vertexCount = 0;
 	std::size_t emptyBrickCount = 0;
+	std::size_t redundantPointsIfCompressed = 0;
+	float pointsPerBrickAverage = 0;
 
 public:
 	PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals = {});
