@@ -35,6 +35,14 @@ GPUBuffer::~GPUBuffer()
 	free();
 }
 
+void GPUBuffer::free()
+{
+	glDeleteBuffers(1, &ID);
+	Profiler::recordGPUDeallocation(currentSize);
+	if (fence)
+		glDeleteSync(fence);
+}
+
 void GPUBuffer::resize(std::size_t newSize)
 {
 	if(newSize > currentSize)
@@ -42,13 +50,12 @@ void GPUBuffer::resize(std::size_t newSize)
 	else
 		Profiler::recordGPUDeallocation(currentSize - newSize);
 
-	if(ID != 0)
+	if(glIsBuffer(ID))
 	{
 		unlock();
 		glBindBuffer(target, ID);
 		glUnmapBuffer(target);
 		glDeleteBuffers(1, &ID);
-		ID = 0;
 	}
 	currentSize = newSize;
 	if (newSize == 0)
@@ -100,18 +107,14 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 
 void GPUBuffer::bind()
 {
+	if (target == GL_SHADER_STORAGE_BUFFER)
+		throw "Bind mismatch!";
 	glBindBuffer(target, ID);
 }
 
-unsigned int GPUBuffer::getID()
+void GPUBuffer::bind(unsigned int base)
 {
-	return ID;
-}
-
-void GPUBuffer::free()
-{
-	glDeleteBuffers(1, &ID);
-	Profiler::recordGPUDeallocation(currentSize);
-	if(fence)
-		glDeleteSync(fence);
+	if (target != GL_SHADER_STORAGE_BUFFER)
+		throw "Bind mismatch!";
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, base, ID);
 }

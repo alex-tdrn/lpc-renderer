@@ -175,6 +175,9 @@ void Renderer::drawUI()
 	ImGui::SameLine();
 	if (ImGui::RadioButton("BrickVS", compression == Compression::brickIndirect))
 		compression = Compression::brickIndirect;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Bitmap", compression == Compression::bitmap))
+		compression = Compression::bitmap;
 
 	ImGui::Text("Rendering Mode");
 	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))

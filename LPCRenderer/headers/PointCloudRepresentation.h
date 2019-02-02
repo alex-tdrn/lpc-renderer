@@ -11,7 +11,8 @@ enum class Compression
 {
 	none,
 	brickGS,
-	brickIndirect
+	brickIndirect,
+	bitmap
 };
 
 class PointCloudRepresentation

@@ -143,7 +143,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			glVertexAttribIPointer(2, 1, GL_UNSIGNED_INT, 0, (void*)(brickIndicesBufferSize + bufferOffsetsBufferSize));
 
 			SSBO.write(shrinkToFit, { { (std::byte const*)compressedPositions.data(), compressedPositions.size() * sizeof(compressedPositions.front()) } });
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, SSBO.getID());
+			SSBO.bind(0);
 			break;
 		}
 		case Compression::brickIndirect:
