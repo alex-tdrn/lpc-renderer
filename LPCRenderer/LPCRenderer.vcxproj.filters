@@ -143,5 +143,6 @@
     <None Include="shaders\pcBarebonesBrickVS.geom" />
     <None Include="shaders\pcBarebonesBrickIndirect.vert" />
     <None Include="shaders\pcBarebonesBrickIndirect.frag" />
+    <None Include="shaders\pcUnpackBitmap.comp" />
   </ItemGroup>
 </Project>

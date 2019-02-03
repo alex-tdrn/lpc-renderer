@@ -65,6 +65,11 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 
 void GPUBuffer::bind()
 {
+	bind(target);
+}
+
+void GPUBuffer::bind(GLenum target)
+{
 	glBindBuffer(target, ID);
 }
 

@@ -164,7 +164,6 @@ void Renderer::drawUI()
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Non-Empty", drawBricksMode == DrawBricksMode::nonEmpty))
 		drawBricksMode = DrawBricksMode::nonEmpty;
-
 	ImGui::Separator();
 	ImGui::Text("Compression");
 	if (ImGui::RadioButton("None", compression == Compression::none))
@@ -173,7 +172,7 @@ void Renderer::drawUI()
 	if (ImGui::RadioButton("BrickGS", compression == Compression::brickGS))
 		compression = Compression::brickGS;
 	ImGui::SameLine();
-	if (ImGui::RadioButton("BrickVS", compression == Compression::brickIndirect))
+	if (ImGui::RadioButton("BrickIndirect", compression == Compression::brickIndirect))
 		compression = Compression::brickIndirect;
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Bitmap", compression == Compression::bitmap))

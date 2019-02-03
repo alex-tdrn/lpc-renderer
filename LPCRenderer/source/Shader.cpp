@@ -9,25 +9,44 @@
 #include <sstream>
 #include <iostream>
 
-std::string read(std::string_view const path)
+struct ShaderSource
 {
-	std::ifstream file(path.data());
-	std::stringstream stream;
-	stream << file.rdbuf();
-	return stream.str();
-}
+	unsigned int ID;
+	ShaderSource(std::string_view const path, GLenum type)
+	{
+		std::ifstream file(path.data());
+		std::stringstream stream;
+		stream << file.rdbuf();
+		ID = glCreateShader(type);
+		std::string source = stream.str();
+		char const* aux = source.data();
+		glShaderSource(ID, 1, &aux, nullptr);
+		glCompileShader(ID);
 
-unsigned int compile(std::string_view const source, GLenum type)
-{
-	unsigned int compiledShader = glCreateShader(type);
-	char const* aux = source.data();
-	glShaderSource(compiledShader, 1, &aux, nullptr);
-	glCompileShader(compiledShader);
-	return compiledShader;
-}
+		int logLength;
+		glGetShaderiv(ID, GL_INFO_LOG_LENGTH, &logLength);
+		if (logLength > 0) 
+		{
+			std::string log;
+			log.resize(logLength + 1);
+			glGetShaderInfoLog(ID, logLength, NULL, log.data());
+			std::cout << "ERROR COMPILING " << path << ":\n" << log;
+		}
+
+	}
+	~ShaderSource()
+	{
+		glDeleteShader(ID);
+	}
+};
 
 Shader::Shader(std::string const vertexPath, std::string const fragmentPath, std::optional<std::string const> geometryPath)
 	:vertexPath(vertexPath), fragmentPath(fragmentPath), geometryPath(geometryPath)
+{
+}
+
+Shader::Shader(std::string const computePath)
+	:computePath(computePath), isCompute(true)
 {
 }
 
@@ -52,27 +71,41 @@ void Shader::reload()
 	initialized = true;
 	ID = glCreateProgram();
 
-	std::string const vertexCode = read(vertexPath);
-	unsigned int vertex = compile(vertexCode, GL_VERTEX_SHADER);
-	glAttachShader(ID, vertex);
-
-	std::string const fragmentCode = read(fragmentPath);
-	unsigned int fragment = compile(fragmentCode, GL_FRAGMENT_SHADER);
-	glAttachShader(ID, fragment);
-
-	unsigned int geometry;
-	if(geometryPath)
+	if (isCompute)
 	{
-		std::string const geometryCode = read(*geometryPath);
-		geometry = compile(geometryCode, GL_GEOMETRY_SHADER);
-		glAttachShader(ID, geometry);
+		ShaderSource compute(computePath, GL_COMPUTE_SHADER);
+		glAttachShader(ID, compute.ID);
+		glLinkProgram(ID);
+	}
+	else
+	{
+		ShaderSource vertex(vertexPath, GL_VERTEX_SHADER);
+		glAttachShader(ID, vertex.ID);
+
+		ShaderSource fragment(fragmentPath, GL_FRAGMENT_SHADER);
+		glAttachShader(ID, fragment.ID);
+
+		if (geometryPath)
+		{
+			ShaderSource geometry(*geometryPath, GL_GEOMETRY_SHADER);
+			glAttachShader(ID, geometry.ID);
+			glLinkProgram(ID);
+		}
+		else
+		{
+			glLinkProgram(ID);
+		}
 	}
 
-	glLinkProgram(ID);
-	glDeleteShader(vertex);
-	glDeleteShader(fragment);
-	if(geometryPath)
-		glDeleteShader(geometry);
+	int logLength;
+	glGetProgramiv(ID, GL_INFO_LOG_LENGTH, &logLength);
+	if (logLength > 0)
+	{
+		std::string log;
+		log.resize(logLength + 1);
+		glGetProgramInfoLog(ID, logLength, NULL, log.data());
+		std::cout << "ERROR LINKING " << getName() << ":\n" << log;
+	}
 }
 
 void Shader::use()

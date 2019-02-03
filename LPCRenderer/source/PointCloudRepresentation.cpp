@@ -178,6 +178,11 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			glDisableVertexAttribArray(2);
 			break;
 		}
+		case Compression::bitmap:
+		{
+
+			break;
+		}
 	}
 
 }
@@ -194,6 +199,9 @@ void PointCloudRepresentation::render()
 	case Compression::brickIndirect:
 		glBindVertexArray(VAO);
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
+		break;
+	case Compression::bitmap:
+
 		break;
 	}
 }

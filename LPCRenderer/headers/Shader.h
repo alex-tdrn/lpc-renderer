@@ -11,12 +11,15 @@ class Shader : public AutoName<Shader>
 private:
 	unsigned int ID = 0;
 	bool initialized = false;
+	bool isCompute = false;
+	std::string const computePath;
 	std::string const vertexPath;
 	std::string const fragmentPath;
 	std::optional<std::string const> const geometryPath;
 
 public:
 	Shader(std::string const vertexPath, std::string const fragmentPath, std::optional<std::string const> geometryPath = std::nullopt);
+	Shader(std::string const computePath);
 
 private:
 	int getLocation(std::string_view const name) const;

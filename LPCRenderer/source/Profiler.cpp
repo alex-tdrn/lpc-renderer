@@ -171,6 +171,7 @@ void Profiler::drawUI()
 		{
 			int majorVersion;
 			int minorVersion;
+			std::string glslVersion;
 			std::string vendor;
 			std::string device;
 			int maxShaderStorageBufferBytes;
@@ -202,6 +203,7 @@ void Profiler::drawUI()
 			GLContext ret;
 			glGetIntegerv(GL_MAJOR_VERSION, &ret.majorVersion);
 			glGetIntegerv(GL_MINOR_VERSION, &ret.minorVersion);
+			ret.glslVersion = reinterpret_cast<char const*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
 			ret.vendor = reinterpret_cast<char const*>(glGetString(GL_VENDOR));
 			ret.device = reinterpret_cast<char const*>(glGetString(GL_RENDERER));
 
@@ -240,7 +242,7 @@ void Profiler::drawUI()
 				ret.supportedExtensions.push_back(reinterpret_cast<char const*>(glGetStringi(GL_EXTENSIONS, i)));
 			return ret;
 		}();
-		ImGui::Text("API: OpenGL %i.%i", context.majorVersion, context.minorVersion);
+		ImGui::Text("API: OpenGL %i.%i, glsl %s", context.majorVersion, context.minorVersion, context.glslVersion.data());
 		ImGui::Text("Vendor: %s", context.vendor.data());
 		ImGui::Text("Device: %s", context.device.data());
 		ImGui::Separator();

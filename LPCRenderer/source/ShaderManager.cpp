@@ -17,6 +17,7 @@ void ShaderManager::initialize()
 	pcBarebones();
 	pcBarebonesBrickGS();
 	pcBarebonesBrickIndirect();
+	pcUnpackBitmap();
 	pcLit();
 	pcLitDisk();
 }
@@ -57,6 +58,14 @@ Shader* ShaderManager::pcBarebonesBrickIndirect()
 {
 	static auto ret = load("Barebones BrickIndirect",
 		"shaders/pcBarebonesBrickIndirect.vert", "shaders/pcBarebonesBrickIndirect.frag"
+	);
+	return ret;
+}
+
+Shader* ShaderManager::pcUnpackBitmap()
+{
+	static auto ret = load("Unpack Bitmap",
+		"shaders/pcUnpackBitmap.comp"
 	);
 	return ret;
 }

@@ -1,0 +1,16 @@
+#version 450 core
+
+layout(std430, binding = 0) buffer BitmapsBuffer
+{
+	uint bitmaps[];
+};
+
+layout(std430, binding = 1) buffer PositionsBuffer
+{
+	uint positions[];
+};
+
+void main()
+{
+	//TODO
+}

@@ -8,8 +8,6 @@ class GPUBuffer
 private:
 	unsigned int ID = 0;
 	GLenum target;
-	GLsync fence = nullptr;
-	std::byte* data = nullptr;
 	std::size_t currentSize = 0;
 
 public:
@@ -21,11 +19,10 @@ public:
 	GPUBuffer& operator=(GPUBuffer&&);
 
 public:
-	void unlock();
-	void lock();
 	void free();
 	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
 	void bind();
+	void bind(GLenum target);
 	void bindBase(unsigned int base);
 };
 

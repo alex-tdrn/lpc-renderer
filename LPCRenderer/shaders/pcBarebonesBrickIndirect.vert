@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 uniform vec3 cloudOrigin;
 uniform vec3 brickSize;

@@ -12,6 +12,7 @@ public:
 	static Shader* pcBarebones();
 	static Shader* pcBarebonesBrickGS();
 	static Shader* pcBarebonesBrickIndirect();
+	static Shader* pcUnpackBitmap();
 	static Shader* pcLit();
 	static Shader* pcLitDisk();
 };
