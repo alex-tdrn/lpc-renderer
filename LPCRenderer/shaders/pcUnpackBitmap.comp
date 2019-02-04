@@ -12,30 +12,29 @@ layout(std430, binding = 1) buffer PositionsBuffer
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
 
+shared uint positionCount;
 void main()
 {
-	int bitmapIndex = 0;
-	int positionCount = 0;
-	for(int z = 0; z < 256; z++)
+	if(gl_LocalInvocationIndex == 0)
+		atomicExchange(positionCount, 0);
+	memoryBarrierShared();
+	uint bitmapIndex = 0;
+	for(uint z = gl_LocalInvocationID.z * 32; z < (gl_LocalInvocationID.z + 1) * 32; z++)
 	{
-		for(int y = 0; y < 256; y++)
+		for(uint y = gl_LocalInvocationID.y * 32; y < (gl_LocalInvocationID.y + 1) * 32; y++)
 		{
-			for(int x = 0; x < 8; x++)
+			uint idx = bitmapIndex * 256 * 256 * 8;
+			idx += z * 256 * 8;
+			idx += y * 8;
+			idx += gl_LocalInvocationID.x;
+			uint bytes = bitmaps[idx];
+			for(uint bit = 0; bit < 32; bit++)
 			{
-				uint idx = bitmapIndex * 256 * 256 * 8;
-				idx += z * 256 * 8;
-				idx += y * 8;
-				idx += x;
-				uint bytes = bitmaps[idx];
-				for(int bit = 0; bit < 32; bit++)
+				bool occupied = (bytes & (1 << bit)) != 0;
+				if(occupied)
 				{
-					bool occupied = (bytes & (1 << bit)) != 0;
-					if(occupied)
-					{
-						vec3 position = vec3(x * 32 + bit, y, z) / 256.0f;
-						positions[positionCount] = packUnorm4x8(position.xyzz);
-						positionCount++;
-					}
+					vec3 position = vec3(gl_LocalInvocationID.x * 32 + bit, y, z) / 256.0f;
+					positions[atomicAdd(positionCount, 1)] = packUnorm4x8(position.xyzz);
 				}
 			}
 		}
