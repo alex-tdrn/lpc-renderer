@@ -198,7 +198,11 @@ void Profiler::drawUI()
 			int maxVertices;
 			int maxVertexAttributes;
 			int maxVertexTextureUnits;
-			glm::ivec3 maxComputeWorkGroups;
+			glm::ivec3 maxComputeWorkGroupCount;
+			glm::ivec3 maxComputeWorkGroupSize;
+			int maxComputeWorkGroupInvocations;
+			int maxComputeSharedMemoryBytes;
+			int maxComputeSharedMemoryKiloBytes;
 			std::vector<std::string> supportedExtensions;
 		};
 		static GLContext const context = []() -> GLContext{
@@ -238,9 +242,15 @@ void Profiler::drawUI()
 			glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &ret.maxVertexAttributes);
 			glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &ret.maxVertexTextureUnits);
 
-			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &ret.maxComputeWorkGroups[0]);
-			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &ret.maxComputeWorkGroups[1]);
-			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &ret.maxComputeWorkGroups[2]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &ret.maxComputeWorkGroupCount[0]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &ret.maxComputeWorkGroupCount[1]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &ret.maxComputeWorkGroupCount[2]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &ret.maxComputeWorkGroupSize[0]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &ret.maxComputeWorkGroupSize[1]);
+			glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &ret.maxComputeWorkGroupSize[2]);
+			glGetIntegerv(GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, &ret.maxComputeWorkGroupInvocations);
+			glGetIntegerv(GL_MAX_COMPUTE_SHARED_MEMORY_SIZE, &ret.maxComputeSharedMemoryBytes);
+			ret.maxComputeSharedMemoryKiloBytes = ret.maxComputeSharedMemoryBytes >> 10;
 
 			int nSupportedExtensions;
 			glGetIntegerv(GL_NUM_EXTENSIONS, &nSupportedExtensions);
@@ -315,7 +325,21 @@ void Profiler::drawUI()
 		ImGui::Text("Max Vertex Attributes: %i", context.maxVertexAttributes);
 		ImGui::Text("Max Vertex Texture Units: %i", context.maxVertexTextureUnits);
 		ImGui::NewLine();
-		ImGui::Text("Max Compute Work Groups: %i, %i, %i", context.maxComputeWorkGroups[0], context.maxComputeWorkGroups[1], context.maxComputeWorkGroups[2]);
+		ImGui::Text("Max Compute Work Group Count: %i, %i, %i", context.maxComputeWorkGroupCount[0], context.maxComputeWorkGroupCount[1], context.maxComputeWorkGroupCount[2]);
+		ImGui::Text("Max Compute Work Group Size: %i, %i, %i", context.maxComputeWorkGroupSize[0], context.maxComputeWorkGroupSize[1], context.maxComputeWorkGroupSize[2]);
+		ImGui::Text("Max Compute Work Group Invocations: %i", context.maxComputeWorkGroupInvocations);
+		ImGui::Text("Max Compute Shared Memory: ");
+		ImGui::SameLine();
+		if(context.maxShaderStorageBufferKiloBytes)
+		{
+			ImGui::Text("%lu KB ", context.maxComputeSharedMemoryKiloBytes);
+			ImGui::SameLine();
+			ImGui::Text("%lu B ", context.maxComputeSharedMemoryBytes - (context.maxComputeSharedMemoryKiloBytes << 10));
+		}
+		else
+		{
+			ImGui::Text("%lu B ", context.maxComputeSharedMemoryBytes);
+		}
 		ImGui::Separator();
 		ImGui::Text("Supported Extensions");
 		ImGui::Indent();
