@@ -39,6 +39,13 @@ void GPUBuffer::free()
 	}
 }
 
+void GPUBuffer::clear()
+{
+	bind();
+	glInvalidateBufferData(ID);
+	glClearBufferData(target, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, nullptr);
+}
+
 void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data)
 {
 	std::size_t newSize = 0;
@@ -86,7 +93,7 @@ void GPUBuffer::bind(GLenum target)
 
 void GPUBuffer::bindBase(unsigned int base)
 {
-	if (target != GL_SHADER_STORAGE_BUFFER)
+	if (target != GL_SHADER_STORAGE_BUFFER && target != GL_ATOMIC_COUNTER_BUFFER)
 		throw "Illegal bindbufferbase!";
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, base, ID);
+	glBindBufferBase(target, base, ID);
 }

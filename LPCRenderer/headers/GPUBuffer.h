@@ -20,6 +20,7 @@ public:
 
 public:
 	void free();
+	void clear();
 	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
 	void reserve(std::size_t size);
 	void bind();

@@ -24,6 +24,7 @@ private:
 	GPUBuffer SSBO1{GL_SHADER_STORAGE_BUFFER};
 	GPUBuffer SSBO2{GL_SHADER_STORAGE_BUFFER};
 	GPUBuffer DrawBuffer{GL_DRAW_INDIRECT_BUFFER};
+	GPUBuffer Counter{GL_ATOMIC_COUNTER_BUFFER};
 	std::size_t vertexCount = 0;
 	std::size_t indirectDrawCount = 0;
 	Compression compression = Compression::none;
