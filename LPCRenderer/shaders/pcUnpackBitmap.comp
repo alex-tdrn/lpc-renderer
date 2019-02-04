@@ -10,7 +10,34 @@ layout(std430, binding = 1) buffer PositionsBuffer
 	uint positions[];
 };
 
+layout (local_size_x = 1, local_size_y = 1) in;
+
 void main()
 {
-	//TODO
+	int bitmapIndex = 0;
+	int positionCount = 0;
+	for(int z = 0; z < 256; z++)
+	{
+		for(int y = 0; y < 256; y++)
+		{
+			for(int x = 0; x < 8; x++)
+			{
+				uint idx = bitmapIndex * 256 * 256 * 8;
+				idx += z * 256 * 8;
+				idx += y * 8;
+				idx += x;
+				uint bytes = bitmaps[idx];
+				for(int bit = 0; bit < 32; bit++)
+				{
+					bool occupied = (bytes & (1 << bit)) != 0;
+					if(occupied)
+					{
+						vec3 position = vec3(x * 32 + bit, y, z) / 256.0f;
+						positions[positionCount] = packUnorm4x8(position.xyzz);
+						positionCount++;
+					}
+				}
+			}
+		}
+	}
 }

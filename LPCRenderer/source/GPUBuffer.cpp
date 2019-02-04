@@ -63,6 +63,17 @@ void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, 
 	glBufferStorage(target, joinedData.size(), joinedData.data(), 0);
 }
 
+void GPUBuffer::reserve(std::size_t size)
+{
+	free();
+	Profiler::recordGPUAllocation(size);
+	currentSize = size;
+
+	glGenBuffers(1, &ID);
+	bind();
+	glBufferStorage(target, size, nullptr, 0);
+}
+
 void GPUBuffer::bind()
 {
 	bind(target);

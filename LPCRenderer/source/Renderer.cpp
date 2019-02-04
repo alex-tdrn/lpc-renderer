@@ -39,6 +39,7 @@ void Renderer::render(Scene* scene) const
 					case Compression::brickGS:
 						return ShaderManager::pcBarebonesBrickGS();
 					case Compression::brickIndirect:
+					case Compression::bitmap:
 						return ShaderManager::pcBarebonesBrickIndirect();
 					default:
 						return ShaderManager::pcBarebones();
@@ -74,12 +75,12 @@ void Renderer::render(Scene* scene) const
 	activeShader->set("projection", p);
 
 	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if (compression == Compression::brickGS || compression == Compression::brickIndirect)
+	if (compression == Compression::brickGS || compression == Compression::brickIndirect || compression == Compression::bitmap)
 	{
 		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
 		activeShader->set("brickSize", currentPointCloud->getBrickSize());
 	}
-	if (compression == Compression::brickIndirect)
+	if (compression == Compression::brickIndirect || compression == Compression::bitmap)
 	{
 		activeShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
 	}
@@ -111,8 +112,9 @@ void Renderer::render(Scene* scene) const
 	{
 		pointCloudBufffers[currentPointCloudBuffer]
 			.update(shrinkBuffersToFit, useNormalsIfAvailable, compression, currentPointCloud);
+		refreshBuffers = false;
 	}
-	pointCloudBufffers[currentPointCloudBuffer].render();
+	pointCloudBufffers[currentPointCloudBuffer].render(activeShader);
 	currentPointCloudBuffer++;
 }
 
@@ -124,7 +126,8 @@ std::string Renderer::getNamePrefix() const
 void Renderer::drawUI()
 {
 	ImGui::PushID(this);
-	ImGui::Checkbox("Refresh Buffers", &refreshBuffers);
+	if (ImGui::Button("Refresh Buffers"))
+		refreshBuffers = true;
 	ImGui::Checkbox("Shrink Buffers To Fit", &shrinkBuffersToFit);
 	nBuffers = pointCloudBufffers.size();
 	ImGui::InputInt("# of Buffers", &nBuffers, 1);

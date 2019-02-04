@@ -21,6 +21,7 @@ public:
 public:
 	void free();
 	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
+	void reserve(std::size_t size);
 	void bind();
 	void bind(GLenum target);
 	void bindBase(unsigned int base);
