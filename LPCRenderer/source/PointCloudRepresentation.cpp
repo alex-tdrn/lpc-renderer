@@ -21,7 +21,7 @@ PointCloudRepresentation::PointCloudRepresentation()
 
 PointCloudRepresentation::PointCloudRepresentation(PointCloudRepresentation&& other)
 	:VAO(other.VAO), VBO(std::move(other.VBO)), 
-	SSBO1(std::move(other.SSBO1)), SSBO2(std::move(other.SSBO2)),
+	SSBO1(std::move(other.SSBO1)), SSBO2(std::move(other.SSBO2)), SSBO3(std::move(other.SSBO3)),
 	DrawBuffer(std::move(other.DrawBuffer))
 {
 	other.VAO = 0;
@@ -39,6 +39,7 @@ PointCloudRepresentation& PointCloudRepresentation::operator=(PointCloudRepresen
 	VBO = std::move(other.VBO);
 	SSBO1 = std::move(other.SSBO1);
 	SSBO2 = std::move(other.SSBO2);
+	SSBO3 = std::move(other.SSBO3);
 	DrawBuffer = std::move(other.DrawBuffer);
 	other.VAO = 0;
 	return *this;
@@ -185,7 +186,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		case Compression::bitmap:
 		{
 			Counter.reserve(4);
-			//Counter.clear();
+			Counter.clear();
 			Counter.bindBase(0);
 
 			std::vector<DrawCommand> indirectDraws;
@@ -195,15 +196,18 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			static std::vector<BrickBitmap> bitmaps;
 			compressedPositions.clear();
 			bitmaps.clear();
+			int brickIndex = -1;
 			for (auto brick : bricks)
 			{
+				brickIndex++;
 				if (brick.positions.empty())
 					continue;
 				vertexCount += brick.positions.size();
 				DrawCommand brickDrawCommand{};
 				brickDrawCommand.count = brick.positions.size();
+				brickDrawCommand.baseInstance = brickIndex;
 				indirectDraws.push_back(std::move(brickDrawCommand));
-
+				auxBitmap.reset();
 				for (auto const& position : brick.positions)
 				{
 					glm::ivec3 coordinates(position * 255.0f);
@@ -215,20 +219,21 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 					compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
 				}
 				bitmaps.push_back(auxBitmap);
-				break;
 			}
 			indirectDrawCount = indirectDraws.size();
-			DrawBuffer.write(shrinkToFit, { { (std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front()) } });
-			DrawBuffer.bind();
 
 			SSBO1.write(shrinkToFit, { { (std::byte const*)bitmaps.data(), bitmaps.size() * sizeof(bitmaps.front()) } });
 			SSBO1.bindBase(0);//Bitmaps
 
 			SSBO2.reserve(compressedPositions.size() * sizeof(compressedPositions.front()));
-			SSBO2.bindBase(2);//Compressed Positions, after compute shader run
+			SSBO2.bindBase(1);//Compressed Positions, after compute shader run
 			SSBO2.bind(GL_ARRAY_BUFFER);
-			glEnableVertexAttribArray(0);//Compressed Positions
+			glEnableVertexAttribArray(0);
 			glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 0, (void*)(0));
+
+			SSBO3.write(shrinkToFit, { { (std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front()) } });
+			SSBO3.bindBase(2);
+			SSBO3.bind(GL_DRAW_INDIRECT_BUFFER);
 			break;
 		}
 	}
@@ -251,14 +256,20 @@ void PointCloudRepresentation::render(Shader* activeShader)
 	case Compression::bitmap:
 		glBindVertexArray(VAO);
 		ShaderManager::pcUnpackBitmap()->use();
+		SSBO1.bindBase(0);//Bitmaps
+		SSBO2.bind(GL_ARRAY_BUFFER);
+		SSBO2.bindBase(1);//Compressed Positions, after compute shader run
+		SSBO3.bindBase(2);
+		SSBO3.bind(GL_DRAW_INDIRECT_BUFFER);
+		Counter.clear();
+		Counter.bindBase(0);
 
-		glDispatchCompute(1, 1, 1);
+		glDispatchCompute(indirectDrawCount, 1, 1);
 		glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+		glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
 		activeShader->use();
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
-		Counter.reserve(4);
-		//Counter.clear();
-		Counter.bindBase(0);
+		
 
 		break;
 	}

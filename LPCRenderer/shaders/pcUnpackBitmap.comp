@@ -1,8 +1,14 @@
 #version 450 core
+#extension GL_ARB_shader_atomic_counter_ops : require
 
-layout(std430, binding = 0) buffer BitmapsBuffer
+layout(std430, binding = 0) restrict buffer BitmapsBuffer
 {
 	uint bitmaps[];
+};
+
+layout(std430, binding = 1) restrict buffer PositionsBuffer
+{
+	uint positions[];
 };
 
 struct DrawCommand
@@ -13,75 +19,64 @@ struct DrawCommand
 	uint baseInstance;
 };
 
-//layout(std430, binding = 1) buffer DrawBuffer
-//{
-//	DrawCommand commands[];
-//};
-
-layout(std430, binding = 2) buffer PositionsBuffer
+layout(std430, binding = 2) restrict buffer DrawBuffer
 {
-	uint positions[];
+	DrawCommand commands[];
 };
 
 layout(binding = 0) uniform atomic_uint currentPositionsCount;
 
-layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+layout (local_size_x = 1, local_size_y = 8, local_size_z = 64) in;
 
-shared uint brickPointCount;
+shared uint brickWriteOffset;
+const uint workGroupIndex = gl_WorkGroupID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y + gl_WorkGroupID.y * gl_NumWorkGroups.x + gl_WorkGroupID.x;
+const uint bitmapIndex = gl_WorkGroupID.x;
+const uvec3 localBitCount = 256 / gl_WorkGroupSize;
+uint localPositionCount = 0;
 void main()
 {
+	//we need to reserves space in the positions buffer
 	if(gl_LocalInvocationIndex == 0)
-	{
-		atomicExchange(brickPointCount, 0);
+	{	
+		commands[workGroupIndex].first = atomicCounterAddARB(currentPositionsCount, commands[workGroupIndex].count);
+		atomicExchange(brickWriteOffset, 0);
 	}
-
 	memoryBarrierShared();
-	uint bitmapIndex = 0;
-	//count number of points in current brick
-	for(uint z = gl_LocalInvocationID.z * 32; z < (gl_LocalInvocationID.z + 1) * 32; z++)
+	barrier();
+
+	//count the number of positions in local invocation, to reduce memory barriers for 'brickWriteOffset' 
+	for(uint z = gl_LocalInvocationID.z * localBitCount.z; z < (gl_LocalInvocationID.z + 1) * localBitCount.z; z++)
 	{
-		for(uint y = gl_LocalInvocationID.y * 32; y < (gl_LocalInvocationID.y + 1) * 32; y++)
+		for(uint y = gl_LocalInvocationID.y * localBitCount.y; y < (gl_LocalInvocationID.y + 1) * localBitCount.y; y++)
 		{
-			uint idx = bitmapIndex * 256 * 256 * 8;
-			idx += z * 256 * 8;
-			idx += y * 8;
-			idx += gl_LocalInvocationID.x;
-			atomicAdd(brickPointCount, bitCount(bitmaps[idx]));
+			for(uint x = gl_LocalInvocationID.x * (localBitCount.x / 32); x < (gl_LocalInvocationID.x + 1) * (localBitCount.x / 32); x++)
+			{
+				uint idx = bitmapIndex * 256 * 256 * 8 + z * 256 * 8 + y * 8 + x;
+				localPositionCount += bitCount(bitmaps[idx]);
+			}
 		}
 	}
-	barrier();
 
-	//now we need to reserves space in the positions buffer
-	if(gl_LocalInvocationIndex == 0)
-	{
-		uint workGroupIndex = gl_WorkGroupID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
-		workGroupIndex += gl_WorkGroupID.y * gl_NumWorkGroups.x;
-		workGroupIndex += gl_WorkGroupID.x;
-//		commands[workGroupIndex].instanceCount = 0;
-//		commands[workGroupIndex].baseInstance= 0;
-//		commands[workGroupIndex].first = 0;
-//		commands[workGroupIndex].count = brickPointCount;
+	//reserve local invocation space in positions buffer
+	uint localOffset = atomicAdd(brickWriteOffset, localPositionCount);
+	memoryBarrierShared();
 
-	}
-	barrier();
-
+	uint offset = 0;
 	//push points to appropriate place in buffer
-	for(uint z = gl_LocalInvocationID.z * 32; z < (gl_LocalInvocationID.z + 1) * 32; z++)
+	for(uint z = gl_LocalInvocationID.z * localBitCount.z; z < (gl_LocalInvocationID.z + 1) * localBitCount.z; z++)
 	{
-		for(uint y = gl_LocalInvocationID.y * 32; y < (gl_LocalInvocationID.y + 1) * 32; y++)
+		for(uint y = gl_LocalInvocationID.y * localBitCount.y; y < (gl_LocalInvocationID.y + 1) * localBitCount.y; y++)
 		{
-			uint idx = bitmapIndex * 256 * 256 * 8;
-			idx += z * 256 * 8;
-			idx += y * 8;
-			idx += gl_LocalInvocationID.x;
-			uint bytes = bitmaps[idx];
-			for(uint bit = 0; bit < 32; bit++)
+			for(uint x = gl_LocalInvocationID.x * (localBitCount.x / 32); x < (gl_LocalInvocationID.x + 1) * (localBitCount.x / 32); x++)
 			{
-				bool occupied = (bytes & (1 << bit)) != 0;
-				if(occupied)
+				uint idx = bitmapIndex * 256 * 256 * 8 + z * 256 * 8 + y * 8 + x;
+				for(uint bit = 0; bit < 32; bit++)
 				{
-					vec3 position = vec3(gl_LocalInvocationID.x * 32 + bit, y, z) / 256.0f;
-					positions[atomicCounterIncrement(currentPositionsCount)] = packUnorm4x8(position.xyzz);
+					if((bitmaps[idx] & (1 << bit)) != 0)
+					{
+						vec3 position = vec3(x * 32 + bit, y, z) / 256.0f;
+						positions[commands[workGroupIndex].first + localOffset + offset++] = packUnorm4x8(position.xyzz);
+					}
 				}
 			}
 		}

@@ -43,12 +43,12 @@ void GPUBuffer::clear()
 {
 	bind();
 	glInvalidateBufferData(ID);
-	glClearBufferData(target, GL_R32UI, GL_RED_INTEGER, GL_UNSIGNED_INT, nullptr);
+	glClearBufferSubData(target, GL_R32UI, 0, currentSize, GL_RED_INTEGER, GL_UNSIGNED_INT, nullptr);
 }
 
 void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data)
 {
-	std::size_t newSize = 0;
+	std::size_t newSize = 0;      
 	for(auto const& buffer : data)
 		newSize += buffer.second;
 
