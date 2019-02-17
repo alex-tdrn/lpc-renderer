@@ -26,7 +26,7 @@ layout(std430, binding = 2) restrict buffer coherent DrawBuffer
 
 layout(binding = 0) uniform atomic_uint currentPositionsCount;
 
-const uint bitmapSize = 256;//[32,256] Bits per side
+const uint bitmapSize = 32;//[32,256] Bits per side
 //keep local_size_x = 1 for better cache coherency
 layout (local_size_x = 1, local_size_y = bitmapSize, local_size_z = 1024 / bitmapSize ) in;
 
@@ -64,9 +64,16 @@ void main()
 					if((bitmaps[idx] & (1 << bit)) != 0)
 					{
 						vec3 position = vec3(x * 32 + bit, y, z) / bitmapSize;
-						uint offset = atomicAdd(brickWriteOffset, 1);
+						uint offset = atomicAdd(brickWriteOffset, 1) + brickWriteStart;
 
-						positions[brickWriteStart + offset] = packUnorm4x8(position.xyzz);
+						memoryBarrierShared();
+
+						uint packedPosition = uint(bitmapSize * position.x);
+						packedPosition |= uint(bitmapSize * position.y) << 5;
+						packedPosition |= uint(bitmapSize * position.z) << 10;
+
+						atomicOr(positions[offset/2], packedPosition << ((offset%2 == 0) ? 16 : 0));
+						memoryBarrierBuffer();
 					}
 				}
 			}

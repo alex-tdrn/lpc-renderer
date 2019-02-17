@@ -62,6 +62,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 	{
 		case Compression::none:
 		{
+			VBO.free();
+			SSBO1.free();
+			SSBO2.free();
+			SSBO3.free();
+			DrawBuffer.free();
+			Counter.free();
 			std::size_t bufferSize = 0;
 			static std::vector<std::pair<std::byte const*, std::size_t>> vertexData;
 			vertexData.clear();
@@ -111,6 +117,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		}
 		case Compression::brickGS:
 		{
+			VBO.free();
+			SSBO1.free();
+			SSBO2.free();
+			SSBO3.free();
+			DrawBuffer.free();
+			Counter.free();
 			static std::vector<glm::u8vec3> brickIndices;
 			static std::vector<std::uint32_t> bufferOffsets;
 			static std::vector<std::uint32_t> bufferLengths;
@@ -155,7 +167,12 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		}
 		case Compression::brickIndirect:
 		{
+			VBO.free();
 			SSBO1.free();
+			SSBO2.free();
+			SSBO3.free();
+			DrawBuffer.free();
+			Counter.free();
 			std::vector<DrawCommand> indirectDraws;
 			static std::vector<std::uint16_t> compressedPositions;
 			compressedPositions.clear();
@@ -165,7 +182,6 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 				brickIndex++;
 				if (brick.positions.empty())
 					continue;
-				vertexCount+= brick.positions.size();
 				DrawCommand brickDrawCommand{};
 				brickDrawCommand.count = brick.positions.size();
 				brickDrawCommand.first = compressedPositions.size();
@@ -185,11 +201,17 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		}
 		case Compression::bitmap:
 		{
+			VBO.free();
+			SSBO1.free();
+			SSBO2.free();
+			SSBO3.free();
+			DrawBuffer.free();
+			Counter.free();
 			Counter.reserve(4);
 
 			std::vector<DrawCommand> indirectDraws;
-			static std::vector<std::uint32_t> compressedPositions;
-			constexpr unsigned int bitmapSize = 256;
+			static std::vector<std::uint16_t> compressedPositions;
+			constexpr unsigned int bitmapSize = 32;
 			using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 			static BrickBitmap auxBitmap;
 			static std::vector<BrickBitmap> bitmaps;
@@ -201,7 +223,6 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 				brickIndex++;
 				if (brick.positions.empty())
 					continue;
-				vertexCount += brick.positions.size();
 				DrawCommand brickDrawCommand{};
 				brickDrawCommand.count = 0;
 				brickDrawCommand.baseInstance = brickIndex;
@@ -215,7 +236,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 					idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
 					if(!auxBitmap.test(idx))
 					{
-						compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
+						compressedPositions.push_back(packPosition(position));
 						brickDrawCommand.count++;
 					}
 					auxBitmap.set(idx, true);
@@ -230,7 +251,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			SSBO2.reserve(compressedPositions.size() * sizeof(compressedPositions.front()));
 			SSBO2.bind(GL_ARRAY_BUFFER);
 			glEnableVertexAttribArray(0);
-			glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 0, (void*)(0));
+			glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
 
 			SSBO3.write(shrinkToFit, { { (std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front()) } });
 			break;
@@ -256,6 +277,7 @@ void PointCloudRepresentation::render(Shader* activeShader)
 		glBindVertexArray(VAO);
 		ShaderManager::pcUnpackBitmap()->use();
 		SSBO1.bindBase(0);//Bitmaps
+		SSBO2.clear();
 		SSBO2.bind(GL_ARRAY_BUFFER);
 		SSBO2.bindBase(1);//Compressed Positions, after compute shader run
 		SSBO3.bindBase(2);

@@ -32,6 +32,7 @@ GPUBuffer::~GPUBuffer()
 
 void GPUBuffer::free()
 {
+	bind();
 	if (glIsBuffer(ID))
 	{
 		glDeleteBuffers(1, &ID);
