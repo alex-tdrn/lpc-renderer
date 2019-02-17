@@ -186,12 +186,11 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 		case Compression::bitmap:
 		{
 			Counter.reserve(4);
-			Counter.clear();
-			Counter.bindBase(0);
 
 			std::vector<DrawCommand> indirectDraws;
 			static std::vector<std::uint32_t> compressedPositions;
-			using BrickBitmap = std::bitset<256 * 256 * 256>;
+			constexpr unsigned int bitmapSize = 256;
+			using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 			static BrickBitmap auxBitmap;
 			static std::vector<BrickBitmap> bitmaps;
 			compressedPositions.clear();
@@ -204,36 +203,36 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 					continue;
 				vertexCount += brick.positions.size();
 				DrawCommand brickDrawCommand{};
-				brickDrawCommand.count = brick.positions.size();
+				brickDrawCommand.count = 0;
 				brickDrawCommand.baseInstance = brickIndex;
-				indirectDraws.push_back(std::move(brickDrawCommand));
 				auxBitmap.reset();
 				for (auto const& position : brick.positions)
 				{
-					glm::ivec3 coordinates(position * 255.0f);
+					glm::ivec3 coordinates(position * float(bitmapSize));
 					int idx = 0;
 					idx += coordinates.x;//jump points
-					idx += coordinates.y * 256;//jump lines
-					idx += coordinates.z * 256 * 256;//jump surfaces
+					idx += coordinates.y * bitmapSize;//jump lines
+					idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
+					if(!auxBitmap.test(idx))
+					{
+						compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
+						brickDrawCommand.count++;
+					}
 					auxBitmap.set(idx, true);
-					compressedPositions.push_back(glm::packUnorm4x8(glm::vec4(position, 0.0f)));
 				}
+				indirectDraws.push_back(std::move(brickDrawCommand));
 				bitmaps.push_back(auxBitmap);
 			}
 			indirectDrawCount = indirectDraws.size();
 
 			SSBO1.write(shrinkToFit, { { (std::byte const*)bitmaps.data(), bitmaps.size() * sizeof(bitmaps.front()) } });
-			SSBO1.bindBase(0);//Bitmaps
 
 			SSBO2.reserve(compressedPositions.size() * sizeof(compressedPositions.front()));
-			SSBO2.bindBase(1);//Compressed Positions, after compute shader run
 			SSBO2.bind(GL_ARRAY_BUFFER);
 			glEnableVertexAttribArray(0);
 			glVertexAttribIPointer(0, 1, GL_UNSIGNED_INT, 0, (void*)(0));
 
 			SSBO3.write(shrinkToFit, { { (std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front()) } });
-			SSBO3.bindBase(2);
-			SSBO3.bind(GL_DRAW_INDIRECT_BUFFER);
 			break;
 		}
 	}

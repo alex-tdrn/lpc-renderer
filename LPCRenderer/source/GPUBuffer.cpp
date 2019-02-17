@@ -36,6 +36,7 @@ void GPUBuffer::free()
 	{
 		glDeleteBuffers(1, &ID);
 		Profiler::recordGPUDeallocation(currentSize);
+		currentSize = 0;
 	}
 }
 
@@ -43,7 +44,7 @@ void GPUBuffer::clear()
 {
 	bind();
 	glInvalidateBufferData(ID);
-	glClearBufferSubData(target, GL_R32UI, 0, currentSize, GL_RED_INTEGER, GL_UNSIGNED_INT, nullptr);
+	glClearBufferSubData(target, GL_R8, 0, currentSize, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 }
 
 void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data)
