@@ -56,15 +56,19 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 				getBrickAt(indices).normals.push_back(brick.normals[i]);
 		}
 	}
+
 	emptyBrickCount = 0;
 	redundantPointsIfCompressed = 0;
 	for (auto const& brick : bricks)
 	{
 		if (brick.positions.empty())
+		{
 			emptyBrickCount++;
-		std::unordered_map<std::uint32_t, std::size_t> occurences;
+			continue;
+		}
+		std::unordered_map<std::uint16_t, std::size_t> occurences;
 		for (auto const& position : brick.positions)
-			occurences[glm::packUnorm4x8(glm::vec4(position, 1.0f))]++;
+			occurences[packPosition(position)]++;
 		for (auto n : occurences)
 			redundantPointsIfCompressed += n.second - 1;
 	}
@@ -150,3 +154,10 @@ void PointCloud::drawUI()
 
 }
 
+std::uint16_t packPosition(glm::vec3 p)
+{
+	std::uint16_t packed = 32 * p.x;
+	packed |= std::uint16_t(32 * p.y) << 5;
+	packed |= std::uint16_t(32 * p.z) << 10;
+	return packed;
+}

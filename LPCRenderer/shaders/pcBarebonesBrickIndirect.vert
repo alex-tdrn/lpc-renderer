@@ -11,7 +11,10 @@ layout(location = 0) in uint compressedPosition;
 
 void main()
 {
-	vec3 relativePosition = unpackUnorm4x8(compressedPosition).xyz;
+	vec3 relativePosition;
+	relativePosition.x = float(bitfieldExtract(compressedPosition, 0, 5)) / 32.0f;
+	relativePosition.y = float(bitfieldExtract(compressedPosition, 5, 5)) / 32.0f;
+	relativePosition.z = float(bitfieldExtract(compressedPosition, 10, 5)) / 32.0f;
 	relativePosition *= brickSize;
 	
 	uint index = gl_BaseInstanceARB;

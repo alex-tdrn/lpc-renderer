@@ -10,6 +10,7 @@ struct PointCloudBrick
 	std::vector<glm::vec3> normals;
 };
 
+
 class PointCloud : public AutoName<PointCloud>
 {
 private:
@@ -50,3 +51,5 @@ public:
 	void drawUI();
 
 };
+
+std::uint16_t packPosition(glm::vec3);
