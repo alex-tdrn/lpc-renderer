@@ -126,7 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\PCRendererBasic.cpp" />
+    <ClCompile Include="source\PCRendererUncompressed.cpp" />
     <ClCompile Include="source\PCRenderer.cpp" />
     <ClCompile Include="source\PointCloud.cpp" />
     <ClCompile Include="source\GPUBuffer.cpp" />
@@ -173,7 +173,7 @@
     <ClInclude Include="libraries\tinyply.h" />
     <ClInclude Include="headers\PointCloud.h" />
     <ClInclude Include="headers\PCRenderer.h" />
-    <ClInclude Include="headers\PCRendererBasic.h" />
+    <ClInclude Include="headers\PCRendererUncompressed.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBarebonesBrickGS.frag" />

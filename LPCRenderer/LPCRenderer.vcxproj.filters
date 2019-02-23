@@ -53,7 +53,7 @@
     </ClCompile>
     <ClCompile Include="source\PCRenderer.cpp" />
     <ClCompile Include="source\PCManager.cpp" />
-    <ClCompile Include="source\PCRendererBasic.cpp" />
+    <ClCompile Include="source\PCRendererUncompressed.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -116,7 +116,7 @@
     </ClInclude>
     <ClInclude Include="headers\PCRenderer.h" />
     <ClInclude Include="headers\PCManager.h" />
-    <ClInclude Include="headers\PCRendererBasic.h" />
+    <ClInclude Include="headers\PCRendererUncompressed.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcLit.vert" />

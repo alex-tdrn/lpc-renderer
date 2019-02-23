@@ -39,6 +39,11 @@ Camera& Scene::getCamera()
 	return camera;
 }
 
+Camera const& Scene::getCamera() const
+{
+	return camera;
+}
+
 glm::vec3 Scene::getBackgroundColor() const
 {
 	return backgroundColor;

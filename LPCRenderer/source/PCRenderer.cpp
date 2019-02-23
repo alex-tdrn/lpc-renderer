@@ -1,4 +1,5 @@
 #include "PCRenderer.h"
+#include "Scene.h"
 
 PCRenderer::PCRenderer(Shader* mainShader)
 	: mainShader(mainShader)
@@ -41,9 +42,12 @@ Shader* PCRenderer::getMainShader() const
 	return mainShader;
 }
 
-void PCRenderer::setPointCloud(PointCloud const* cloud)
+void PCRenderer::render(Scene const* scene)
 {
-	this->cloud = cloud;
-	update();
+	if(cloud != scene->getPointCloud())
+	{
+		cloud = scene->getPointCloud();
+		update();
+	}
 }
 

@@ -8,6 +8,7 @@ enum class PCRenderType
 };
 
 class Shader;
+class Scene;
 class PointCloud;
 
 class PCRenderer
@@ -16,7 +17,7 @@ private:
 	unsigned int VAO = 0;
 
 protected:
-	PointCloud const* cloud = nullptr;
+	mutable PointCloud const* cloud = nullptr;
 	Shader* mainShader = nullptr;
 
 public:
@@ -35,8 +36,7 @@ protected:
 
 public:
 	Shader* getMainShader() const;
-	void setPointCloud(PointCloud const* cloud);
 	virtual void update() = 0;
-	virtual void render() const = 0;
+	virtual void render(Scene const* scene);
 	virtual void drawUI() = 0;
 };

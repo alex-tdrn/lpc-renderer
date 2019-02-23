@@ -7,7 +7,7 @@
 #include "Shader.h"
 #include "PointCloud.h"
 #include "PCRenderer.h"
-#include "PCRendererBasic.h"
+#include "PCRendererUncompressed.h"
 
 #include <array>
 
@@ -29,15 +29,10 @@ void drawBricks(PointCloud const* cloud, glm::mat4 mvp, bool drawEmptyBricks);
 void MainRenderer::render(Scene* scene)
 {
 	if(!pointCloudRenderer)
-		pointCloudRenderer = std::make_unique<PCRendererBasic>();
+		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
 	if(!scene)
 		return;
-	static PointCloud const* currentPointCloud = nullptr;
-	if(currentPointCloud != scene->getPointCloud())
-	{
-		currentPointCloud = scene->getPointCloud();
-		pointCloudRenderer->setPointCloud(currentPointCloud);
-	}
+	
 
 	glm::vec3 backgroundColor = scene->getBackgroundColor();
 	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
@@ -53,10 +48,10 @@ void MainRenderer::render(Scene* scene)
 	switch (drawBricksMode)
 	{
 		case DrawBricksMode::all:
-			drawBricks(currentPointCloud, p * v * m, true);
+			drawBricks(scene->getPointCloud(), p * v * m, true);
 			break;
 		case DrawBricksMode::nonEmpty:
-			drawBricks(currentPointCloud, p * v * m, false);
+			drawBricks(scene->getPointCloud(), p * v * m, false);
 			break;
 	}
 
@@ -69,7 +64,7 @@ void MainRenderer::render(Scene* scene)
 
 	/*if (compression == Compression::brickGS || compression == Compression::brickIndirect || compression == Compression::bitmap)
 	{
-		mainShader->set("cloudOrigin", currentPointCloud->getBounds().first);
+		mainShader->set("cloudOrigin", scene->getPointCloud()->getBounds().first);
 		mainShader->set("brickSize", currentPointCloud->getBrickSize());
 	}
 	if (compression == Compression::brickIndirect || compression == Compression::bitmap)
@@ -77,28 +72,9 @@ void MainRenderer::render(Scene* scene)
 		mainShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
 	}
 
-	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
-	{
-		mainShader->set("backFaceCulling", backFaceCulling);
-		mainShader->set("specularColor", scene->getSpecularColor());
-		mainShader->set("shininess", scene->getShininess());
-		mainShader->set("ambientStrength", scene->getAmbientStrength());
-		mainShader->set("ambientColor", backgroundColor);
-		mainShader->set("light.color", scene->getLightColor());
-		glm::vec3 viewSpaceLightDirection = v * glm::vec4(scene->getLightDirection(), 0.0f);
-		mainShader->set("light.direction", viewSpaceLightDirection);
-		if(renderMode == RenderMode::litDisk)
-		{
-			mainShader->set("diskRadius", diskRadius);
-		}
-	}
-	else if(renderMode == RenderMode::debugNormals)
-	{
-		glLineWidth(debugNormalsLineThickness);
-		mainShader->set("lineLength", debugNormalsLineLength);
-	}*/
+	*/
 
-	pointCloudRenderer->render();
+	pointCloudRenderer->render(scene);
 }
 
 void MainRenderer::drawUI()
@@ -117,17 +93,7 @@ void MainRenderer::drawUI()
 	ImGui::Separator();
 
 	pointCloudRenderer->drawUI();
-	/*if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
-		ImGui::Checkbox("Backface Culling", &backFaceCulling);
-
-	if(renderMode == RenderMode::litDisk)
-		ImGui::DragFloat("Disk Radius", &diskRadius, 0.00001f, 0.00001f, 0.005f, "%.5f");
-
-	if(renderMode == RenderMode::debugNormals)
-	{
-		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0001f, 0.01f, "%.4f");
-		ImGui::SliderInt("Line Thickness", &debugNormalsLineThickness, 1, 16);
-	}*/
+	
 }
 
 

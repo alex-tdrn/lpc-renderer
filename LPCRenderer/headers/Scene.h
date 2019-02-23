@@ -27,6 +27,7 @@ public:
 public:
 	std::string getNamePrefix() const override;
 	Camera& getCamera();
+	Camera const& getCamera() const;
 	glm::vec3 getBackgroundColor() const;
 	glm::vec3 getLightColor() const;
 	glm::vec3 getLightDirection() const;
