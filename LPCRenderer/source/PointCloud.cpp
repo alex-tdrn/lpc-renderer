@@ -142,7 +142,7 @@ void PointCloud::drawUI()
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
 	ImGui::Text("Total Point Count: %i", vertexCount);
-	ImGui::Text("Average Point Count Per Brick: %.2f", pointsPerBrickAverage);
+	ImGui::Text("Average Point Count Per Brick: %.2f (need 2048)", pointsPerBrickAverage);
 	ImGui::Text("Redundant Points if compressed: %i, (%.2f%%)", redundantPointsIfCompressed, 100 * static_cast<float>(redundantPointsIfCompressed) / vertexCount);
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);

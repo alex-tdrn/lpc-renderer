@@ -1,7 +1,7 @@
 #version 450 core
 #extension GL_ARB_shader_atomic_counter_ops : require
 
-layout(std430, binding = 0) restrict readonly buffer coherent InputBuffer
+layout(std430, binding = 0) restrict readonly buffer InputBuffer
 {
 	uint bitmaps[];
 };
@@ -19,7 +19,7 @@ struct DrawCommand
 	uint baseInstance;
 };
 
-layout(std430, binding = 2) restrict buffer coherent DrawBuffer
+layout(std430, binding = 2) restrict buffer DrawBuffer
 {
 	DrawCommand commands[];
 };

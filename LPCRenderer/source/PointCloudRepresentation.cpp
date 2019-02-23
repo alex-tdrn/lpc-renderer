@@ -174,6 +174,7 @@ void PointCloudRepresentation::update(bool shrinkToFit, bool useNormals, Compres
 			DrawBuffer.free();
 			Counter.free();
 			std::vector<DrawCommand> indirectDraws;
+			indirectDraws.clear();
 			static std::vector<std::uint16_t> compressedPositions;
 			compressedPositions.clear();
 			int brickIndex = -1;
@@ -271,6 +272,8 @@ void PointCloudRepresentation::render(Shader* activeShader)
 		break;
 	case Compression::brickIndirect:
 		glBindVertexArray(VAO);
+		DrawBuffer.bind();
+		activeShader->use();
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
 		break;
 	case Compression::bitmap:
