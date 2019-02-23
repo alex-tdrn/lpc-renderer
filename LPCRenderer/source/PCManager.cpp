@@ -1,3 +1,3 @@
-#include "PointCloudManager.h"
+#include "PCManager.h"
 
 std::string const Manager<PointCloud>::name = "Point Clouds";

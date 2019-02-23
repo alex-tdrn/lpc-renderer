@@ -1,12 +1,10 @@
 #pragma once
-#include "AutoName.h"
-
 #include <glm\gtc\matrix_transform.hpp>
 #include <string>
 #include <string_view>
 #include <optional>
 
-class Shader : public AutoName<Shader>
+class Shader
 {
 private:
 	unsigned int ID = 0;
@@ -25,7 +23,6 @@ private:
 	int getLocation(std::string_view const name) const;
 
 public:
-	std::string getNamePrefix() const override;
 	void reload();
 	void use();
 	void set(std::string_view const name, int value) const;

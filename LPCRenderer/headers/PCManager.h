@@ -2,7 +2,7 @@
 #include "Manager.h"
 #include "PointCloud.h"
 
-class PointCloudManager : public Manager<PointCloud>
+class PCManager : public Manager<PointCloud>
 {
 };
 

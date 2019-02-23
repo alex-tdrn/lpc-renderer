@@ -1,61 +1,55 @@
-#include "Renderer.h"
+#include "MainRenderer.h"
 #include "OSWindow.h"
 #include "glad/glad.h"
+#include "glm/glm.hpp"
 #include "imgui.h"
 #include "Scene.h"
-#include "ShaderManager.h"
+#include "Shader.h"
 #include "PointCloud.h"
+#include "PCRenderer.h"
+#include "PCRendererBasic.h"
 
-Renderer::Renderer()
+#include <array>
+
+enum class DrawBricksMode
 {
-	if(pointCloudBufffers.empty())
-		pointCloudBufffers.resize(nBuffers);
+	disabled,
+	all,
+	nonEmpty
+};
+
+namespace
+{
+	std::unique_ptr<PCRenderer> pointCloudRenderer = nullptr;
+	DrawBricksMode drawBricksMode = DrawBricksMode::all;
 }
 
 void drawBricks(PointCloud const* cloud, glm::mat4 mvp, bool drawEmptyBricks);
 
-void Renderer::render(Scene* scene) const
+void MainRenderer::render(Scene* scene)
 {
+	if(!pointCloudRenderer)
+		pointCloudRenderer = std::make_unique<PCRendererBasic>();
 	if(!scene)
 		return;
+	static PointCloud const* currentPointCloud = nullptr;
+	if(currentPointCloud != scene->getPointCloud())
+	{
+		currentPointCloud = scene->getPointCloud();
+		pointCloudRenderer->setPointCloud(currentPointCloud);
+	}
 
 	glm::vec3 backgroundColor = scene->getBackgroundColor();
 	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0);
 
 	if(!scene->getPointCloud())
 		return;
-	auto activeShader = [&](){
-		switch(renderMode)
-		{
-			case Renderer::RenderMode::debugNormals:
-				return ShaderManager::pcDebugNormals();
-			case Renderer::RenderMode::lit:
-				return ShaderManager::pcLit();
-			case Renderer::RenderMode::litDisk:
-				return ShaderManager::pcLitDisk();
-			default:
-				switch (compression)
-				{
-					case Compression::brickGS:
-						return ShaderManager::pcBarebonesBrickGS();
-					case Compression::brickIndirect:
-					case Compression::bitmap:
-						return ShaderManager::pcBarebonesBrickIndirect();
-					default:
-						return ShaderManager::pcBarebones();
-				}
-		}
-	}();
 
-	if(renderMode == RenderMode::barebones || renderMode == RenderMode::lit)
-		glPointSize(pointSize);
-	else
-		glPointSize(1.0f);
+	glPointSize(1.0f);
 
 	glm::mat4 m = scene->getModelMatrix();
 	glm::mat4 v = scene->getCamera().getViewMatrix();
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
-	currentPointCloud = scene->getPointCloud();
 	switch (drawBricksMode)
 	{
 		case DrawBricksMode::all:
@@ -66,96 +60,49 @@ void Renderer::render(Scene* scene) const
 			break;
 	}
 
-	/*if(decimation)
-		currentPointCloud = currentPointCloud->decimated(decimationMaxVertices);*/
+	Shader* mainShader = pointCloudRenderer->getMainShader();
+	mainShader->use();
+	mainShader->set("model", m);
+	mainShader->set("view", v);
+	mainShader->set("projection", p);
+	mainShader->set("diffuseColor", scene->getDiffuseColor());
 
-	activeShader->use();
-	activeShader->set("model", m);
-	activeShader->set("view", v);
-	activeShader->set("projection", p);
-
-	activeShader->set("diffuseColor", scene->getDiffuseColor());
-	if (compression == Compression::brickGS || compression == Compression::brickIndirect || compression == Compression::bitmap)
+	/*if (compression == Compression::brickGS || compression == Compression::brickIndirect || compression == Compression::bitmap)
 	{
-		activeShader->set("cloudOrigin", currentPointCloud->getBounds().first);
-		activeShader->set("brickSize", currentPointCloud->getBrickSize());
+		mainShader->set("cloudOrigin", currentPointCloud->getBounds().first);
+		mainShader->set("brickSize", currentPointCloud->getBrickSize());
 	}
 	if (compression == Compression::brickIndirect || compression == Compression::bitmap)
 	{
-		activeShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
+		mainShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
 	}
 
 	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 	{
-		activeShader->set("backFaceCulling", backFaceCulling);
-		activeShader->set("specularColor", scene->getSpecularColor());
-		activeShader->set("shininess", scene->getShininess());
-		activeShader->set("ambientStrength", scene->getAmbientStrength());
-		activeShader->set("ambientColor", backgroundColor);
-		activeShader->set("light.color", scene->getLightColor());
+		mainShader->set("backFaceCulling", backFaceCulling);
+		mainShader->set("specularColor", scene->getSpecularColor());
+		mainShader->set("shininess", scene->getShininess());
+		mainShader->set("ambientStrength", scene->getAmbientStrength());
+		mainShader->set("ambientColor", backgroundColor);
+		mainShader->set("light.color", scene->getLightColor());
 		glm::vec3 viewSpaceLightDirection = v * glm::vec4(scene->getLightDirection(), 0.0f);
-		activeShader->set("light.direction", viewSpaceLightDirection);
+		mainShader->set("light.direction", viewSpaceLightDirection);
 		if(renderMode == RenderMode::litDisk)
 		{
-			activeShader->set("diskRadius", diskRadius);
+			mainShader->set("diskRadius", diskRadius);
 		}
 	}
 	else if(renderMode == RenderMode::debugNormals)
 	{
 		glLineWidth(debugNormalsLineThickness);
-		activeShader->set("lineLength", debugNormalsLineLength);
-	}
+		mainShader->set("lineLength", debugNormalsLineLength);
+	}*/
 
-	currentPointCloudBuffer %= pointCloudBufffers.size();
-
-	if (refreshBuffers)
-	{
-		pointCloudBufffers[currentPointCloudBuffer]
-			.update(shrinkBuffersToFit, useNormalsIfAvailable, compression, currentPointCloud);
-		refreshBuffers = false;
-	}
-	pointCloudBufffers[currentPointCloudBuffer].render(activeShader);
-	currentPointCloudBuffer++;
+	pointCloudRenderer->render();
 }
 
-std::string Renderer::getNamePrefix() const
+void MainRenderer::drawUI()
 {
-	return "Renderer";
-}
-
-void Renderer::drawUI()
-{
-	ImGui::PushID(this);
-	if (ImGui::Button("Refresh Buffers"))
-		refreshBuffers = true;
-	ImGui::Checkbox("Shrink Buffers To Fit", &shrinkBuffersToFit);
-	nBuffers = pointCloudBufffers.size();
-	ImGui::InputInt("# of Buffers", &nBuffers, 1);
-	if(nBuffers <= 0)
-		nBuffers = 1;
-	if(nBuffers != pointCloudBufffers.size())
-	{
-		pointCloudBufffers.resize(nBuffers);
-	}
-	if(currentPointCloud)
-	{
-		ImGui::Text("Rendering %lu Vertices", renderedVertices);
-		ImGui::SameLine();
-		if(currentPointCloud->hasNormals() && useNormalsIfAvailable)
-			ImGui::Text("With Normals");
-		else
-			ImGui::Text("Without Normals");
-	}
-	ImGui::Checkbox("Decimation", &decimation);
-	if(decimation)
-	{
-		ImGui::SameLine();
-		ImGui::Text("Max Vertices");
-		ImGui::DragInt("###InputMaxVertices", &decimationMaxVertices, 10'000, 1, std::numeric_limits<int>::max());
-		if(decimationMaxVertices < 1)
-			decimationMaxVertices = 1;
-	}
-	ImGui::Separator();
 	ImGui::Text("Brick Rendering");
 	if (ImGui::RadioButton("Disabled", drawBricksMode == DrawBricksMode::disabled))
 		drawBricksMode = DrawBricksMode::disabled;
@@ -168,46 +115,9 @@ void Renderer::drawUI()
 	if (ImGui::RadioButton("Non-Empty", drawBricksMode == DrawBricksMode::nonEmpty))
 		drawBricksMode = DrawBricksMode::nonEmpty;
 	ImGui::Separator();
-	ImGui::Text("Compression");
-	if (ImGui::RadioButton("None", compression == Compression::none))
-		compression = Compression::none;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("BrickGS", compression == Compression::brickGS))
-		compression = Compression::brickGS;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("BrickIndirect", compression == Compression::brickIndirect))
-		compression = Compression::brickIndirect;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Bitmap", compression == Compression::bitmap))
-		compression = Compression::bitmap;
 
-	ImGui::Text("Rendering Mode");
-	if(ImGui::RadioButton("Barebones", renderMode == RenderMode::barebones))
-	{
-		renderMode = RenderMode::barebones;
-		useNormalsIfAvailable = false;
-	}
-	ImGui::SameLine();
-	if(ImGui::RadioButton("Debug Normals", renderMode == RenderMode::debugNormals))
-	{
-		renderMode = RenderMode::debugNormals;
-		useNormalsIfAvailable = true;
-	}
-	if(ImGui::RadioButton("Lit", renderMode == RenderMode::lit))
-	{
-		renderMode = RenderMode::lit;
-		useNormalsIfAvailable = true;
-	}
-	ImGui::SameLine();
-	if(ImGui::RadioButton("Lit Disk", renderMode == RenderMode::litDisk))
-	{
-		renderMode = RenderMode::litDisk;
-		useNormalsIfAvailable = true;
-	}
-	if(renderMode == RenderMode::barebones || renderMode == RenderMode::lit)
-		ImGui::SliderInt("Point Size", &pointSize, 1, 16);
-
-	if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
+	pointCloudRenderer->drawUI();
+	/*if(renderMode == RenderMode::lit || renderMode == RenderMode::litDisk)
 		ImGui::Checkbox("Backface Culling", &backFaceCulling);
 
 	if(renderMode == RenderMode::litDisk)
@@ -217,9 +127,7 @@ void Renderer::drawUI()
 	{
 		ImGui::DragFloat("Line Length", &debugNormalsLineLength, 0.0001f, 0.0001f, 0.01f, "%.4f");
 		ImGui::SliderInt("Line Thickness", &debugNormalsLineThickness, 1, 16);
-	}
-
-	ImGui::PopID();
+	}*/
 }
 
 
@@ -302,9 +210,9 @@ void drawBoxes(glm::mat4 mvp, std::optional<std::vector<glm::mat4>> newBoxes = s
 		boxCount = newBoxes->size();
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::mat4) * boxCount, newBoxes->data(), GL_STATIC_DRAW);
 	}
-
-	ShaderManager::box()->use();
-	ShaderManager::box()->set("mvp", mvp);
+	static Shader boxShader{"shaders/box.vert", "shaders/box.frag"};
+	boxShader.use();
+	boxShader.set("mvp", mvp);
 	glDrawElementsInstanced(GL_LINES, 24, GL_UNSIGNED_BYTE, 0, boxCount);
 
 }

@@ -1,5 +1,5 @@
 #include "Scene.h"
-#include "PointCloudManager.h"
+#include "PCManager.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui.h"
@@ -94,7 +94,7 @@ void Scene::drawUI()
 	if(ImGui::BeginCombo("Point Cloud", !cloud ? "None" : cloud->getName().data()))
 	{
 		int id = 0;
-		for(auto& cloud : PointCloudManager::getAll())
+		for(auto& cloud : PCManager::getAll())
 		{
 			ImGui::PushID(id++);
 			bool isSelected = this->cloud == cloud.get();

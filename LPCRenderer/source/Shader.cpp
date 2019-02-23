@@ -59,11 +59,6 @@ int Shader::getLocation(std::string_view const name) const
 	return res;
 }
 
-std::string Shader::getNamePrefix() const
-{
-	return "Shader";
-}
-
 void Shader::reload()
 {
 	if(initialized)
@@ -104,7 +99,7 @@ void Shader::reload()
 		std::string log;
 		log.resize(logLength + 1);
 		glGetProgramInfoLog(ID, logLength, NULL, log.data());
-		std::cout << "ERROR LINKING " << getName() << ":\n" << log;
+		std::cout << "ERROR LINKING: \n" << log;
 	}
 }
 

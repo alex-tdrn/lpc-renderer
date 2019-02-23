@@ -273,7 +273,6 @@ void PointCloudRepresentation::render(Shader* activeShader)
 	case Compression::brickIndirect:
 		glBindVertexArray(VAO);
 		DrawBuffer.bind();
-		activeShader->use();
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
 		break;
 	case Compression::bitmap:

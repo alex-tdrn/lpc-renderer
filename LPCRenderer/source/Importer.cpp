@@ -1,6 +1,6 @@
 #include "Importer.h"
 #include "SceneManager.h"
-#include "PointCloudManager.h"
+#include "PCManager.h"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #define TINYPLY_IMPLEMENTATION
@@ -66,7 +66,7 @@ namespace Importer
 				);
 			}
 		}
-		auto cloud = PointCloudManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals)));
+		auto cloud = PCManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals)));
 		SceneManager::add(std::make_unique<Scene>(cloud));
 	}
 

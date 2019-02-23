@@ -83,17 +83,17 @@ void GPUBuffer::reserve(std::size_t size)
 	glBufferStorage(target, size, nullptr, 0);
 }
 
-void GPUBuffer::bind()
+void GPUBuffer::bind() const
 {
 	bind(target);
 }
 
-void GPUBuffer::bind(GLenum target)
+void GPUBuffer::bind(GLenum target) const
 {
 	glBindBuffer(target, ID);
 }
 
-void GPUBuffer::bindBase(unsigned int base)
+void GPUBuffer::bindBase(unsigned int base) const
 {
 	if (target != GL_SHADER_STORAGE_BUFFER && target != GL_ATOMIC_COUNTER_BUFFER)
 		throw "Illegal bindbufferbase!";

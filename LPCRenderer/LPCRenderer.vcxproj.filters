@@ -35,9 +35,6 @@
       <Filter>Libraries</Filter>
     </ClCompile>
     <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\Renderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="source\OSWindow.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
@@ -45,18 +42,18 @@
       <Filter>Utilities</Filter>
     </ClCompile>
     <ClCompile Include="source\Scene.cpp" />
-    <ClCompile Include="source\ShaderManager.cpp" />
     <ClCompile Include="source\Shader.cpp" />
-    <ClCompile Include="source\RendererManager.cpp" />
     <ClCompile Include="source\SceneManager.cpp" />
     <ClCompile Include="source\Camera.cpp" />
     <ClCompile Include="source\Importer.cpp" />
-    <ClCompile Include="source\PointCloudManager.cpp" />
-    <ClCompile Include="source\PointCloudRepresentation.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="source\GPUBuffer.cpp" />
     <ClCompile Include="source\PointCloud.cpp" />
+    <ClCompile Include="source\MainRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRenderer.cpp" />
+    <ClCompile Include="source\PCManager.cpp" />
+    <ClCompile Include="source\PCRendererBasic.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -86,9 +83,6 @@
     <ClInclude Include="libraries\glad\glad.h">
       <Filter>Libraries</Filter>
     </ClInclude>
-    <ClInclude Include="headers\Renderer.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="headers\Shader.h">
       <Filter>Rendering</Filter>
     </ClInclude>
@@ -111,22 +105,20 @@
       <Filter>Libraries</Filter>
     </ClInclude>
     <ClInclude Include="headers\Scene.h" />
-    <ClInclude Include="headers\ShaderManager.h" />
-    <ClInclude Include="headers\RendererManager.h" />
     <ClInclude Include="headers\SceneManager.h" />
     <ClInclude Include="headers\Camera.h" />
     <ClInclude Include="libraries\tinyply.h" />
     <ClInclude Include="headers\Importer.h" />
-    <ClInclude Include="headers\PointCloudManager.h" />
-    <ClInclude Include="headers\PointCloudRepresentation.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="headers\GPUBuffer.h" />
     <ClInclude Include="headers\PointCloud.h" />
+    <ClInclude Include="headers\MainRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRenderer.h" />
+    <ClInclude Include="headers\PCManager.h" />
+    <ClInclude Include="headers\PCRendererBasic.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\pcBarebones.frag" />
-    <None Include="shaders\pcBarebones.vert" />
     <None Include="shaders\pcLit.vert" />
     <None Include="shaders\pcLit.frag" />
     <None Include="shaders\pcDebugNormals.vert" />
@@ -144,5 +136,7 @@
     <None Include="shaders\pcBarebonesBrickIndirect.vert" />
     <None Include="shaders\pcBarebonesBrickIndirect.frag" />
     <None Include="shaders\pcUnpackBitmap.comp" />
+    <None Include="shaders\pcBasic.frag" />
+    <None Include="shaders\pcBasic.vert" />
   </ItemGroup>
 </Project>
