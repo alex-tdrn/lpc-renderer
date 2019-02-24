@@ -147,5 +147,6 @@
     <None Include="shaders\pcUnpackBitmap16.comp" />
     <None Include="shaders\pcUnpackBitmap32.comp" />
     <None Include="shaders\pcUnpackBitmap8.comp" />
+    <None Include="shaders\pcUnpackBitmap4.comp" />
   </ItemGroup>
 </Project>

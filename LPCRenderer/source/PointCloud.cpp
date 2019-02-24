@@ -68,7 +68,7 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 		}
 		std::unordered_map<std::uint16_t, std::size_t> occurences;
 		for (auto const& position : brick.positions)
-			occurences[packPosition8(position)]++;
+			occurences[packPosition4(position)]++;
 		for (auto n : occurences)
 			redundantPointsIfCompressed += n.second - 1;
 	}
@@ -142,7 +142,7 @@ void PointCloud::drawUI()
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
 	ImGui::Text("Total Point Count: %i", vertexCount);
-	ImGui::Text("Average Point Count Per Brick: %.2f (need 512)", pointsPerBrickAverage);
+	ImGui::Text("Average Point Count Per Brick: %.2f (need 8)", pointsPerBrickAverage);
 	ImGui::Text("Redundant Points if compressed: %i, (%.2f%%)", redundantPointsIfCompressed, 100 * static_cast<float>(redundantPointsIfCompressed) / vertexCount);
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);
@@ -175,5 +175,13 @@ std::uint16_t packPosition8(glm::vec3 p)
 	std::uint16_t packed = 8 * p.x;
 	packed |= std::uint16_t(8 * p.y) << 3;
 	packed |= std::uint16_t(8 * p.z) << 6;
+	return packed;
+}
+
+std::uint16_t packPosition4(glm::vec3 p)
+{
+	std::uint16_t packed = 4 * p.x;
+	packed |= std::uint16_t(4 * p.y) << 2;
+	packed |= std::uint16_t(4 * p.z) << 4;
 	return packed;
 }

@@ -11,6 +11,7 @@ namespace
 	Shader unpack32Shader{"shaders/pcUnpackBitmap32.comp"};
 	Shader unpack16Shader{"shaders/pcUnpackBitmap16.comp"};
 	Shader unpack8Shader{"shaders/pcUnpackBitmap8.comp"};
+	Shader unpack4Shader{"shaders/pcUnpackBitmap4.comp"};
 	int pointSize = 2;
 	int batchSize = 1;
 }
@@ -23,7 +24,7 @@ PCRendererBitmap::PCRendererBitmap()
 
 void PCRendererBitmap::update()
 {
-	constexpr std::size_t bitmapSize = 8;
+	constexpr std::size_t bitmapSize = 4;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 	static BrickBitmap auxBitmap;
 	static std::vector<BrickBitmap> bitmaps;
@@ -72,7 +73,7 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
 	bindVAO();
-	unpack8Shader.use();
+	unpack4Shader.use();
 
 	SSBOBitmaps.bindBase(0);
 	SSBOBitmapIndices.bindBase(1);
@@ -88,8 +89,8 @@ void PCRendererBitmap::render(Scene const* scene)
 	{
 		Counter.clear();
 
-		unpack8Shader.use();
-		unpack8Shader.set("bitmapsOffset", totalBrickCount - remainingBricks);
+		unpack4Shader.use();
+		unpack4Shader.set("bitmapsOffset", totalBrickCount - remainingBricks);
 		int brickCount = batchSize;
 		if(remainingBricks < batchSize)
 			brickCount = remainingBricks;
@@ -138,4 +139,5 @@ void PCRendererBitmap::reloadShaders()
 	unpack32Shader.reload();
 	unpack16Shader.reload();
 	unpack8Shader.reload();
+	unpack4Shader.reload();
 }

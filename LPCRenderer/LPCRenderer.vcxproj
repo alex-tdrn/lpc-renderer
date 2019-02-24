@@ -203,6 +203,7 @@
     <None Include="shaders\pcUnpackBitmap.comp" />
     <None Include="shaders\pcUnpackBitmap16.comp" />
     <None Include="shaders\pcUnpackBitmap32.comp" />
+    <None Include="shaders\pcUnpackBitmap4.comp" />
     <None Include="shaders\pcUnpackBitmap8.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
