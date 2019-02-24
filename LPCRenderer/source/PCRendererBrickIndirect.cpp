@@ -32,7 +32,7 @@ void PCRendererBrickIndirect::update()
 		brickDrawCommand.baseInstance = brickIndex;
 		indirectDraws.push_back(std::move(brickDrawCommand));
 		for(auto const& position : brick.positions)
-			compressedPositions.push_back(packPosition(position));
+			compressedPositions.push_back(packPosition32(position));
 	}
 	indirectDrawCount = indirectDraws.size();
 

@@ -8,7 +8,8 @@
 namespace
 {
 	Shader basicShader{"shaders/pcBrickIndirect.vert", "shaders/pcBrickIndirect.frag"};
-	Shader unpackShader{"shaders/pcUnpackBitmap.comp"};
+	Shader unpack32Shader{"shaders/pcUnpackBitmap32.comp"};
+	Shader unpack16Shader{"shaders/pcUnpackBitmap16.comp"};
 	int pointSize = 2;
 	int batchSize = 1;
 }
@@ -21,7 +22,7 @@ PCRendererBitmap::PCRendererBitmap()
 
 void PCRendererBitmap::update()
 {
-	constexpr std::size_t bitmapSize = 32;
+	constexpr std::size_t bitmapSize = 16;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 	static BrickBitmap auxBitmap;
 	static std::vector<BrickBitmap> bitmaps;
@@ -43,10 +44,7 @@ void PCRendererBitmap::update()
 			idx += coordinates.x;//jump points
 			idx += coordinates.y * bitmapSize;//jump lines
 			idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
-			if(!auxBitmap.test(idx))
-			{
-				auxBitmap.set(idx, true);
-			}
+			auxBitmap.set(idx, true);
 		}
 		bitmapIndices.push_back(brickIndex);
 		bitmaps.push_back(auxBitmap);
@@ -73,7 +71,7 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
 	bindVAO();
-	unpackShader.use();
+	unpack16Shader.use();
 
 	SSBOBitmaps.bindBase(0);
 	SSBOBitmapIndices.bindBase(1);
@@ -89,8 +87,8 @@ void PCRendererBitmap::render(Scene const* scene)
 	{
 		Counter.clear();
 
-		unpackShader.use();
-		unpackShader.set("bitmapsOffset", totalBrickCount - remainingBricks);
+		unpack16Shader.use();
+		unpack16Shader.set("bitmapsOffset", totalBrickCount - remainingBricks);
 		int brickCount = batchSize;
 		if(remainingBricks < batchSize)
 			brickCount = remainingBricks;
@@ -136,5 +134,6 @@ void PCRendererBitmap::drawUI()
 void PCRendererBitmap::reloadShaders()
 {
 	basicShader.reload();
-	unpackShader.reload();
+	unpack32Shader.reload();
+	unpack16Shader.reload();
 }

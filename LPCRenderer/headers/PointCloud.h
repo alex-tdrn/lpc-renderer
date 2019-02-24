@@ -52,4 +52,5 @@ public:
 
 };
 
-std::uint16_t packPosition(glm::vec3);
+std::uint16_t packPosition32(glm::vec3);
+std::uint16_t packPosition16(glm::vec3);
