@@ -38,5 +38,6 @@ public:
 	Shader* getMainShader() const;
 	virtual void update() = 0;
 	virtual void render(Scene const* scene);
-	virtual void drawUI() = 0;
+	virtual void drawUI();
+	virtual void reloadShaders() = 0;
 };

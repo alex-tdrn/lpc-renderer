@@ -1,5 +1,6 @@
 #include "PCRenderer.h"
 #include "Scene.h"
+#include "imgui.h"
 
 PCRenderer::PCRenderer(Shader* mainShader)
 	: mainShader(mainShader)
@@ -49,5 +50,11 @@ void PCRenderer::render(Scene const* scene)
 		cloud = scene->getPointCloud();
 		update();
 	}
+}
+
+void PCRenderer::drawUI()
+{
+	if(ImGui::Button("Reload Shaders"))
+		reloadShaders();
 }
 

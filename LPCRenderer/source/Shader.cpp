@@ -114,6 +114,14 @@ void Shader::set(std::string_view const name, int value) const
 {
 	glUniform1i(getLocation(name), value);
 }
+void Shader::set(std::string_view const name, unsigned int value) const
+{
+	glUniform1ui(getLocation(name), value);
+}
+void Shader::set(std::string_view const name, std::size_t value) const
+{
+	glUniform1ui(getLocation(name), value);
+}
 void Shader::set(std::string_view const name, float value) const
 {
 	glUniform1f(getLocation(name), value);

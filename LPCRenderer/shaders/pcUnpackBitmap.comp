@@ -1,16 +1,6 @@
 #version 450 core
 #extension GL_ARB_shader_atomic_counter_ops : require
 
-layout(std430, binding = 0) restrict readonly buffer InputBuffer
-{
-	uint bitmaps[];
-};
-
-layout(std430, binding = 1) restrict writeonly buffer coherent OutputBuffer
-{
-	uint positions[];
-};
-
 struct DrawCommand
 {
 	uint count;
@@ -19,42 +9,77 @@ struct DrawCommand
 	uint baseInstance;
 };
 
-layout(std430, binding = 2) restrict buffer DrawBuffer
+layout(std430, binding = 0) restrict readonly buffer Bitmaps
 {
-	DrawCommand commands[];
+	uint bitmaps[];
+};
+
+layout(std430, binding = 1) restrict readonly buffer BitmapIndices
+{
+	uint bitmapIndices[];
+};
+
+layout(std430, binding = 2) restrict writeonly buffer coherent PackedPositions
+{
+	uint packedPositions[];
+};
+
+layout(std430, binding = 3) restrict writeonly buffer DrawBuffer
+{
+	DrawCommand drawCommands[];
 };
 
 layout(binding = 0) uniform atomic_uint currentPositionsCount;
 
-const uint bitmapSize = 32;//[32,256] Bits per side
-//keep local_size_x = 1 for better cache coherency
-layout (local_size_x = 1, local_size_y = bitmapSize, local_size_z = 1024 / bitmapSize ) in;
+uniform uint bitmapsOffset;
+
+const uint bitmapSize = 32;
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = bitmapSize) in;
 
 const uint bitmapRowSize = bitmapSize / 32;//uints per row
 
-const uint workGroupIndex = gl_WorkGroupID.x;
-const uint brickReadStart = gl_WorkGroupID.x * bitmapSize * bitmapSize * bitmapRowSize;
+const uint bitmapIndex = gl_WorkGroupID.x + bitmapsOffset;
+const uint brickReadStart = bitmapIndex * bitmapSize * bitmapSize * bitmapRowSize;
 shared uint brickWriteOffset;
 shared uint brickWriteStart;
 const uvec3 localBitCount = bitmapSize / gl_WorkGroupSize;
-uint localPositionCount = 0;
 void main()
 {
-	//we need to reserve space for the work group in the positions buffer
 	if(gl_LocalInvocationIndex == 0)
 	{	
-		commands[workGroupIndex].first = atomicCounterAddARB(currentPositionsCount, commands[workGroupIndex].count);
-		atomicExchange(brickWriteStart, commands[workGroupIndex].first);
+		uint brickPositionsCount = 0;
+		//we need to find the positions count of the current work group
+		for(uint z = 0; z < bitmapSize; z++)
+		{
+			for(uint y = 0; y < bitmapSize; y++)
+			{
+				for(uint x = 0; x < bitmapRowSize; x++)
+				{
+					uint idx = brickReadStart + z * bitmapSize * bitmapRowSize + y * bitmapRowSize + x;
+					brickPositionsCount += bitCount(bitmaps[idx]);
+				}
+			}
+		}
+
+		//fill the draw command for the current bitmap and 
+		//reserve space for the work group in the positions buffer
+		drawCommands[gl_WorkGroupID.x].count = brickPositionsCount;
+		drawCommands[gl_WorkGroupID.x].instanceCount = 1;
+		drawCommands[gl_WorkGroupID.x].first = atomicCounterAddARB(currentPositionsCount, brickPositionsCount);
+		drawCommands[gl_WorkGroupID.x].baseInstance = bitmapIndices[bitmapIndex];
+		atomicExchange(brickWriteStart, drawCommands[gl_WorkGroupID.x].first);
 		atomicExchange(brickWriteOffset, 0);
 	}
 
 	memoryBarrierShared();
+	groupMemoryBarrier();
 	barrier();
 
 	//push points to appropriate place in buffer
-	for(uint z = gl_LocalInvocationID.y * localBitCount.y; z < (gl_LocalInvocationID.y + 1) * localBitCount.y; z++)
+	for(uint z = gl_LocalInvocationID.z * localBitCount.z; z < (gl_LocalInvocationID.z + 1) * localBitCount.z; z++)
 	{
-		for(uint y = gl_LocalInvocationID.z * localBitCount.z; y < (gl_LocalInvocationID.z + 1) * localBitCount.z; y++)
+		for(uint y = gl_LocalInvocationID.y * localBitCount.y; y < (gl_LocalInvocationID.y + 1) * localBitCount.y; y++)
 		{
 			for(uint x = gl_LocalInvocationID.x * (localBitCount.x / 32); x < (gl_LocalInvocationID.x + 1) * (localBitCount.x / 32); x++)
 			{
@@ -67,13 +92,16 @@ void main()
 						uint offset = atomicAdd(brickWriteOffset, 1) + brickWriteStart;
 
 						memoryBarrierShared();
+						groupMemoryBarrier();
 
 						uint packedPosition = uint(bitmapSize * position.x);
 						packedPosition |= uint(bitmapSize * position.y) << 5;
 						packedPosition |= uint(bitmapSize * position.z) << 10;
 
-						atomicOr(positions[offset/2], packedPosition << ((offset%2 == 0) ? 16 : 0));
+						atomicOr(packedPositions[offset/2], packedPosition << ((offset%2 == 0) ? 16 : 0));
 						memoryBarrierBuffer();
+						groupMemoryBarrier();
+
 					}
 				}
 			}

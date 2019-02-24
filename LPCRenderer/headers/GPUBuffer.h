@@ -30,7 +30,7 @@ public:
 };
 
 template<typename T>
-std::size_t sizeInBytes(std::vector<T> v)
+std::size_t sizeInBytes(std::vector<T> const& v)
 {
 	return v.size() * sizeof(v.front());
 }

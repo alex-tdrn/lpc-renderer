@@ -76,5 +76,11 @@ void PCRendererBrickGS::render(Scene const* scene)
 
 void PCRendererBrickGS::drawUI()
 {
+	PCRenderer::drawUI();
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);
+}
+
+void PCRendererBrickGS::reloadShaders()
+{
+	basicShader.reload();
 }

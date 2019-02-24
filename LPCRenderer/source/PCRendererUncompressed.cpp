@@ -130,6 +130,7 @@ void PCRendererUncompressed::render(Scene const* scene)
 
 void PCRendererUncompressed::drawUI()
 {
+	PCRenderer::drawUI();
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);
 
 	ImGui::Text("Render Mode");
@@ -181,4 +182,12 @@ void PCRendererUncompressed::drawUI()
 			ImGui::SliderInt("Line Thickness", &debugNormalsLineThickness, 1, 16);
 			break;
 	}
+}
+
+void PCRendererUncompressed::reloadShaders()
+{
+	basicShader.reload();
+	litPointShader.reload();
+	litDiskShader.reload();
+	debugNormalsShader.reload();
 }

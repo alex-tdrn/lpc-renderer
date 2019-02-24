@@ -21,13 +21,11 @@ PCRendererBitmap::PCRendererBitmap()
 void PCRendererBitmap::update()
 {
 
-	std::vector<DrawCommand> indirectDraws;
-	static std::vector<std::uint16_t> compressedPositions;
 	constexpr unsigned int bitmapSize = 32;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 	static BrickBitmap auxBitmap;
 	static std::vector<BrickBitmap> bitmaps;
-	compressedPositions.clear();
+	std::vector<std::uint32_t> bitmapIndices;
 	bitmaps.clear();
 	int brickIndex = -1;
 	for(auto brick : cloud->getAllBricks())
@@ -35,9 +33,7 @@ void PCRendererBitmap::update()
 		brickIndex++;
 		if(brick.positions.empty())
 			continue;
-		DrawCommand brickDrawCommand{};
-		brickDrawCommand.count = 0;
-		brickDrawCommand.baseInstance = brickIndex;
+		totalBrickCount++;
 		auxBitmap.reset();
 		for(auto const& position : brick.positions)
 		{
@@ -48,25 +44,23 @@ void PCRendererBitmap::update()
 			idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
 			if(!auxBitmap.test(idx))
 			{
-				compressedPositions.push_back(packPosition(position));
-				brickDrawCommand.count++;
+				auxBitmap.set(idx, true);
 			}
-			auxBitmap.set(idx, true);
 		}
-		indirectDraws.push_back(std::move(brickDrawCommand));
+		bitmapIndices.push_back(brickIndex);
 		bitmaps.push_back(auxBitmap);
 	}
-	indirectDrawCount = indirectDraws.size();
 
 	bindVAO();
-	SSBOBitmap.write({{(std::byte const*)bitmaps.data(), bitmaps.size() * sizeof(bitmaps.front())}});
+	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
+	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(),sizeInBytes(bitmapIndices)}});
 
-	SSBOPackedPositions.reserve(compressedPositions.size() * sizeof(compressedPositions.front()));
+	SSBOPackedPositions.reserve(batchSize * bitmapSize * bitmapSize * bitmapSize * sizeof(std::uint16_t));
 	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
 	glEnableVertexAttribArray(0);
 	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
 
-	SSBODrawCommands.write({{(std::byte const*)indirectDraws.data(), indirectDraws.size() * sizeof(indirectDraws.front())}});
+	SSBODrawCommands.reserve(batchSize * sizeof(DrawCommand));
 }
 
 void PCRendererBitmap::render(Scene const* scene)
@@ -78,30 +72,45 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
 	bindVAO();
-
-	unpackShader.use();
-	SSBOBitmap.bindBase(0);
-	SSBOPackedPositions.clear();
+	SSBOBitmaps.bindBase(0);
+	SSBOBitmapIndices.bindBase(1);
+	SSBOPackedPositions.bindBase(2);
 	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
-	SSBOPackedPositions.bindBase(1);
-	SSBODrawCommands.bindBase(2);
+	SSBODrawCommands.bindBase(3);
 	SSBODrawCommands.bind(GL_DRAW_INDIRECT_BUFFER);
-	Counter.clear();
 	Counter.bindBase(0);
-
-	glDispatchCompute(indirectDrawCount, 1, 1);
-	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-	glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
-	mainShader->use();
-
 	glPointSize(pointSize);
 
-	glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
+	std::size_t remainingBricks = totalBrickCount;
+	while(remainingBricks > 0)
+	{
+		SSBOPackedPositions.clear();
+		Counter.clear();
 
+		unpackShader.use();
+		unpackShader.set("bitmapsOffset", totalBrickCount - remainingBricks);
+		std::size_t brickCount = batchSize;
+		if(remainingBricks < batchSize)
+			brickCount = remainingBricks;
+		glDispatchCompute(brickCount, 1, 1);
+		glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+		glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
+
+		mainShader->use();
+		glMultiDrawArraysIndirect(GL_POINTS, nullptr, brickCount, 0);
+		remainingBricks -= batchSize;
+	}
 
 }
 
 void PCRendererBitmap::drawUI()
 {
+	PCRenderer::drawUI();
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);
+}
+
+void PCRendererBitmap::reloadShaders()
+{
+	basicShader.reload();
+	unpackShader.reload();
 }

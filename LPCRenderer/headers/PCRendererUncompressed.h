@@ -23,6 +23,7 @@ public:
 	virtual void update() override;
 	virtual void render(Scene const* scene) override;
 	virtual void drawUI() override;
+	virtual void reloadShaders() override;
 
 };
 
