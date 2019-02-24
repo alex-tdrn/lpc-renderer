@@ -167,7 +167,10 @@ void PCRendererUncompressed::drawUI()
 		update();
 	}
 	if(needNormals() && !cloud->hasNormals())
-		ImGui::Text("Current render mode needs normals, but none are present in the dataset!");
+	{
+		ImGui::Text("Current render mode needs normals"); 
+		ImGui::Text("but none are present in the dataset!");
+	}
 
 
 	switch(renderMode)

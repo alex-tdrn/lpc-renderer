@@ -128,13 +128,13 @@ void Profiler::drawUI()
 				return reinterpret_cast<std::chrono::nanoseconds*>(data)[idx].count();
 		},frametimes.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFrametime.count(), {ImGui::GetContentRegionAvailWidth(), plotHeight});
 
-		ImGui::NewLine();
+		/*ImGui::NewLine();
 		ImGui::Text("Time Waiting On Fences: %s", printDuration(fenceWaitDurations[currentFrameIndex]).data());
 		ImGui::Text("Average: %s", printDuration(averageFenceWaitDuration).data());
 		ImGui::Text("Longest: %s", printDuration(longestFenceWaitDuration).data());
 		ImGui::PlotLines("###FenceWaitDuration", [](void* data, int idx) -> float{
 			return reinterpret_cast<std::chrono::nanoseconds*>(data)[idx].count();
-		}, fenceWaitDurations.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFenceWaitDuration.count(), {ImGui::GetContentRegionAvailWidth(), plotHeight});
+		}, fenceWaitDurations.data(), frameSamples, currentFrameIndex, nullptr, 0.0f, longestFenceWaitDuration.count(), {ImGui::GetContentRegionAvailWidth(), plotHeight});*/
 	}
 
 	ImGui::NewLine();
