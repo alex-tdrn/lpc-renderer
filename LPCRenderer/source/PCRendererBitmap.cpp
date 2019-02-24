@@ -21,14 +21,14 @@ PCRendererBitmap::PCRendererBitmap()
 
 void PCRendererBitmap::update()
 {
-
 	constexpr std::size_t bitmapSize = 32;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 	static BrickBitmap auxBitmap;
 	static std::vector<BrickBitmap> bitmaps;
-	std::vector<std::uint32_t> bitmapIndices;
 	bitmaps.clear();
+	std::vector<std::uint32_t> bitmapIndices;
 	int brickIndex = -1;
+	totalBrickCount = 0;
 	for(auto brick : cloud->getAllBricks())
 	{
 		brickIndex++;
@@ -55,8 +55,8 @@ void PCRendererBitmap::update()
 	bindVAO();
 	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
 	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(),sizeInBytes(bitmapIndices)}});
-
-	SSBOPackedPositions.reserve(batchSize * bitmapSize * bitmapSize * bitmapSize * sizeof(std::uint16_t));
+	std::size_t positionCount = batchSize * bitmapSize * bitmapSize * bitmapSize;
+	SSBOPackedPositions.reserve((positionCount + positionCount % 2) * sizeof(std::uint16_t));
 	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
 	glEnableVertexAttribArray(0);
 	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
@@ -73,6 +73,8 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
 	bindVAO();
+	unpackShader.use();
+
 	SSBOBitmaps.bindBase(0);
 	SSBOBitmapIndices.bindBase(1);
 	SSBOPackedPositions.bindBase(2);
@@ -85,7 +87,6 @@ void PCRendererBitmap::render(Scene const* scene)
 	int remainingBricks = totalBrickCount;
 	while(remainingBricks > 0)
 	{
-		//SSBOPackedPositions.clear();
 		Counter.clear();
 
 		unpackShader.use();
@@ -94,10 +95,9 @@ void PCRendererBitmap::render(Scene const* scene)
 		if(remainingBricks < batchSize)
 			brickCount = remainingBricks;
 		glDispatchCompute(brickCount, 1, 1);
-		glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-		glMemoryBarrier(GL_COMMAND_BARRIER_BIT);
-
 		mainShader->use();
+		glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_COMMAND_BARRIER_BIT);
+
 		glMultiDrawArraysIndirect(GL_POINTS, nullptr, brickCount, 0);
 		remainingBricks -= batchSize;
 	}

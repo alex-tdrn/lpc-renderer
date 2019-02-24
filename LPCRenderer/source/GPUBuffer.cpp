@@ -44,6 +44,7 @@ void GPUBuffer::free()
 		glDeleteBuffers(1, &ID);
 		Profiler::recordGPUDeallocation(currentSize);
 		currentSize = 0;
+		glBindBuffer(target, 0);
 	}
 }
 

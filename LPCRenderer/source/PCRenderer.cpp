@@ -31,6 +31,7 @@ PCRenderer& PCRenderer::operator=(PCRenderer &&other)
 void PCRenderer::freeVAO()
 {
 	glDeleteVertexArrays(1, &VAO);
+	glBindVertexArray(0);
 }
 
 void PCRenderer::bindVAO() const

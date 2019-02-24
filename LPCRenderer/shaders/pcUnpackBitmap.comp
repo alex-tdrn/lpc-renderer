@@ -76,7 +76,7 @@ void main()
 	groupMemoryBarrier();
 	barrier();
 
-	//push points to appropriate place in buffer
+	//write points to appropriate place in buffer
 	for(uint z = gl_LocalInvocationID.z * localBitCount.z; z < (gl_LocalInvocationID.z + 1) * localBitCount.z; z++)
 	{
 		for(uint y = gl_LocalInvocationID.y * localBitCount.y; y < (gl_LocalInvocationID.y + 1) * localBitCount.y; y++)
