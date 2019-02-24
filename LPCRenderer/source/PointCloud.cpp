@@ -68,7 +68,7 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 		}
 		std::unordered_map<std::uint16_t, std::size_t> occurences;
 		for (auto const& position : brick.positions)
-			occurences[packPosition16(position)]++;
+			occurences[packPosition8(position)]++;
 		for (auto n : occurences)
 			redundantPointsIfCompressed += n.second - 1;
 	}
@@ -167,5 +167,13 @@ std::uint16_t packPosition16(glm::vec3 p)
 	std::uint16_t packed = 16 * p.x;
 	packed |= std::uint16_t(16 * p.y) << 4;
 	packed |= std::uint16_t(16 * p.z) << 8;
+	return packed;
+}
+
+std::uint16_t packPosition8(glm::vec3 p)
+{
+	std::uint16_t packed = 8 * p.x;
+	packed |= std::uint16_t(8 * p.y) << 3;
+	packed |= std::uint16_t(8 * p.z) << 6;
 	return packed;
 }

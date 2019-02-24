@@ -1,0 +1,91 @@
+#version 450 core
+#extension GL_ARB_shader_atomic_counter_ops : require
+
+struct DrawCommand
+{
+	uint count;
+	uint instanceCount;
+	uint first;
+	uint baseInstance;
+};
+
+layout(std430, binding = 0) restrict readonly buffer Bitmaps
+{
+	uint bitmaps[];
+};
+
+layout(std430, binding = 1) restrict readonly buffer BitmapIndices
+{
+	uint bitmapIndices[];
+};
+
+layout(std430, binding = 2) restrict writeonly buffer coherent PackedPositions
+{
+	uint packedPositions[];
+};
+
+layout(std430, binding = 3) restrict writeonly buffer DrawBuffer
+{
+	DrawCommand drawCommands[];
+};
+
+layout(binding = 0) uniform atomic_uint globalPositionsOffset;
+
+uniform uint bitmapsOffset;
+
+const uint bitmapSize = 8;
+
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+const uint wordCount = (bitmapSize * bitmapSize * bitmapSize) / 32;
+const uint bitmapIndex = gl_WorkGroupID.x + bitmapsOffset;
+const uint brickReadStart = bitmapIndex * wordCount;
+uint brickWriteOffset = 0;
+uint brickWriteStart;
+
+void main()
+{
+	uint brickPositionsCount = 0;
+	for(uint word = 0; word < wordCount; word++)
+		brickPositionsCount += bitCount(bitmaps[brickReadStart + word]);
+
+	//fill the draw command for the current bitmap and 
+	//reserve space in the positions buffer
+	brickWriteStart = atomicCounterAddARB(globalPositionsOffset, brickPositionsCount);
+	drawCommands[gl_WorkGroupID.x].count = brickPositionsCount;
+	drawCommands[gl_WorkGroupID.x].instanceCount = 1;
+	drawCommands[gl_WorkGroupID.x].first = brickWriteStart;
+	drawCommands[gl_WorkGroupID.x].baseInstance = bitmapIndices[bitmapIndex];
+
+	for(uint i = 0; i < wordCount; i++)
+	{
+		uint word = bitmaps[brickReadStart + i];
+		for(uint bit = 0; bit < 32; bit++)
+		{
+			if((word & (1 << bit)) != 0)
+			{
+				uint idx = i * 32 + bit;
+
+				uvec3 p8;
+				p8.z = idx / (bitmapSize * bitmapSize);//count whole surfaces
+				idx %= bitmapSize * bitmapSize;//remove whole surfaces
+				p8.y = idx / bitmapSize;//count whole lines
+				p8.x = idx % bitmapSize;//count whole points
+
+				uvec3 p32 = uvec3((p8 / float(bitmapSize)) * 32);
+
+				uint packedPosition = p32.x;
+				packedPosition |= p32.y << 5;
+				packedPosition |= p32.z << 10;
+
+				uint offset = brickWriteStart + brickWriteOffset++;
+
+				atomicAnd(packedPositions[offset/2], (offset%2 == 0) ? 0xFFFF0000 : 0x0000FFFF);
+				memoryBarrierBuffer();
+				atomicOr(packedPositions[offset/2], packedPosition << ((offset%2 == 0) ? 0 : 16));
+				memoryBarrierBuffer();
+
+			}
+		}
+	}
+}

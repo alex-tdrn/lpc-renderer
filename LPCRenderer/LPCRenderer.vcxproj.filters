@@ -146,5 +146,6 @@
     <None Include="shaders\pcBrickIndirect.vert" />
     <None Include="shaders\pcUnpackBitmap16.comp" />
     <None Include="shaders\pcUnpackBitmap32.comp" />
+    <None Include="shaders\pcUnpackBitmap8.comp" />
   </ItemGroup>
 </Project>
