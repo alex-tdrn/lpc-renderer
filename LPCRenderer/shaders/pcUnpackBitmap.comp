@@ -64,16 +64,15 @@ void main()
 
 		//fill the draw command for the current bitmap and 
 		//reserve space for the work group in the positions buffer
+		brickWriteStart = atomicCounterAddARB(currentPositionsCount, brickPositionsCount);;
+		brickWriteOffset = 0;
 		drawCommands[gl_WorkGroupID.x].count = brickPositionsCount;
 		drawCommands[gl_WorkGroupID.x].instanceCount = 1;
-		drawCommands[gl_WorkGroupID.x].first = atomicCounterAddARB(currentPositionsCount, brickPositionsCount);
+		drawCommands[gl_WorkGroupID.x].first = brickWriteStart;
 		drawCommands[gl_WorkGroupID.x].baseInstance = bitmapIndices[bitmapIndex];
-		atomicExchange(brickWriteStart, drawCommands[gl_WorkGroupID.x].first);
-		atomicExchange(brickWriteOffset, 0);
 	}
 
 	memoryBarrierShared();
-	groupMemoryBarrier();
 	barrier();
 
 	//write points to appropriate place in buffer
@@ -89,18 +88,19 @@ void main()
 					if((bitmaps[idx] & (1 << bit)) != 0)
 					{
 						vec3 position = vec3(x * 32 + bit, y, z) / bitmapSize;
-						uint offset = atomicAdd(brickWriteOffset, 1) + brickWriteStart;
-
-						memoryBarrierShared();
-						groupMemoryBarrier();
 
 						uint packedPosition = uint(bitmapSize * position.x);
 						packedPosition |= uint(bitmapSize * position.y) << 5;
 						packedPosition |= uint(bitmapSize * position.z) << 10;
+
+						uint offset = atomicAdd(brickWriteOffset, 1);
+						memoryBarrierShared();
+						offset += brickWriteStart;
+
 						atomicAnd(packedPositions[offset/2], (offset%2 == 0) ? 0xFFFF0000 : 0x0000FFFF);
+						memoryBarrierBuffer();
 						atomicOr(packedPositions[offset/2], packedPosition << ((offset%2 == 0) ? 0 : 16));
 						memoryBarrierBuffer();
-						groupMemoryBarrier();
 
 					}
 				}
