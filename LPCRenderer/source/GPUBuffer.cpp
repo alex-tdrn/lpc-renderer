@@ -1,5 +1,6 @@
 #include "GPUBuffer.h"
 #include "Profiler.h"
+#include "imgui.h"
 
 GPUBuffer::GPUBuffer(GLenum target)
 	:target(target)
@@ -28,6 +29,11 @@ GPUBuffer& GPUBuffer::operator=(GPUBuffer&& other)
 GPUBuffer::~GPUBuffer()
 {
 	free();
+}
+
+std::size_t GPUBuffer::size() const
+{
+	return currentSize;
 }
 
 void GPUBuffer::free()
@@ -98,4 +104,34 @@ void GPUBuffer::bindBase(unsigned int base) const
 	if (target != GL_SHADER_STORAGE_BUFFER && target != GL_ATOMIC_COUNTER_BUFFER)
 		throw "Illegal bindbufferbase!";
 	glBindBufferBase(target, base, ID);
+}
+
+void drawMemoryConsumption(std::size_t amountInBytes)
+{
+	std::size_t amountInKiloBytes = amountInBytes >> 10;
+	std::size_t amountInMegaBytes = amountInKiloBytes >> 10;
+	std::size_t amountInGigaBytes = amountInMegaBytes >> 10;
+
+	if(amountInGigaBytes)
+	{
+		ImGui::Text("%lu GB ", amountInGigaBytes);
+		ImGui::SameLine();
+		ImGui::Text("%lu MB ", amountInMegaBytes - (amountInGigaBytes << 10));
+	}
+	else if(amountInMegaBytes)
+	{
+		ImGui::Text("%lu MB ", amountInMegaBytes);
+		ImGui::SameLine();
+		ImGui::Text("%lu KB ", amountInKiloBytes - (amountInMegaBytes << 10));
+	}
+	else if(amountInKiloBytes)
+	{
+		ImGui::Text("%lu KB ", amountInKiloBytes);
+		ImGui::SameLine();
+		ImGui::Text("%lu B ", amountInBytes - (amountInKiloBytes << 10));
+	}
+	else
+	{
+		ImGui::Text("%lu B ", amountInBytes);
+	}
 }

@@ -11,7 +11,6 @@ private:
 	GPUBuffer SSBODrawCommands{GL_SHADER_STORAGE_BUFFER};
 	GPUBuffer Counter{GL_ATOMIC_COUNTER_BUFFER};
 	std::size_t totalBrickCount = 0;
-	std::size_t batchSize = 1;
 
 public:
 	PCRendererBitmap();

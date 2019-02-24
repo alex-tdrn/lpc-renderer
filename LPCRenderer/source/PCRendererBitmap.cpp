@@ -10,6 +10,7 @@ namespace
 	Shader basicShader{"shaders/pcBrickIndirect.vert", "shaders/pcBrickIndirect.frag"};
 	Shader unpackShader{"shaders/pcUnpackBitmap.comp"};
 	int pointSize = 2;
+	int batchSize = 1;
 }
 
 PCRendererBitmap::PCRendererBitmap()
@@ -21,7 +22,7 @@ PCRendererBitmap::PCRendererBitmap()
 void PCRendererBitmap::update()
 {
 
-	constexpr unsigned int bitmapSize = 32;
+	constexpr std::size_t bitmapSize = 32;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
 	static BrickBitmap auxBitmap;
 	static std::vector<BrickBitmap> bitmaps;
@@ -81,15 +82,15 @@ void PCRendererBitmap::render(Scene const* scene)
 	Counter.bindBase(0);
 	glPointSize(pointSize);
 
-	std::size_t remainingBricks = totalBrickCount;
+	int remainingBricks = totalBrickCount;
 	while(remainingBricks > 0)
 	{
-		SSBOPackedPositions.clear();
+		//SSBOPackedPositions.clear();
 		Counter.clear();
 
 		unpackShader.use();
 		unpackShader.set("bitmapsOffset", totalBrickCount - remainingBricks);
-		std::size_t brickCount = batchSize;
+		int brickCount = batchSize;
 		if(remainingBricks < batchSize)
 			brickCount = remainingBricks;
 		glDispatchCompute(brickCount, 1, 1);
@@ -107,6 +108,29 @@ void PCRendererBitmap::drawUI()
 {
 	PCRenderer::drawUI();
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);
+	if(ImGui::InputInt("Batch Size", &batchSize, 1, 10))
+	{
+		if(batchSize < 1)
+			batchSize = 1;
+		update();
+	}
+
+	ImGui::Text("Memory Bitmaps: ");
+	ImGui::SameLine();
+	drawMemoryConsumption(SSBOBitmaps.size());
+
+	ImGui::Text("Memory Bitmap Indices: ");
+	ImGui::SameLine();
+	drawMemoryConsumption(SSBOBitmapIndices.size());
+
+	ImGui::Text("Memory Packed Positions: ");
+	ImGui::SameLine();
+	drawMemoryConsumption(SSBOPackedPositions.size());
+
+	ImGui::Text("Memory Draw Commands: ");
+	ImGui::SameLine();
+	drawMemoryConsumption(SSBODrawCommands.size());
+
 }
 
 void PCRendererBitmap::reloadShaders()

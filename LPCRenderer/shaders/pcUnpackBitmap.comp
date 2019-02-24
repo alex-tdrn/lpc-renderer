@@ -97,8 +97,8 @@ void main()
 						uint packedPosition = uint(bitmapSize * position.x);
 						packedPosition |= uint(bitmapSize * position.y) << 5;
 						packedPosition |= uint(bitmapSize * position.z) << 10;
-
-						atomicOr(packedPositions[offset/2], packedPosition << ((offset%2 == 0) ? 16 : 0));
+						atomicAnd(packedPositions[offset/2], (offset%2 == 0) ? 0xFFFF0000 : 0x0000FFFF);
+						atomicOr(packedPositions[offset/2], packedPosition << ((offset%2 == 0) ? 0 : 16));
 						memoryBarrierBuffer();
 						groupMemoryBarrier();
 

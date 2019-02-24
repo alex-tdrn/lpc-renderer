@@ -20,6 +20,7 @@ public:
 	GPUBuffer& operator=(GPUBuffer&&);
 
 public:
+	std::size_t size() const;
 	void free();
 	void clear();
 	void write(std::vector<std::pair<std::byte const*, std::size_t>>&& data);
@@ -42,3 +43,5 @@ struct DrawCommand
 	unsigned int first = 0;
 	unsigned int baseInstance = 0;
 };
+
+void drawMemoryConsumption(std::size_t amountInBytes);
