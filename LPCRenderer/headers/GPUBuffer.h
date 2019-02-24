@@ -3,6 +3,7 @@
 #include <tuple>
 #include <glad/glad.h>
 
+
 class GPUBuffer
 {
 private:
@@ -21,10 +22,15 @@ public:
 public:
 	void free();
 	void clear();
-	void write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data);
+	void write(std::vector<std::pair<std::byte const*, std::size_t>>&& data);
 	void reserve(std::size_t size);
 	void bind() const;
 	void bind(GLenum target) const;
 	void bindBase(unsigned int base) const;
 };
 
+template<typename T>
+std::size_t sizeInBytes(std::vector<T> v)
+{
+	return v.size() * sizeof(v.front());
+}

@@ -56,32 +56,48 @@ void PCRendererUncompressed::update()
 
 	static std::vector<glm::vec3> positions;
 	positions.reserve(vertexCount);
+	static std::vector<glm::vec3> normals;
+	if(needNormals())
+		normals.reserve(vertexCount);
 
-	std::vector<std::pair<std::byte const*, std::size_t>> vertexData;
-	std::byte const* bufferStartAddress = (std::byte const*)(positions.data());
-	std::size_t bufferOffset = 0;
 	for(auto const& brick : cloud->getAllBricks())
 	{
 		if(brick.positions.empty())
 			continue;
-		std::size_t const elementSize = 3 * sizeof(float);
-		std::size_t const brickSize = brick.positions.size() * elementSize;
-
-		vertexData.emplace_back(bufferStartAddress + bufferOffset, brickSize);
 
 		for(glm::vec3 position : brick.positions)
 			positions.push_back(cloud->convertToWorldPosition(brick.indices, position));
+		if(needNormals())
+		{
+			for(glm::vec3 normal : brick.normals)
+				normals.push_back(normal);
+		}
 
-		bufferOffset += brickSize;
 	}
 
 	bindVAO();
-	VBO.write(true, std::move(vertexData));
-	VBO.bind();
+	if(needNormals())
+	{
+		VBO.write({
+			{ (std::byte const*)positions.data(), sizeInBytes(positions) },
+			{ (std::byte const*)normals.data(), sizeInBytes(normals) }
+			});
+		VBO.bind();
+		glEnableVertexAttribArray(1);//Normals
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeInBytes(positions)));
+	}
+	else
+	{
+		VBO.write({{(std::byte const*)positions.data(), sizeInBytes(positions)}});
+		VBO.bind();
+		glDisableVertexAttribArray(1);//Normals
+	}
 	glEnableVertexAttribArray(0);//Positions
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)(0));
 
+
 	positions.clear();
+	normals.clear();
 }
 
 void PCRendererUncompressed::render(Scene const* scene)
@@ -127,24 +143,28 @@ void PCRendererUncompressed::drawUI()
 	{
 		renderMode = RenderMode::basic;
 		mainShader = &basicShader;
+		update();
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Lit SS Point", renderMode == RenderMode::litPoint))
 	{
 		renderMode = RenderMode::litPoint;
 		mainShader = &litPointShader;
+		update();
 	}
 
 	if(ImGui::RadioButton("Lit Disk", renderMode == RenderMode::litDisk))
 	{
 		renderMode = RenderMode::litDisk;
 		mainShader = &litDiskShader;
+		update();
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Debug Normals", renderMode == RenderMode::debugNormals))
 	{
 		renderMode = RenderMode::debugNormals;
 		mainShader = &debugNormalsShader;
+		update();
 	}
 	if(needNormals() && !cloud->hasNormals())
 		ImGui::Text("Current render mode needs normals, but none are present in the dataset!");

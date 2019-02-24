@@ -48,7 +48,7 @@ void GPUBuffer::clear()
 	glClearBufferSubData(target, GL_R8, 0, currentSize, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 }
 
-void GPUBuffer::write(bool shrinkToFit, std::vector<std::pair<std::byte const*, std::size_t>>&& data)
+void GPUBuffer::write(std::vector<std::pair<std::byte const*, std::size_t>>&& data)
 {
 	std::size_t newSize = 0;      
 	for(auto const& buffer : data)
