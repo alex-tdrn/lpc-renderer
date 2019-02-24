@@ -12,7 +12,7 @@ public:
 	PCRendererUncompressed();
 	PCRendererUncompressed(const PCRendererUncompressed&) = delete;
 	PCRendererUncompressed(PCRendererUncompressed&&) = default;
-	~PCRendererUncompressed();
+	~PCRendererUncompressed() = default;
 	PCRendererUncompressed& operator=(const PCRendererUncompressed&) = delete;
 	PCRendererUncompressed& operator=(PCRendererUncompressed&&) = default;
 

@@ -8,6 +8,7 @@
 #include "PointCloud.h"
 #include "PCRenderer.h"
 #include "PCRendererUncompressed.h"
+#include "PCRendererBrickGS.h"
 
 #include <array>
 
@@ -18,10 +19,19 @@ enum class DrawBricksMode
 	nonEmpty
 };
 
+enum class CompressionMode
+{
+	none,
+	brickGS,
+	brickIndirect,
+	bitmap
+};
+
 namespace
 {
 	std::unique_ptr<PCRenderer> pointCloudRenderer = nullptr;
 	DrawBricksMode drawBricksMode = DrawBricksMode::all;
+	CompressionMode compressionMode = CompressionMode::none;
 }
 
 void drawBricks(PointCloud const* cloud, glm::mat4 mvp, bool drawEmptyBricks);
@@ -90,6 +100,32 @@ void MainRenderer::drawUI()
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Non-Empty", drawBricksMode == DrawBricksMode::nonEmpty))
 		drawBricksMode = DrawBricksMode::nonEmpty;
+	ImGui::Separator();
+	
+	ImGui::Text("Compression Mode");
+	if(ImGui::RadioButton("None", compressionMode == CompressionMode::none))
+	{
+		compressionMode = CompressionMode::none;
+		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Brick Geometry Shader", compressionMode == CompressionMode::brickGS))
+	{
+		compressionMode = CompressionMode::brickGS;
+		pointCloudRenderer = std::make_unique<PCRendererBrickGS>();
+	}
+	if(ImGui::RadioButton("Brick Indirect Draw", compressionMode == CompressionMode::brickIndirect))
+	{
+		compressionMode = CompressionMode::brickIndirect;
+		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("Bitmap", compressionMode == CompressionMode::bitmap))
+	{
+		compressionMode = CompressionMode::bitmap;
+		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
+	}
+
 	ImGui::Separator();
 
 	pointCloudRenderer->drawUI();

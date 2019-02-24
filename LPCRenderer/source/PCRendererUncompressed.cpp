@@ -36,11 +36,6 @@ PCRendererUncompressed::PCRendererUncompressed()
 
 }
 
-
-PCRendererUncompressed::~PCRendererUncompressed()
-{
-}
-
 bool PCRendererUncompressed::needNormals() const
 {
 	return renderMode != RenderMode::basic;
