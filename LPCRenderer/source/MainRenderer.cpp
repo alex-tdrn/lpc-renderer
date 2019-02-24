@@ -10,6 +10,7 @@
 #include "PCRendererUncompressed.h"
 #include "PCRendererBrickGS.h"
 #include "PCRendererBrickIndirect.h"
+#include "PCRendererBitmap.h"
 
 #include <array>
 
@@ -81,18 +82,6 @@ void MainRenderer::render(Scene* scene)
 	mainShader->set("projection", p);
 	mainShader->set("diffuseColor", scene->getDiffuseColor());
 
-	/*if (compression == Compression::brickGS || compression == Compression::brickIndirect || compression == Compression::bitmap)
-	{
-		mainShader->set("cloudOrigin", scene->getPointCloud()->getBounds().first);
-		mainShader->set("brickSize", currentPointCloud->getBrickSize());
-	}
-	if (compression == Compression::brickIndirect || compression == Compression::bitmap)
-	{
-		mainShader->set("subdivisions", glm::uvec3(currentPointCloud->getSubdivisions()));
-	}
-
-	*/
-
 	pointCloudRenderer->render(scene);
 }
 
@@ -132,7 +121,7 @@ void MainRenderer::drawUI()
 	if(ImGui::RadioButton("Bitmap", compressionMode == CompressionMode::bitmap))
 	{
 		compressionMode = CompressionMode::bitmap;
-		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
+		pointCloudRenderer = std::make_unique<PCRendererBitmap>();
 	}
 
 	ImGui::Separator();

@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\PCRendererBitmap.cpp" />
     <ClCompile Include="source\PCRendererBrickIndirect.cpp" />
     <ClCompile Include="source\PCRendererBrickGS.cpp" />
     <ClCompile Include="source\PCRendererUncompressed.cpp" />
@@ -178,6 +179,7 @@
     <ClInclude Include="headers\PCRendererUncompressed.h" />
     <ClInclude Include="headers\PCRendererBrickGS.h" />
     <ClInclude Include="headers\PCRendererBrickIndirect.h" />
+    <ClInclude Include="headers\PCRendererBitmap.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBrickGS.frag" />

@@ -53,6 +53,8 @@ void PCRendererBrickIndirect::render(Scene const* scene)
 	mainShader->set("brickSize", cloud->getBrickSize());
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
+	glPointSize(pointSize);
+
 	bindVAO();
 	DrawBuffer.bind();
 	glMultiDrawArraysIndirect(GL_POINTS, nullptr, indirectDrawCount, 0);
