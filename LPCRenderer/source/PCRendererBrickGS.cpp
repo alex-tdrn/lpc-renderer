@@ -26,7 +26,7 @@ void PCRendererBrickGS::update()
 	bufferLengths.clear();
 	bufferOffsets.push_back(0);
 	compressedPositions.clear();
-
+	brickCount = 0;
 	for(auto brick : cloud->getAllBricks())
 	{
 		if(brick.positions.empty())

@@ -55,6 +55,7 @@
     <ClCompile Include="source\PCManager.cpp" />
     <ClCompile Include="source\PCRendererUncompressed.cpp" />
     <ClCompile Include="source\PCRendererBrickGS.cpp" />
+    <ClCompile Include="source\PCRendererBrickIndirect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -119,6 +120,7 @@
     <ClInclude Include="headers\PCManager.h" />
     <ClInclude Include="headers\PCRendererUncompressed.h" />
     <ClInclude Include="headers\PCRendererBrickGS.h" />
+    <ClInclude Include="headers\PCRendererBrickIndirect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcLit.vert" />
@@ -132,13 +134,13 @@
     <None Include="shaders\box.vert" />
     <None Include="shaders\box.frag" />
     <None Include="shaders\pcBarebonesBrickVS.geom" />
-    <None Include="shaders\pcBarebonesBrickIndirect.vert" />
-    <None Include="shaders\pcBarebonesBrickIndirect.frag" />
     <None Include="shaders\pcUnpackBitmap.comp" />
     <None Include="shaders\pcBasic.frag" />
     <None Include="shaders\pcBasic.vert" />
     <None Include="shaders\pcBrickGS.frag" />
     <None Include="shaders\pcBrickGS.vert" />
     <None Include="shaders\pcBrickGS.geom" />
+    <None Include="shaders\pcBrickIndirect.frag" />
+    <None Include="shaders\pcBrickIndirect.vert" />
   </ItemGroup>
 </Project>

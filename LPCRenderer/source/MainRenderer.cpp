@@ -9,6 +9,7 @@
 #include "PCRenderer.h"
 #include "PCRendererUncompressed.h"
 #include "PCRendererBrickGS.h"
+#include "PCRendererBrickIndirect.h"
 
 #include <array>
 
@@ -50,11 +51,19 @@ void MainRenderer::render(Scene* scene)
 	if(!scene->getPointCloud())
 		return;
 
-	glPointSize(1.0f);
+	static glm::ivec3 previousSubdivions = scene->getPointCloud()->getSubdivisions();
+	if(previousSubdivions != scene->getPointCloud()->getSubdivisions())
+	{
+		previousSubdivions = scene->getPointCloud()->getSubdivisions();
+		pointCloudRenderer->update();
+	}
 
 	glm::mat4 m = scene->getModelMatrix();
 	glm::mat4 v = scene->getCamera().getViewMatrix();
 	glm::mat4 p = scene->getCamera().getProjectionMatrix();
+	if(drawBricksMode != DrawBricksMode::disabled)
+		glPointSize(1.0f);
+
 	switch (drawBricksMode)
 	{
 		case DrawBricksMode::all:
@@ -117,7 +126,7 @@ void MainRenderer::drawUI()
 	if(ImGui::RadioButton("Brick Indirect Draw", compressionMode == CompressionMode::brickIndirect))
 	{
 		compressionMode = CompressionMode::brickIndirect;
-		pointCloudRenderer = std::make_unique<PCRendererUncompressed>();
+		pointCloudRenderer = std::make_unique<PCRendererBrickIndirect>();
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Bitmap", compressionMode == CompressionMode::bitmap))

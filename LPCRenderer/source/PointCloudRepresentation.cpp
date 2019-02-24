@@ -5,14 +5,6 @@
 #include "ShaderManager.h"
 #include <bitset>
 
-struct DrawCommand
-{
-	unsigned int count = 0;
-	unsigned int instanceCount = 1;
-	unsigned int first = 0;
-	unsigned int baseInstance = 0;
-};
-
 PointCloudRepresentation::PointCloudRepresentation()
 {
 	glGenVertexArrays(1, &VAO);

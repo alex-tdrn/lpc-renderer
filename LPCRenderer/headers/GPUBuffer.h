@@ -34,3 +34,11 @@ std::size_t sizeInBytes(std::vector<T> v)
 {
 	return v.size() * sizeof(v.front());
 }
+
+struct DrawCommand
+{
+	unsigned int count = 0;
+	unsigned int instanceCount = 1;
+	unsigned int first = 0;
+	unsigned int baseInstance = 0;
+};

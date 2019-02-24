@@ -126,6 +126,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\PCRendererBrickIndirect.cpp" />
     <ClCompile Include="source\PCRendererBrickGS.cpp" />
     <ClCompile Include="source\PCRendererUncompressed.cpp" />
     <ClCompile Include="source\PCRenderer.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="headers\PCRenderer.h" />
     <ClInclude Include="headers\PCRendererUncompressed.h" />
     <ClInclude Include="headers\PCRendererBrickGS.h" />
+    <ClInclude Include="headers\PCRendererBrickIndirect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\pcBrickGS.frag" />
@@ -185,9 +187,9 @@
     <None Include="shaders\box.vert" />
     <None Include="shaders\pcBasic.frag" />
     <None Include="shaders\pcBasic.vert" />
-    <None Include="shaders\pcBarebonesBrickIndirect.frag" />
+    <None Include="shaders\pcBrickIndirect.frag" />
     <None Include="shaders\pcBarebonesBrickVS.geom" />
-    <None Include="shaders\pcBarebonesBrickIndirect.vert" />
+    <None Include="shaders\pcBrickIndirect.vert" />
     <None Include="shaders\pcDebugNormals.frag" />
     <None Include="shaders\pcDebugNormals.geom" />
     <None Include="shaders\pcDebugNormals.vert" />
