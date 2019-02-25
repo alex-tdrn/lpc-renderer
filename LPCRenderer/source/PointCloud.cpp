@@ -31,6 +31,54 @@ std::string PointCloud::getNamePrefix() const
 	return "PointCloud";
 }
 
+void PointCloud::setBitmapSize(std::size_t bitmapSize) const
+{
+	this->bitmapSize = bitmapSize;
+	updateStatistics();
+}
+
+void PointCloud::updateStatistics() const
+{
+	emptyBrickCount = 0;
+	redundantPointsIfCompressed = 0;
+	for(auto const& brick : bricks)
+	{
+		if(brick.positions.empty())
+		{
+			emptyBrickCount++;
+			continue;
+		}
+		std::unordered_map<std::uint16_t, std::size_t> occurences;
+		for(auto const& position : brick.positions)
+		{
+			switch(bitmapSize)
+			{
+				case 32:
+					occurences[packPosition32(position)]++;
+					break;
+				case 16:
+					occurences[packPosition16(position)]++;
+					break;
+				case 8:
+					occurences[packPosition8(position)]++;
+					break;
+				case 4:
+					occurences[packPosition4(position)]++;
+					break;
+			}
+		}
+		for(auto n : occurences)
+			redundantPointsIfCompressed += n.second - 1;
+	}
+	pointsPerBrickAverage = 0;
+	for(auto const& brick : bricks)
+	{
+		if(brick.positions.empty())
+			continue;
+		pointsPerBrickAverage += static_cast<float>(brick.positions.size()) / (bricks.size() - emptyBrickCount);
+	}
+}
+
 void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 {
 	this->subdivisions = subdivisions;
@@ -57,28 +105,7 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 		}
 	}
 
-	emptyBrickCount = 0;
-	redundantPointsIfCompressed = 0;
-	for (auto const& brick : bricks)
-	{
-		if (brick.positions.empty())
-		{
-			emptyBrickCount++;
-			continue;
-		}
-		std::unordered_map<std::uint16_t, std::size_t> occurences;
-		for (auto const& position : brick.positions)
-			occurences[packPosition4(position)]++;
-		for (auto n : occurences)
-			redundantPointsIfCompressed += n.second - 1;
-	}
-	pointsPerBrickAverage = 0;
-	for (auto const& brick : bricks)
-	{
-		if (brick.positions.empty())
-			continue;
-		pointsPerBrickAverage += static_cast<float>(brick.positions.size()) / (bricks.size() - emptyBrickCount);
-	}
+	updateStatistics();
 }
 
 bool PointCloud::hasNormals() const
@@ -142,7 +169,21 @@ void PointCloud::drawUI()
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
 	ImGui::Text("Total Point Count: %i", vertexCount);
-	ImGui::Text("Average Point Count Per Brick: %.2f (need 8)", pointsPerBrickAverage);
+	switch(bitmapSize)
+	{
+		case 32:
+			ImGui::Text("Average Point Count Per Brick: %.2f (need 2048)", pointsPerBrickAverage);
+			break;
+		case 16:
+			ImGui::Text("Average Point Count Per Brick: %.2f (need 256)", pointsPerBrickAverage);
+			break;
+		case 8:
+			ImGui::Text("Average Point Count Per Brick: %.2f (need 32)", pointsPerBrickAverage);
+			break;
+		case 4:
+			ImGui::Text("Average Point Count Per Brick: %.2f (need 8)", pointsPerBrickAverage);
+			break;
+	}
 	ImGui::Text("Redundant Points if compressed: %i, (%.2f%%)", redundantPointsIfCompressed, 100 * static_cast<float>(redundantPointsIfCompressed) / vertexCount);
 	ImGui::SliderInt("Max Subdivisions: ", &maxSubdivisions, 1, 255);
 	ImGui::SliderInt3("Subdivisions", &tmpSubdivisions.x, 0, maxSubdivisions);

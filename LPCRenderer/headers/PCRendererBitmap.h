@@ -20,6 +20,12 @@ public:
 	PCRendererBitmap& operator=(const PCRendererBitmap&) = delete;
 	PCRendererBitmap& operator=(PCRendererBitmap&&) = default;
 
+private:
+	void update32();
+	void update16();
+	void update8();
+	void update4();
+
 public:
 	virtual void update() override;
 	virtual void render(Scene const* scene) override;

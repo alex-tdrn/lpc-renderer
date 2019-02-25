@@ -14,6 +14,8 @@ namespace
 	Shader unpack4Shader{"shaders/pcUnpackBitmap4.comp"};
 	int pointSize = 2;
 	int batchSize = 1;
+	int bitmapSize = 32;
+	Shader* unpackShader = nullptr;
 }
 
 PCRendererBitmap::PCRendererBitmap()
@@ -22,7 +24,133 @@ PCRendererBitmap::PCRendererBitmap()
 	Counter.reserve(4);
 }
 
-void PCRendererBitmap::update()
+void PCRendererBitmap::update32()
+{
+	constexpr std::size_t bitmapSize = 32;
+	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
+	static BrickBitmap auxBitmap;
+	static std::vector<BrickBitmap> bitmaps;
+	bitmaps.clear();
+	std::vector<std::uint32_t> bitmapIndices;
+	int brickIndex = -1;
+	totalBrickCount = 0;
+	for(auto brick : cloud->getAllBricks())
+	{
+		brickIndex++;
+		if(brick.positions.empty())
+			continue;
+		totalBrickCount++;
+		auxBitmap.reset();
+		for(auto const& position : brick.positions)
+		{
+			glm::ivec3 coordinates(position * float(bitmapSize));
+			int idx = 0;
+			idx += coordinates.x;//jump points
+			idx += coordinates.y * bitmapSize;//jump lines
+			idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
+			auxBitmap.set(idx, true);
+		}
+		bitmapIndices.push_back(brickIndex);
+		bitmaps.push_back(auxBitmap);
+	}
+
+	bindVAO();
+	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
+	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(), sizeInBytes(bitmapIndices)}});
+	std::size_t positionCount = batchSize * bitmapSize * bitmapSize * bitmapSize;
+	SSBOPackedPositions.reserve((positionCount + positionCount % 2) * sizeof(std::uint16_t));
+	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
+	glEnableVertexAttribArray(0);
+	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
+
+	SSBODrawCommands.reserve(batchSize * sizeof(DrawCommand));
+}
+
+void PCRendererBitmap::update16()
+{
+	constexpr std::size_t bitmapSize = 16;
+	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
+	static BrickBitmap auxBitmap;
+	static std::vector<BrickBitmap> bitmaps;
+	bitmaps.clear();
+	std::vector<std::uint32_t> bitmapIndices;
+	int brickIndex = -1;
+	totalBrickCount = 0;
+	for(auto brick : cloud->getAllBricks())
+	{
+		brickIndex++;
+		if(brick.positions.empty())
+			continue;
+		totalBrickCount++;
+		auxBitmap.reset();
+		for(auto const& position : brick.positions)
+		{
+			glm::ivec3 coordinates(position * float(bitmapSize));
+			int idx = 0;
+			idx += coordinates.x;//jump points
+			idx += coordinates.y * bitmapSize;//jump lines
+			idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
+			auxBitmap.set(idx, true);
+		}
+		bitmapIndices.push_back(brickIndex);
+		bitmaps.push_back(auxBitmap);
+	}
+
+	bindVAO();
+	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
+	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(), sizeInBytes(bitmapIndices)}});
+	std::size_t positionCount = batchSize * bitmapSize * bitmapSize * bitmapSize;
+	SSBOPackedPositions.reserve((positionCount + positionCount % 2) * sizeof(std::uint16_t));
+	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
+	glEnableVertexAttribArray(0);
+	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
+
+	SSBODrawCommands.reserve(batchSize * sizeof(DrawCommand));
+}
+
+void PCRendererBitmap::update8()
+{
+	constexpr std::size_t bitmapSize = 8;
+	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
+	static BrickBitmap auxBitmap;
+	static std::vector<BrickBitmap> bitmaps;
+	bitmaps.clear();
+	std::vector<std::uint32_t> bitmapIndices;
+	int brickIndex = -1;
+	totalBrickCount = 0;
+	for(auto brick : cloud->getAllBricks())
+	{
+		brickIndex++;
+		if(brick.positions.empty())
+			continue;
+		totalBrickCount++;
+		auxBitmap.reset();
+		for(auto const& position : brick.positions)
+		{
+			glm::ivec3 coordinates(position * float(bitmapSize));
+			int idx = 0;
+			idx += coordinates.x;//jump points
+			idx += coordinates.y * bitmapSize;//jump lines
+			idx += coordinates.z * bitmapSize * bitmapSize;//jump surfaces
+			auxBitmap.set(idx, true);
+		}
+		bitmapIndices.push_back(brickIndex);
+		bitmaps.push_back(auxBitmap);
+	}
+
+	bindVAO();
+	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
+	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(), sizeInBytes(bitmapIndices)}});
+	std::size_t positionCount = batchSize * bitmapSize * bitmapSize * bitmapSize;
+	SSBOPackedPositions.reserve((positionCount + positionCount % 2) * sizeof(std::uint16_t));
+	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
+	glEnableVertexAttribArray(0);
+	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
+
+	SSBODrawCommands.reserve(batchSize * sizeof(DrawCommand));
+}
+
+void PCRendererBitmap::update4()
 {
 	constexpr std::size_t bitmapSize = 4;
 	using BrickBitmap = std::bitset<bitmapSize * bitmapSize * bitmapSize>;
@@ -54,7 +182,7 @@ void PCRendererBitmap::update()
 
 	bindVAO();
 	SSBOBitmaps.write({{(std::byte const*)bitmaps.data(), sizeInBytes(bitmaps)}});
-	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(),sizeInBytes(bitmapIndices)}});
+	SSBOBitmapIndices.write({{(std::byte const*)bitmapIndices.data(), sizeInBytes(bitmapIndices)}});
 	std::size_t positionCount = batchSize * bitmapSize * bitmapSize * bitmapSize;
 	SSBOPackedPositions.reserve((positionCount + positionCount % 2) * sizeof(std::uint16_t));
 	SSBOPackedPositions.bind(GL_ARRAY_BUFFER);
@@ -62,6 +190,29 @@ void PCRendererBitmap::update()
 	glVertexAttribIPointer(0, 1, GL_UNSIGNED_SHORT, 0, (void*)(0));
 
 	SSBODrawCommands.reserve(batchSize * sizeof(DrawCommand));
+}
+
+void PCRendererBitmap::update()
+{
+	switch(bitmapSize)
+	{
+		case 32:
+			unpackShader = &unpack32Shader;
+			update32();
+			break;
+		case 16:
+			unpackShader = &unpack16Shader;
+			update16();
+			break;
+		case 8:
+			unpackShader = &unpack8Shader;
+			update8();
+			break;
+		case 4:
+			unpackShader = &unpack4Shader;
+			update4();
+			break;
+	}
 }
 
 void PCRendererBitmap::render(Scene const* scene)
@@ -73,7 +224,7 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
 	bindVAO();
-	unpack4Shader.use();
+	unpackShader->use();
 
 	SSBOBitmaps.bindBase(0);
 	SSBOBitmapIndices.bindBase(1);
@@ -89,8 +240,8 @@ void PCRendererBitmap::render(Scene const* scene)
 	{
 		Counter.clear();
 
-		unpack4Shader.use();
-		unpack4Shader.set("bitmapsOffset", totalBrickCount - remainingBricks);
+		unpackShader->use();
+		unpackShader->set("bitmapsOffset", totalBrickCount - remainingBricks);
 		int brickCount = batchSize;
 		if(remainingBricks < batchSize)
 			brickCount = remainingBricks;
@@ -107,6 +258,38 @@ void PCRendererBitmap::render(Scene const* scene)
 void PCRendererBitmap::drawUI()
 {
 	PCRenderer::drawUI();
+	ImGui::Text("Bitmap Size");
+	if(ImGui::RadioButton("32", bitmapSize == 32))
+	{
+		bitmapSize = 32;
+		update();
+		cloud->setBitmapSize(bitmapSize);
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("16", bitmapSize == 16))
+	{
+		bitmapSize = 16;
+		update();
+		cloud->setBitmapSize(bitmapSize);
+
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("8", bitmapSize == 8))
+	{
+		bitmapSize = 8;
+		update();
+		cloud->setBitmapSize(bitmapSize);
+
+	}
+	ImGui::SameLine();
+	if(ImGui::RadioButton("4", bitmapSize == 4))
+	{
+		bitmapSize = 4;
+		update();
+		cloud->setBitmapSize(bitmapSize);
+
+	}
+
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);
 	if(ImGui::InputInt("Batch Size", &batchSize, 1, 10))
 	{
