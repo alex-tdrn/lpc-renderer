@@ -22,8 +22,10 @@ public:
 private:
 	bool needNormals() const;
 	bool needColours() const;
-	void updatePositions16();
 	void updatePositions32();
+	void updatePositions16();
+	void updateNormals16();
+	void updateNormals8();
 
 public:
 	virtual void update() override;

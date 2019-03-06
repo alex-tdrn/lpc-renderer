@@ -194,6 +194,8 @@ void PCRendererBitmap::update4()
 
 void PCRendererBitmap::update()
 {
+	cloud->setBrickPrecision(bitmapSize);
+
 	switch(bitmapSize)
 	{
 		case 32:
@@ -263,14 +265,12 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 32;
 		update();
-		cloud->setBrickPrecision(bitmapSize);
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("16", bitmapSize == 16))
 	{
 		bitmapSize = 16;
 		update();
-		cloud->setBrickPrecision(bitmapSize);
 
 	}
 	ImGui::SameLine();
@@ -278,7 +278,6 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 8;
 		update();
-		cloud->setBrickPrecision(bitmapSize);
 
 	}
 	ImGui::SameLine();
@@ -286,8 +285,6 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 4;
 		update();
-		cloud->setBrickPrecision(bitmapSize);
-
 	}
 
 	ImGui::SliderInt("Point Size", &pointSize, 1, 16);

@@ -1,6 +1,7 @@
 #include "PCRenderer.h"
 #include "Scene.h"
 #include "imgui.h"
+#include "Shader.h"
 
 PCRenderer::PCRenderer(Shader* mainShader)
 	: mainShader(mainShader)
@@ -50,6 +51,7 @@ void PCRenderer::render(Scene const* scene)
 	{
 		cloud = scene->getPointCloud();
 		update();
+		mainShader->use();
 	}
 }
 

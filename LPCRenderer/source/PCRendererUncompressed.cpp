@@ -43,6 +43,21 @@ bool PCRendererUncompressed::needNormals() const
 
 void PCRendererUncompressed::update()
 {
+	switch(renderMode)
+	{
+		case RenderMode::basic:
+			mainShader = &basicShader;
+			break;
+		case RenderMode::litPoint:
+			mainShader = &litPointShader;
+			break;
+		case RenderMode::litDisk:
+			mainShader = &litDiskShader;
+			break;
+		case RenderMode::debugNormals:
+			mainShader = &debugNormalsShader;
+			break;
+	}
 	if(needNormals() && !cloud->hasNormals())
 		return;
 	vertexCount = 0;
@@ -138,28 +153,24 @@ void PCRendererUncompressed::drawUI()
 	if(ImGui::RadioButton("Basic", renderMode == RenderMode::basic))
 	{
 		renderMode = RenderMode::basic;
-		mainShader = &basicShader;
 		update();
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Lit SS Point", renderMode == RenderMode::litPoint))
 	{
 		renderMode = RenderMode::litPoint;
-		mainShader = &litPointShader;
 		update();
 	}
 
 	if(ImGui::RadioButton("Lit Disk", renderMode == RenderMode::litDisk))
 	{
 		renderMode = RenderMode::litDisk;
-		mainShader = &litDiskShader;
 		update();
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("Debug Normals", renderMode == RenderMode::debugNormals))
 	{
 		renderMode = RenderMode::debugNormals;
-		mainShader = &debugNormalsShader;
 		update();
 	}
 	if(needNormals() && cloud && !cloud->hasNormals())
