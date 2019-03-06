@@ -192,6 +192,8 @@
     <None Include="shaders\pcBrickIndirect.frag" />
     <None Include="shaders\pcBarebonesBrickVS.geom" />
     <None Include="shaders\pcBrickIndirect.vert" />
+    <None Include="shaders\pcBrickIndirectLit.geom" />
+    <None Include="shaders\pcBrickIndirectLit.vert" />
     <None Include="shaders\pcDebugNormals.frag" />
     <None Include="shaders\pcDebugNormals.geom" />
     <None Include="shaders\pcDebugNormals.vert" />

@@ -148,5 +148,7 @@
     <None Include="shaders\pcUnpackBitmap8.comp" />
     <None Include="shaders\pcUnpackBitmap4.comp" />
     <None Include="shaders\pcBrickIndirect.vert" />
+    <None Include="shaders\pcBrickIndirectLit.vert" />
+    <None Include="shaders\pcBrickIndirectLit.geom" />
   </ItemGroup>
 </Project>
