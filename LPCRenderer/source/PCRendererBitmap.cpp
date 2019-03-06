@@ -263,14 +263,14 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 32;
 		update();
-		cloud->setBitmapSize(bitmapSize);
+		cloud->setBrickPrecision(bitmapSize);
 	}
 	ImGui::SameLine();
 	if(ImGui::RadioButton("16", bitmapSize == 16))
 	{
 		bitmapSize = 16;
 		update();
-		cloud->setBitmapSize(bitmapSize);
+		cloud->setBrickPrecision(bitmapSize);
 
 	}
 	ImGui::SameLine();
@@ -278,7 +278,7 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 8;
 		update();
-		cloud->setBitmapSize(bitmapSize);
+		cloud->setBrickPrecision(bitmapSize);
 
 	}
 	ImGui::SameLine();
@@ -286,7 +286,7 @@ void PCRendererBitmap::drawUI()
 	{
 		bitmapSize = 4;
 		update();
-		cloud->setBitmapSize(bitmapSize);
+		cloud->setBrickPrecision(bitmapSize);
 
 	}
 

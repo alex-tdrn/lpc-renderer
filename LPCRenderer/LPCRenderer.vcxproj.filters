@@ -143,10 +143,10 @@
     <None Include="shaders\pcBrickGS.vert" />
     <None Include="shaders\pcBrickGS.geom" />
     <None Include="shaders\pcBrickIndirect.frag" />
-    <None Include="shaders\pcBrickIndirect.vert" />
     <None Include="shaders\pcUnpackBitmap16.comp" />
     <None Include="shaders\pcUnpackBitmap32.comp" />
     <None Include="shaders\pcUnpackBitmap8.comp" />
     <None Include="shaders\pcUnpackBitmap4.comp" />
+    <None Include="shaders\pcBrickIndirect.vert" />
   </ItemGroup>
 </Project>

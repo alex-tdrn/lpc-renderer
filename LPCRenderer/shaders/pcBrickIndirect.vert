@@ -6,15 +6,25 @@ uniform uvec3 subdivisions;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform int positionSize;
 
 layout(location = 0) in uint compressedPosition;
 
 void main()
 {
 	vec3 relativePosition;
-	relativePosition.x = float(bitfieldExtract(compressedPosition, 0, 5)) / 32.0f;
-	relativePosition.y = float(bitfieldExtract(compressedPosition, 5, 5)) / 32.0f;
-	relativePosition.z = float(bitfieldExtract(compressedPosition, 10, 5)) / 32.0f;
+	if(positionSize == 16)
+	{
+		relativePosition.x = float(bitfieldExtract(compressedPosition, 0, 5)) / 32.0f;
+		relativePosition.y = float(bitfieldExtract(compressedPosition, 5, 5)) / 32.0f;
+		relativePosition.z = float(bitfieldExtract(compressedPosition, 10, 5)) / 32.0f;
+	}
+	else if (positionSize == 32)
+	{
+		relativePosition.x = float(bitfieldExtract(compressedPosition, 0, 10)) / 1024.0f;
+		relativePosition.y = float(bitfieldExtract(compressedPosition, 10, 10)) / 1024.0f;
+		relativePosition.z = float(bitfieldExtract(compressedPosition, 20, 10)) / 1024.0f;
+	}
 	relativePosition *= brickSize;
 	
 	uint index = gl_BaseInstanceARB;

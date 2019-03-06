@@ -23,7 +23,7 @@ private:
 	mutable std::size_t emptyBrickCount = 0;
 	mutable std::size_t redundantPointsIfCompressed = 0;
 	mutable float pointsPerBrickAverage = 0;
-	mutable std::size_t bitmapSize = 32;
+	mutable std::size_t brickPrecision = 32;
 
 public:
 	PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals = {});
@@ -38,7 +38,7 @@ protected:
 	std::string getNamePrefix() const;
 
 public:
-	void setBitmapSize(std::size_t bitmapSize) const;
+	void setBrickPrecision(std::size_t precision) const;
 	void updateStatistics() const;
 	void setSubDivisions(glm::ivec3 subdivisions);
 	bool hasNormals() const;
@@ -55,6 +55,7 @@ public:
 
 };
 
+std::uint32_t packPosition1024(glm::vec3);
 std::uint16_t packPosition32(glm::vec3);
 std::uint16_t packPosition16(glm::vec3);
 std::uint16_t packPosition8(glm::vec3);

@@ -31,9 +31,9 @@ std::string PointCloud::getNamePrefix() const
 	return "PointCloud";
 }
 
-void PointCloud::setBitmapSize(std::size_t bitmapSize) const
+void PointCloud::setBrickPrecision(std::size_t precision) const
 {
-	this->bitmapSize = bitmapSize;
+	this->brickPrecision = precision;
 	updateStatistics();
 }
 
@@ -48,11 +48,14 @@ void PointCloud::updateStatistics() const
 			emptyBrickCount++;
 			continue;
 		}
-		std::unordered_map<std::uint16_t, std::size_t> occurences;
+		std::unordered_map<std::uint32_t, std::size_t> occurences;
 		for(auto const& position : brick.positions)
 		{
-			switch(bitmapSize)
+			switch(brickPrecision)
 			{
+				case 1024:
+					occurences[packPosition1024(position)]++;
+					break;
 				case 32:
 					occurences[packPosition32(position)]++;
 					break;
@@ -169,7 +172,7 @@ void PointCloud::drawUI()
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
 	ImGui::Text("Total Point Count: %i", vertexCount);
-	switch(bitmapSize)
+	switch(brickPrecision)
 	{
 		case 32:
 			ImGui::Text("Average Point Count Per Brick: %.2f (need 2048)", pointsPerBrickAverage);
@@ -193,6 +196,14 @@ void PointCloud::drawUI()
 	ImGui::Text("Total Brick Count: %i", bricks.size());
 	ImGui::Text("Empty Brick Count: %i, (%.2f%%)", emptyBrickCount, 100 * static_cast<float>(emptyBrickCount) / bricks.size());
 
+}
+
+std::uint32_t packPosition1024(glm::vec3 p)
+{
+	std::uint32_t packed = 1024 * p.x;
+	packed |= std::uint32_t(1024 * p.y) << 10;
+	packed |= std::uint32_t(1024 * p.z) << 20;
+	return packed;
 }
 
 std::uint16_t packPosition32(glm::vec3 p)
