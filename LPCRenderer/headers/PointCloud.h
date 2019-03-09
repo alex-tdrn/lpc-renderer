@@ -51,6 +51,8 @@ public:
 	glm::vec3 convertToWorldPosition(glm::ivec3 indices, glm::vec3 localPosition) const;
 	std::pair<glm::vec3, glm::vec3> getBoundsAt(glm::ivec3 indices) const;
 	glm::vec3 getOffsetAt(glm::ivec3 indices) const;
+
+	std::unique_ptr<PointCloud> decimate(std::size_t maxPoints) const; 
 	void drawUI();
 
 };

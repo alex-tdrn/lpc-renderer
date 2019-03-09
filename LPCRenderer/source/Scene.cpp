@@ -11,11 +11,11 @@ Scene::Scene(PointCloud* cloud)
 	auto bounds = cloud->getBounds();
 	glm::vec3 center = (bounds.first + bounds.second) / 2.0f;
 	bounds.first -= center;
-	float scale = -1.0f;
+	normalizationScale = -1.0f;
 	for(int i = 0; i < 3; i++)
-		scale = std::max(scale, -bounds.first[i]);
+		normalizationScale = std::max(normalizationScale, -bounds.first[i]);
 	glm::mat4 t = glm::translate(glm::mat4{1.0f}, -center);
-	glm::mat4 s = glm::scale(glm::mat4{1.0f}, 1.0f / glm::vec3{scale});
+	glm::mat4 s = glm::scale(glm::mat4{1.0f}, 1.0f / glm::vec3{normalizationScale});
 	modelMatrix = s * t;
 }
 
@@ -32,6 +32,11 @@ PointCloud const* Scene::getPointCloud() const
 glm::mat4 Scene::getModelMatrix() const
 {
 	return glm::scale(modelMatrix, glm::vec3{scaling});
+}
+
+float Scene::getScaling() const
+{
+	return scaling * normalizationScale;
 }
 
 Camera& Scene::getCamera()

@@ -122,7 +122,7 @@ void PCRendererUncompressed::render(Scene const* scene)
 	switch(renderMode)
 	{
 		case RenderMode::litDisk:
-			mainShader->set("diskRadius", diskRadius);
+			mainShader->set("diskRadius", diskRadius  * scene->getScaling());
 			[[fallthrough]];
 		case RenderMode::litPoint:
 			mainShader->set("backFaceCulling", backFaceCulling);
@@ -135,7 +135,7 @@ void PCRendererUncompressed::render(Scene const* scene)
 			break;
 		case RenderMode::debugNormals:
 			glLineWidth(debugNormalsLineThickness);
-			mainShader->set("lineLength", debugNormalsLineLength);
+			mainShader->set("lineLength", debugNormalsLineLength * scene->getScaling());
 			break;
 	}
 

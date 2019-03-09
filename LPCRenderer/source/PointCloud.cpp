@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <imgui.h>
 #include <unordered_map>
+#include <PCManager.h>
+#include <Scene.h>
+#include <SceneManager.h>
 
 PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
 	:vertexCount(positions.size())
@@ -167,6 +170,39 @@ glm::vec3 PointCloud::getOffsetAt(glm::ivec3 indices) const
 	return brickSize * glm::vec3(indices);
 }
 
+std::unique_ptr<PointCloud> PointCloud::decimate(std::size_t maxPoints) const
+{
+	int stride = std::max(1ULL, vertexCount / maxPoints);
+	std::vector<glm::vec3> positions;
+	std::vector<glm::vec3> normals;
+
+	positions.reserve(vertexCount);
+	if(hasNormals())
+		normals.reserve(vertexCount);
+	for(auto const& brick : bricks)
+	{
+		for(auto const& position : brick.positions)
+			positions.push_back(convertToWorldPosition(brick.indices, position));
+		for(auto const& normal : brick.normals)
+			normals.push_back(normal);
+	}
+
+	std::vector<glm::vec3> decimatedPositions;
+	std::vector<glm::vec3> decimatedNormals;
+	decimatedPositions.reserve(maxPoints);
+	
+	if(hasNormals())
+		decimatedNormals.reserve(maxPoints);
+
+	for(int i = 0; i < positions.size(); i += stride)
+	{
+		decimatedPositions.push_back(positions[i]);
+		if(hasNormals())
+			decimatedNormals.push_back(normals[i]);
+	}
+	return std::make_unique<PointCloud>(std::move(decimatedPositions), std::move(decimatedNormals));
+}
+
 void PointCloud::drawUI()
 {
 	glm::ivec3 tmpSubdivisions = subdivisions;
@@ -196,6 +232,14 @@ void PointCloud::drawUI()
 	ImGui::Text("Total Brick Count: %i", bricks.size());
 	ImGui::Text("Empty Brick Count: %i, (%.2f%%)", emptyBrickCount, 100 * static_cast<float>(emptyBrickCount) / bricks.size());
 
+	static int decimatePointCount = 100'000;
+	ImGui::InputInt("Decimate Max Points: ", &decimatePointCount);
+	if(ImGui::Button("Decimate"))
+	{
+		auto cloud = PCManager::add(decimate(decimatePointCount));
+		cloud->setName(getName() + "(decimated)");
+		SceneManager::add(std::make_unique<Scene>(cloud));
+	}
 }
 
 std::uint32_t packPosition1024(glm::vec3 p)

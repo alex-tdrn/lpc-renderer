@@ -20,6 +20,7 @@ private:
 	PointCloud* cloud = nullptr;
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	float scaling = 1.0f;
+	float normalizationScale = 1.0f;
 
 public:
 	Scene(PointCloud* cloud);
@@ -37,6 +38,7 @@ public:
 	float getAmbientStrength() const;
 	PointCloud const* getPointCloud() const;
 	glm::mat4 getModelMatrix() const;
+	float getScaling() const;
 	void drawUI();
 
 };

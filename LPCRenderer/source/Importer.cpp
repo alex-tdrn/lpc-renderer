@@ -66,8 +66,15 @@ namespace Importer
 				);
 			}
 		}
+		bool makeDecimated = allPositions.size() > 1'000'000;
 		auto cloud = PCManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals)));
 		SceneManager::add(std::make_unique<Scene>(cloud));
+		if(makeDecimated)
+		{
+			auto decimatedCloud = PCManager::add(cloud->decimate(1'000'000));
+			decimatedCloud->setName(cloud->getName() + "(decimated)");
+			SceneManager::add(std::make_unique<Scene>(decimatedCloud));
+		}
 	}
 
 	std::vector<MeshData> importCONF(std::filesystem::path const& filename)

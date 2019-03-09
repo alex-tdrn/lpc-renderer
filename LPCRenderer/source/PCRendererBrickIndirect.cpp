@@ -226,7 +226,7 @@ void PCRendererBrickIndirect::render(Scene const* scene)
 
 	if(renderMode == RenderMode::lit)
 	{
-		mainShader->set("diskRadius", diskRadius);
+		mainShader->set("diskRadius", diskRadius * scene->getScaling());
 		mainShader->set("backFaceCulling", backFaceCulling);
 		mainShader->set("specularColor", scene->getSpecularColor());
 		mainShader->set("shininess", scene->getShininess());
