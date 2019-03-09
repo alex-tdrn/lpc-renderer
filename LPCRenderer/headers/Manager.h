@@ -63,6 +63,7 @@ public:
 		int id = 0;
 		for(auto& resource : store)
 		{
+			ImGui::PushID(id++);
 			if(ImGui::Selectable(resource->getName().data(), selected == resource.get()))
 			{
 				selected = resource.get();
@@ -71,6 +72,7 @@ public:
 					impl::BaseClassWithActiveInstance<T>::activeResource = selected;
 				}
 			}
+			ImGui::PopID();
 		}
 		ImGui::EndChild();
 

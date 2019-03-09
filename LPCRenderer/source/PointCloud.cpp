@@ -181,7 +181,7 @@ glm::vec3 PointCloud::getOffsetAt(glm::ivec3 indices) const
 
 std::unique_ptr<PointCloud> PointCloud::decimate(std::size_t maxPoints) const
 {
-	int stride = std::max(1ULL, vertexCount / maxPoints);
+	float stride = std::max(1.0f, float(vertexCount) / maxPoints);
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::u8vec3> colors;
@@ -212,7 +212,7 @@ std::unique_ptr<PointCloud> PointCloud::decimate(std::size_t maxPoints) const
 	if(hasColors())
 		decimatedColors.reserve(maxPoints);
 
-	for(int i = 0; i < positions.size(); i += stride)
+	for(float i = 0; i < positions.size(); i += stride)
 	{
 		decimatedPositions.push_back(positions[i]);
 		if(hasNormals())

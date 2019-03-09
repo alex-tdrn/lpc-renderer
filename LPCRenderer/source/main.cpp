@@ -38,8 +38,8 @@ void drawUI()
 	static std::array uiWindows = {
 		UIWindow{"Profiler", Profiler::drawUI, true, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize},
 		UIWindow{"Renderer", MainRenderer::drawUI, true},
-		UIWindow{SceneManager::name, SceneManager::drawUI},
-		UIWindow{PCManager::name, PCManager::drawUI}
+		UIWindow{SceneManager::name, SceneManager::drawUI, true},
+		UIWindow{PCManager::name, PCManager::drawUI, true}
 	};
 
 	if(ImGui::BeginMainMenuBar())

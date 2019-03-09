@@ -12,7 +12,7 @@ private:
 	glm::vec3 backgroundColor{0.065f, 0.0f, 0.125f};
 	Camera camera;
 	glm::vec3 lightDirection = glm::normalize(glm::vec3{0.0f, -1.0f, -1.0f});
-	glm::vec3 lightColor{0.5f, 0.5f, 0.25f};
+	glm::vec3 lightColor{0.86f, 0.9f, 1.0f};
 	glm::vec3 diffuseColor{0.0f, 1.0f, 0.5f};
 	glm::vec3 specularColor{0.25f};
 	float shininess = 64.0f;
