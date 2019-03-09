@@ -13,6 +13,7 @@ struct MeshData
 {
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::u8vec3> colors;
 };
 
 namespace Importer
@@ -45,7 +46,10 @@ namespace Importer
 			verticesCount += mesh.positions.size();
 		std::vector<glm::vec3> allPositions;
 		allPositions.reserve(verticesCount);
+		
 		bool useNormals = true;
+		bool useColors = true;
+
 		for (auto& mesh : meshes)
 		{
 			allPositions.insert(allPositions.end(),
@@ -53,6 +57,7 @@ namespace Importer
 				std::make_move_iterator(mesh.positions.end())
 			);
 			useNormals = useNormals && !mesh.normals.empty();
+			useColors = useColors && !mesh.colors.empty();
 		}
 		std::vector<glm::vec3> allNormals;
 		if (useNormals)
@@ -66,8 +71,22 @@ namespace Importer
 				);
 			}
 		}
+
+		std::vector<glm::u8vec3> allColors;
+		if(useColors)
+		{
+			allColors.reserve(verticesCount);
+			for(auto& mesh : meshes)
+			{
+				allColors.insert(allColors.end(),
+					std::make_move_iterator(mesh.colors.begin()),
+					std::make_move_iterator(mesh.colors.end())
+				);
+			}
+		}
+
 		bool makeDecimated = allPositions.size() > 1'000'000;
-		auto cloud = PCManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals)));
+		auto cloud = PCManager::add(std::make_unique<PointCloud>(std::move(allPositions), std::move(allNormals), std::move(allColors)));
 		SceneManager::add(std::make_unique<Scene>(cloud));
 		if(makeDecimated)
 		{
@@ -135,6 +154,17 @@ namespace Importer
 		{
 			normalsAvailable = false;
 		}
+
+		bool colorsAvailable = true;
+		std::shared_ptr<tinyply::PlyData> plyColors;
+		try
+		{
+			plyColors = file.request_properties_from_element("vertex", {"red", "green", "blue"});
+		}
+		catch(...)
+		{
+			colorsAvailable = false;
+		}
 		file.read(fileStream);
 
 		MeshData mesh;
@@ -144,6 +174,11 @@ namespace Importer
 		{
 			mesh.normals.resize(plyNormals->count);
 			std::memcpy(mesh.normals.data(), plyNormals->buffer.get(), plyNormals->buffer.size_bytes());
+		}
+		if(colorsAvailable)
+		{
+			mesh.colors.resize(plyColors->count);
+			std::memcpy(mesh.colors.data(), plyColors->buffer.get(), plyColors->buffer.size_bytes());
 		}
 		return mesh;
 	}

@@ -7,7 +7,7 @@ class PCRendererBrickIndirect : public PCRenderer
 private:
 	GPUBuffer VBOPositions{GL_ARRAY_BUFFER};
 	GPUBuffer VBONormals{GL_ARRAY_BUFFER};
-	GPUBuffer VBOColours{GL_ARRAY_BUFFER};
+	GPUBuffer VBOColors{GL_ARRAY_BUFFER};
 	GPUBuffer DrawBuffer{GL_DRAW_INDIRECT_BUFFER};
 	std::size_t indirectDrawCount = 0;
 
@@ -21,7 +21,7 @@ public:
 
 private:
 	bool needNormals() const;
-	bool needColours() const;
+	bool needColors() const;
 	void updatePositions32();
 	void updatePositions16();
 	void updateNormals16();

@@ -5,8 +5,9 @@
 #include <PCManager.h>
 #include <Scene.h>
 #include <SceneManager.h>
+#include "GPUBuffer.h"
 
-PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals)
+PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals, std::vector<glm::u8vec3>&& colors)
 	:vertexCount(positions.size())
 {
 	for (int i = 0; i < 3; i++)
@@ -23,10 +24,11 @@ PointCloud::PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3
 		}
 	}
 	_hasNormals = !normals.empty();
+	_hasColors = !colors.empty();
 	brickSize = getSize() / glm::vec3(subdivisions + 1);
 	for (auto& position : positions)
 		position = glm::fract((position - bounds.first) / brickSize);
-	bricks.push_back(PointCloudBrick{ { 0, 0, 0 }, std::move(positions), std::move(normals) });
+	bricks.push_back(PointCloudBrick{ { 0, 0, 0 }, std::move(positions), std::move(normals), std::move(colors)});
 }
 
 std::string PointCloud::getNamePrefix() const
@@ -108,6 +110,8 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 			getBrickAt(indices).positions.push_back(relativePosition);
 			if (_hasNormals)
 				getBrickAt(indices).normals.push_back(brick.normals[i]);
+			if(_hasColors)
+				getBrickAt(indices).colors.push_back(brick.colors[i]);
 		}
 	}
 
@@ -117,6 +121,11 @@ void PointCloud::setSubDivisions(glm::ivec3 subdivisions)
 bool PointCloud::hasNormals() const
 {
 	return _hasNormals;
+}
+
+bool PointCloud::hasColors() const
+{
+	return _hasColors;
 }
 
 std::pair<glm::vec3, glm::vec3> PointCloud::getBounds() const
@@ -175,32 +184,43 @@ std::unique_ptr<PointCloud> PointCloud::decimate(std::size_t maxPoints) const
 	int stride = std::max(1ULL, vertexCount / maxPoints);
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::u8vec3> colors;
 
 	positions.reserve(vertexCount);
 	if(hasNormals())
 		normals.reserve(vertexCount);
+	if(hasColors())
+		colors.reserve(vertexCount);
+
 	for(auto const& brick : bricks)
 	{
 		for(auto const& position : brick.positions)
 			positions.push_back(convertToWorldPosition(brick.indices, position));
 		for(auto const& normal : brick.normals)
 			normals.push_back(normal);
+		for(auto const& color : brick.colors)
+			colors.push_back(color);
 	}
 
 	std::vector<glm::vec3> decimatedPositions;
 	std::vector<glm::vec3> decimatedNormals;
+	std::vector<glm::u8vec3> decimatedColors;
 	decimatedPositions.reserve(maxPoints);
 	
 	if(hasNormals())
 		decimatedNormals.reserve(maxPoints);
+	if(hasColors())
+		decimatedColors.reserve(maxPoints);
 
 	for(int i = 0; i < positions.size(); i += stride)
 	{
 		decimatedPositions.push_back(positions[i]);
 		if(hasNormals())
 			decimatedNormals.push_back(normals[i]);
+		if(hasColors())
+			decimatedColors.push_back(colors[i]);
 	}
-	return std::make_unique<PointCloud>(std::move(decimatedPositions), std::move(decimatedNormals));
+	return std::make_unique<PointCloud>(std::move(decimatedPositions), std::move(decimatedNormals), std::move(decimatedColors));
 }
 
 void PointCloud::drawUI()
@@ -208,6 +228,28 @@ void PointCloud::drawUI()
 	glm::ivec3 tmpSubdivisions = subdivisions;
 	static int maxSubdivisions = 7;
 	ImGui::Text("Total Point Count: %i", vertexCount);
+	if(hasNormals())
+		ImGui::Text("Has Normals");
+	if(hasColors())
+		ImGui::Text("Has Colors");
+
+	ImGui::Text("Memory Consumption: ");
+	ImGui::Text("    -Positions ");
+	ImGui::SameLine();
+	drawMemoryConsumption(vertexCount * sizeof(glm::vec3));
+	if(hasNormals())
+	{
+		ImGui::Text("    -Normals ");
+		ImGui::SameLine();
+		drawMemoryConsumption(vertexCount * sizeof(glm::vec3));
+	}
+	if(hasColors())
+	{
+		ImGui::Text("    -Colors ");
+		ImGui::SameLine();
+		drawMemoryConsumption(vertexCount * sizeof(glm::u8vec3));
+	}
+
 	switch(brickPrecision)
 	{
 		case 32:

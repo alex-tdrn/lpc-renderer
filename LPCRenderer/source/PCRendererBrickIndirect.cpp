@@ -15,7 +15,7 @@ namespace
 {
 	Shader basicShader{"shaders/pcBrickIndirect.vert", "shaders/pcBrickIndirect.frag"};
 	Shader litShader{"shaders/pcBrickIndirectLit.vert", "shaders/pcLitDisk.frag", "shaders/pcLitDisk.geom"};
-	Shader litColouredShader{"shaders/pcBrickIndirectLit.vert", "shaders/pcBrickIndirect.frag"};
+	Shader litColouredShader{"shaders/pcBrickIndirectLitColored.vert", "shaders/pcLitDiskColored.frag", "shaders/pcLitDiskColored.geom"};
 	RenderMode renderMode = RenderMode::basic;
 	
 	bool backFaceCulling = true;
@@ -54,7 +54,7 @@ bool PCRendererBrickIndirect::needNormals() const
 	return renderMode != RenderMode::basic;
 }
 
-bool PCRendererBrickIndirect::needColours() const
+bool PCRendererBrickIndirect::needColors() const
 {
 	return renderMode == RenderMode::litColoured;
 }
@@ -214,6 +214,31 @@ void PCRendererBrickIndirect::update()
 		VBONormals.free();
 		glDisableVertexAttribArray(1);
 	}
+
+	if(needColors())
+	{
+		static std::vector<glm::u8vec3> colors;
+
+		for(auto const& brick : cloud->getAllBricks())
+		{
+			if(brick.positions.empty())
+				continue;
+			for(glm::u8vec3 color : brick.colors)
+				colors.push_back(color);
+		}
+
+		VBOColors.write({{(std::byte const*)colors.data(), colors.size() * sizeof(colors.front())}});
+		VBOColors.bind();
+
+		glEnableVertexAttribArray(2);//Colors
+		glVertexAttribPointer(2, 3, GL_UNSIGNED_BYTE, true, 0, (void*)(0));
+		colors.clear();
+	}
+	else
+	{
+		VBOColors.free();
+		glDisableVertexAttribArray(2);
+	}
 }
 
 void PCRendererBrickIndirect::render(Scene const* scene)
@@ -224,7 +249,7 @@ void PCRendererBrickIndirect::render(Scene const* scene)
 	mainShader->set("brickSize", cloud->getBrickSize());
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
 
-	if(renderMode == RenderMode::lit)
+	if(renderMode != RenderMode::basic)
 	{
 		mainShader->set("diskRadius", diskRadius * scene->getScaling());
 		mainShader->set("backFaceCulling", backFaceCulling);
@@ -303,7 +328,7 @@ void PCRendererBrickIndirect::drawUI()
 		ImGui::PopID();
 	}
 
-	if(needColours() && false)
+	if(needColors() && false)
 	{
 		ImGui::Text("Current render mode needs colours");
 		ImGui::Text("but none are present in the dataset!");

@@ -8,6 +8,7 @@ struct PointCloudBrick
 	glm::ivec3 indices;
 	std::vector<glm::vec3> positions;
 	std::vector<glm::vec3> normals;
+	std::vector<glm::u8vec3> colors;
 };
 
 
@@ -16,6 +17,7 @@ class PointCloud : public AutoName<PointCloud>
 private:
 	std::pair<glm::vec3, glm::vec3> bounds;
 	bool _hasNormals = false;
+	bool _hasColors = false;
 	glm::ivec3 subdivisions{0};
 	glm::vec3 brickSize;
 	std::vector<PointCloudBrick> bricks;
@@ -26,7 +28,7 @@ private:
 	mutable std::size_t brickPrecision = 32;
 
 public:
-	PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals = {});
+	PointCloud(std::vector<glm::vec3>&& positions, std::vector<glm::vec3>&& normals = {}, std::vector<glm::u8vec3>&& colors = {});
 	PointCloud() = delete;
 	PointCloud(PointCloud const& other) = default;
 	PointCloud(PointCloud&& other) = default;
@@ -42,6 +44,7 @@ public:
 	void updateStatistics() const;
 	void setSubDivisions(glm::ivec3 subdivisions);
 	bool hasNormals() const;
+	bool hasColors() const;
 	std::pair<glm::vec3, glm::vec3> getBounds() const;
 	glm::vec3 getSize() const;
 	glm::ivec3 getSubdivisions() const;
