@@ -17,6 +17,9 @@
     <Filter Include="Resource Management">
       <UniqueIdentifier>{f2892704-72ee-44e7-a644-52072d12f721}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Shaders">
+      <UniqueIdentifier>{73510dae-9b04-4d46-8432-f4ffa7ac26f8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="libraries\glad\glad.c">
@@ -41,22 +44,48 @@
     <ClCompile Include="source\Profiler.cpp">
       <Filter>Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="source\Scene.cpp" />
-    <ClCompile Include="source\Shader.cpp" />
-    <ClCompile Include="source\SceneManager.cpp" />
-    <ClCompile Include="source\Camera.cpp" />
-    <ClCompile Include="source\Importer.cpp" />
-    <ClCompile Include="source\GPUBuffer.cpp" />
-    <ClCompile Include="source\PointCloud.cpp" />
     <ClCompile Include="source\MainRenderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="source\PCRenderer.cpp" />
-    <ClCompile Include="source\PCManager.cpp" />
-    <ClCompile Include="source\PCRendererUncompressed.cpp" />
-    <ClCompile Include="source\PCRendererBrickGS.cpp" />
-    <ClCompile Include="source\PCRendererBrickIndirect.cpp" />
-    <ClCompile Include="source\PCRendererBitmap.cpp" />
+    <ClCompile Include="source\GPUBuffer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRendererBitmap.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRenderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRendererBrickGS.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRendererBrickIndirect.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCRendererUncompressed.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PCManager.cpp">
+      <Filter>Resource Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SceneManager.cpp">
+      <Filter>Resource Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Importer.cpp">
+      <Filter>Resource Management</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Shader.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Scene.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\PointCloud.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Camera.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\stb_truetype.h">
@@ -107,50 +136,130 @@
     <ClInclude Include="libraries\stb_textedit.h">
       <Filter>Libraries</Filter>
     </ClInclude>
-    <ClInclude Include="headers\Scene.h" />
-    <ClInclude Include="headers\SceneManager.h" />
-    <ClInclude Include="headers\Camera.h" />
-    <ClInclude Include="libraries\tinyply.h" />
-    <ClInclude Include="headers\Importer.h" />
-    <ClInclude Include="headers\GPUBuffer.h" />
-    <ClInclude Include="headers\PointCloud.h" />
     <ClInclude Include="headers\MainRenderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
-    <ClInclude Include="headers\PCRenderer.h" />
-    <ClInclude Include="headers\PCManager.h" />
-    <ClInclude Include="headers\PCRendererUncompressed.h" />
-    <ClInclude Include="headers\PCRendererBrickGS.h" />
-    <ClInclude Include="headers\PCRendererBrickIndirect.h" />
-    <ClInclude Include="headers\PCRendererBitmap.h" />
+    <ClInclude Include="headers\GPUBuffer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRenderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRendererBitmap.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRendererBrickGS.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRendererBrickIndirect.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCRendererUncompressed.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PCManager.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\SceneManager.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Importer.h">
+      <Filter>Resource Management</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Scene.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\PointCloud.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\tinyply.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Camera.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\pcLit.vert" />
-    <None Include="shaders\pcLit.frag" />
-    <None Include="shaders\pcDebugNormals.vert" />
-    <None Include="shaders\pcDebugNormals.geom" />
-    <None Include="shaders\pcDebugNormals.frag" />
-    <None Include="shaders\pcLitDisk.frag" />
-    <None Include="shaders\pcLitDisk.geom" />
-    <None Include="shaders\pcLitDisk.vert" />
-    <None Include="shaders\box.vert" />
-    <None Include="shaders\box.frag" />
-    <None Include="shaders\pcBarebonesBrickVS.geom" />
-    <None Include="shaders\pcUnpackBitmap.comp" />
-    <None Include="shaders\pcBasic.frag" />
-    <None Include="shaders\pcBasic.vert" />
-    <None Include="shaders\pcBrickGS.frag" />
-    <None Include="shaders\pcBrickGS.vert" />
-    <None Include="shaders\pcBrickGS.geom" />
-    <None Include="shaders\pcBrickIndirect.frag" />
-    <None Include="shaders\pcUnpackBitmap16.comp" />
-    <None Include="shaders\pcUnpackBitmap32.comp" />
-    <None Include="shaders\pcUnpackBitmap8.comp" />
-    <None Include="shaders\pcUnpackBitmap4.comp" />
-    <None Include="shaders\pcBrickIndirect.vert" />
-    <None Include="shaders\pcBrickIndirectLit.vert" />
-    <None Include="shaders\pcLitDiskColored.frag" />
-    <None Include="shaders\pcLitDiskColored.geom" />
-    <None Include="shaders\pcBrickIndirectLitColored.vert" />
+    <None Include="shaders\box.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\box.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBarebonesBrickVS.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBasic.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBasic.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickGS.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickGS.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickGS.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickIndirect.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickIndirect.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickIndirectLit.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcBrickIndirectLitColored.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcDebugNormals.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcDebugNormals.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcDebugNormals.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLit.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLit.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLitDisk.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLitDisk.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLitDisk.vert">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLitDiskColored.frag">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcLitDiskColored.geom">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcUnpackBitmap.comp">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcUnpackBitmap4.comp">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcUnpackBitmap8.comp">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcUnpackBitmap16.comp">
+      <Filter>Resources\Shaders</Filter>
+    </None>
+    <None Include="shaders\pcUnpackBitmap32.comp">
+      <Filter>Resources\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
