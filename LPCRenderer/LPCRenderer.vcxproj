@@ -204,7 +204,6 @@
     <None Include="shaders\pcLitDisk.vert" />
     <None Include="shaders\pcLitDiskColored.frag" />
     <None Include="shaders\pcLitDiskColored.geom" />
-    <None Include="shaders\pcUnpackBitmap.comp" />
     <None Include="shaders\pcUnpackBitmap16.comp" />
     <None Include="shaders\pcUnpackBitmap32.comp" />
     <None Include="shaders\pcUnpackBitmap4.comp" />

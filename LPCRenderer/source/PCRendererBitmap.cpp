@@ -224,6 +224,7 @@ void PCRendererBitmap::render(Scene const* scene)
 	mainShader->set("cloudOrigin", cloud->getBounds().first);
 	mainShader->set("brickSize", cloud->getBrickSize());
 	mainShader->set("subdivisions", glm::uvec3(cloud->getSubdivisions()));
+	mainShader->set("positionSize", 16);
 
 	bindVAO();
 	unpackShader->use();

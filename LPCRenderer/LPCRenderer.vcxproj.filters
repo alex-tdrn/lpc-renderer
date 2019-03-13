@@ -246,9 +246,6 @@
     <None Include="shaders\pcLitDiskColored.geom">
       <Filter>Resources\Shaders</Filter>
     </None>
-    <None Include="shaders\pcUnpackBitmap.comp">
-      <Filter>Resources\Shaders</Filter>
-    </None>
     <None Include="shaders\pcUnpackBitmap4.comp">
       <Filter>Resources\Shaders</Filter>
     </None>

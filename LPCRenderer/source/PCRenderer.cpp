@@ -50,8 +50,8 @@ void PCRenderer::render(Scene const* scene)
 	if(cloud != scene->getPointCloud())
 	{
 		cloud = scene->getPointCloud();
-		update();
 		mainShader->use();
+		update();
 	}
 }
 
