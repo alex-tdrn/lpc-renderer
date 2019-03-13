@@ -2,7 +2,8 @@
 #include "UIWindow.h"
 #include "Profiler.h"
 #include "MainRenderer.h"
-#include "imgui_impl_glfw_gl3.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
 #include "PCManager.h"
 #include "SceneManager.h"
 #include "Importer.h"
@@ -33,8 +34,9 @@ int main(int argc, char** argv)
 
 void drawUI()
 {
-	ImGui_ImplGlfwGL3_NewFrame();
-
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
 	static std::array uiWindows = {
 		UIWindow{"Profiler", Profiler::drawUI, true, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize},
 		UIWindow{"Renderer", MainRenderer::drawUI, true},
@@ -57,5 +59,5 @@ void drawUI()
 		window.drawUI();
 
 	ImGui::Render();
-	ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

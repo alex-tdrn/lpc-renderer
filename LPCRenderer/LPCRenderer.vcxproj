@@ -90,6 +90,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;$(SolutionDir)\$(ProjectName)\libraries\GLFW\glfw3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,10 +123,17 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;$(SolutionDir)\$(ProjectName)\libraries\GLFW\glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\imgui.cpp" />
+    <ClCompile Include="libraries\imgui_demo.cpp" />
+    <ClCompile Include="libraries\imgui_draw.cpp" />
+    <ClCompile Include="libraries\imgui_impl_glfw.cpp" />
+    <ClCompile Include="libraries\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="libraries\imgui_widgets.cpp" />
     <ClCompile Include="source\PCRendererBitmap.cpp" />
     <ClCompile Include="source\PCRendererBrickIndirect.cpp" />
     <ClCompile Include="source\PCRendererBrickGS.cpp" />
@@ -141,10 +149,6 @@
     <ClCompile Include="source\Scene.cpp" />
     <ClCompile Include="source\Profiler.cpp" />
     <ClCompile Include="libraries\glad\glad.c" />
-    <ClCompile Include="libraries\imgui.cpp" />
-    <ClCompile Include="libraries\imgui_demo.cpp" />
-    <ClCompile Include="libraries\imgui_draw.cpp" />
-    <ClCompile Include="libraries\imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\MainRenderer.cpp" />
     <ClCompile Include="source\OSWindow.cpp" />
@@ -160,13 +164,15 @@
     <ClInclude Include="libraries\glad\glad.h" />
     <ClInclude Include="libraries\GLFW\glfw3.h" />
     <ClInclude Include="libraries\GLFW\glfw3native.h" />
+    <ClInclude Include="libraries\imconfig.h" />
     <ClInclude Include="libraries\imgui.h" />
-    <ClInclude Include="libraries\imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="libraries\imgui_impl_glfw.h" />
+    <ClInclude Include="libraries\imgui_impl_opengl3.h" />
     <ClInclude Include="libraries\imgui_internal.h" />
+    <ClInclude Include="libraries\imstb_rectpack.h" />
+    <ClInclude Include="libraries\imstb_textedit.h" />
+    <ClInclude Include="libraries\imstb_truetype.h" />
     <ClInclude Include="libraries\KHR\khrplatform.h" />
-    <ClInclude Include="libraries\stb_rect_pack.h" />
-    <ClInclude Include="libraries\stb_textedit.h" />
-    <ClInclude Include="libraries\stb_truetype.h" />
     <ClInclude Include="headers\UIWindow.h" />
     <ClInclude Include="headers\Profiler.h" />
     <ClInclude Include="headers\Manager.h" />

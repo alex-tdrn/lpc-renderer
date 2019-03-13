@@ -2,7 +2,8 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_glfw.h"
 #include "Importer.h"
 #include "SceneManager.h"
 
@@ -80,7 +81,7 @@ void OSWindow::init()
 	glfwSetDropCallback(handle, callback::filesDropped);
 
 	auto guiContext = ImGui::CreateContext();
-	if(!ImGui_ImplGlfwGL3_Init(handle, false) || !guiContext)
+	if(!ImGui_ImplGlfw_InitForOpenGL(handle, false) || !guiContext || !ImGui_ImplOpenGL3_Init("#version 450"))
 	{
 		std::cerr << "Failed to initialize ImGui context\n";
 		std::terminate();
@@ -136,7 +137,9 @@ bool OSWindow::shouldClose()
 
 void OSWindow::destroy()
 {
-	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 }
 

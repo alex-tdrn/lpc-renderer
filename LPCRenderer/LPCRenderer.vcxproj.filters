@@ -25,18 +25,6 @@
     <ClCompile Include="libraries\glad\glad.c">
       <Filter>Libraries</Filter>
     </ClCompile>
-    <ClCompile Include="libraries\imgui_demo.cpp">
-      <Filter>Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="libraries\imgui.cpp">
-      <Filter>Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="libraries\imgui_draw.cpp">
-      <Filter>Libraries</Filter>
-    </ClCompile>
-    <ClCompile Include="libraries\imgui_impl_glfw_gl3.cpp">
-      <Filter>Libraries</Filter>
-    </ClCompile>
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\OSWindow.cpp">
       <Filter>Rendering</Filter>
@@ -86,24 +74,23 @@
     <ClCompile Include="source\Camera.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
+    <ClCompile Include="libraries\imgui.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_demo.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_draw.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_widgets.cpp">
+      <Filter>Libraries</Filter>
+    </ClCompile>
+    <ClCompile Include="libraries\imgui_impl_glfw.cpp" />
+    <ClCompile Include="libraries\imgui_impl_opengl3.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="libraries\stb_truetype.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\stb_rect_pack.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\KHR\khrplatform.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\imgui_internal.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\imgui_impl_glfw_gl3.h">
-      <Filter>Libraries</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\imgui.h">
       <Filter>Libraries</Filter>
     </ClInclude>
     <ClInclude Include="libraries\GLFW\glfw3.h">
@@ -132,9 +119,6 @@
     </ClInclude>
     <ClInclude Include="headers\Manager.h">
       <Filter>Resource Management</Filter>
-    </ClInclude>
-    <ClInclude Include="libraries\stb_textedit.h">
-      <Filter>Libraries</Filter>
     </ClInclude>
     <ClInclude Include="headers\MainRenderer.h">
       <Filter>Rendering</Filter>
@@ -178,6 +162,26 @@
     <ClInclude Include="headers\Camera.h">
       <Filter>Resources</Filter>
     </ClInclude>
+    <ClInclude Include="libraries\imconfig.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui_internal.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imstb_rectpack.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imstb_textedit.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imstb_truetype.h">
+      <Filter>Libraries</Filter>
+    </ClInclude>
+    <ClInclude Include="libraries\imgui_impl_glfw.h" />
+    <ClInclude Include="libraries\imgui_impl_opengl3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\box.frag">
