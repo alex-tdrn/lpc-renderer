@@ -28,7 +28,7 @@ void main()
 	EmitVertex();
 
 	gl_Position = projection * view * model * (p + vec4(gs_in[0].normal * lineLength, 0.0f));
-	gs_out.color = diffuseColor;
+	gs_out.color = gs_in[0].normal;
 	EmitVertex();
 
 	EndPrimitive();

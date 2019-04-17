@@ -62,9 +62,6 @@
     <ClCompile Include="source\Importer.cpp">
       <Filter>Resource Management</Filter>
     </ClCompile>
-    <ClCompile Include="source\Shader.cpp">
-      <Filter>Resources</Filter>
-    </ClCompile>
     <ClCompile Include="source\Scene.cpp">
       <Filter>Resources</Filter>
     </ClCompile>
@@ -88,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="libraries\imgui_impl_glfw.cpp" />
     <ClCompile Include="libraries\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="source\Shader.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="libraries\KHR\khrplatform.h">
