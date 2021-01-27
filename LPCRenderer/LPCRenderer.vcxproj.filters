@@ -17,8 +17,8 @@
     <Filter Include="Resource Management">
       <UniqueIdentifier>{f2892704-72ee-44e7-a644-52072d12f721}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources\Shaders">
-      <UniqueIdentifier>{73510dae-9b04-4d46-8432-f4ffa7ac26f8}</UniqueIdentifier>
+    <Filter Include="Resources\shaders">
+      <UniqueIdentifier>{c51fac89-f0e6-44cc-b879-8ddb0d9a2904}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -184,83 +184,76 @@
     <ClInclude Include="libraries\imgui_impl_opengl3.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\box.frag">
-      <Filter>Resources\Shaders</Filter>
-    </None>
-    <None Include="shaders\box.vert">
-      <Filter>Resources\Shaders</Filter>
-    </None>
-    <None Include="shaders\pcBarebonesBrickVS.geom">
-      <Filter>Resources\Shaders</Filter>
-    </None>
+    <None Include="shaders\box.frag" />
+    <None Include="shaders\box.vert" />
     <None Include="shaders\pcBasic.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBasic.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickGS.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickGS.geom">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickGS.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickIndirect.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickIndirect.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickIndirectLit.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcBrickIndirectLitColored.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcDebugNormals.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcDebugNormals.geom">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcDebugNormals.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLit.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLit.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLitDisk.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLitDisk.geom">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLitDisk.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLitDiskColored.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcLitDiskColored.geom">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcUnpackBitmap4.comp">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcUnpackBitmap8.comp">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcUnpackBitmap16.comp">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
     <None Include="shaders\pcUnpackBitmap32.comp">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>Resources\shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

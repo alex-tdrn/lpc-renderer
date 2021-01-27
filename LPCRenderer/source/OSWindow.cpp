@@ -39,7 +39,7 @@ void OSWindow::init()
 	}
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifndef NDEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
@@ -92,6 +92,11 @@ void OSWindow::init()
 	ImGui::GetStyle().WindowBorderSize = 0.0f;
 	ImGui::GetStyle().PopupRounding = 0.0f;
 	ImGui::GetStyle().ScrollbarRounding = 0.0f;
+
+	std::vector<std::filesystem::path> filenames;
+	filenames.emplace_back("../dragon_vrip_res4.ply");
+	Importer::import(filenames);
+
 }
 
 glm::ivec2 OSWindow::getSize()

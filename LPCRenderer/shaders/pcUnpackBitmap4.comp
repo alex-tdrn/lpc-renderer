@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 #extension GL_ARB_shader_atomic_counter_ops : require
 
 struct DrawCommand
@@ -37,9 +37,9 @@ const uint bitmapSize = 4;
 
 layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-const uint wordCount = (bitmapSize * bitmapSize * bitmapSize) / 32;
-const uint bitmapIndex = gl_WorkGroupID.x + bitmapsOffset;
-const uint brickReadStart = bitmapIndex * wordCount;
+uint wordCount = (bitmapSize * bitmapSize * bitmapSize) / 32;
+uint bitmapIndex = gl_WorkGroupID.x + bitmapsOffset;
+uint brickReadStart = bitmapIndex * wordCount;
 uint brickWriteOffset = 0;
 uint brickWriteStart;
 

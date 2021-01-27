@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "imgui.h"
 
@@ -13,7 +14,7 @@ namespace impl
 	template<typename T>
 	class BaseClassWithActiveInstance
 	{
-	protected:
+	public:
 		static inline T* activeResource = nullptr;
 	};
 }

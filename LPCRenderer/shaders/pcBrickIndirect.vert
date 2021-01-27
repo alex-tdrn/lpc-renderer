@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 uniform vec3 cloudOrigin;
 uniform vec3 brickSize;
@@ -27,7 +27,7 @@ void main()
 	}
 	relativePosition *= brickSize;
 	
-	uint index = gl_BaseInstanceARB;
+	uint index = gl_BaseInstance;
 	uvec3 indices;
 	indices.z = index / ((subdivisions.x + 1) * (subdivisions.y + 1));//count surfaces
 	index  = index % ((subdivisions.x + 1) * (subdivisions.y + 1));

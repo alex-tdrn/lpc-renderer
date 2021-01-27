@@ -22,32 +22,32 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{6753E358-BF40-4101-9400-23970AD08E63}</ProjectGuid>
     <RootNamespace>LPCRenderer</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -188,15 +188,14 @@
     <ClInclude Include="headers\PCRendererBitmap.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\pcBrickGS.frag" />
-    <None Include="shaders\pcBrickGS.geom" />
-    <None Include="shaders\pcBrickGS.vert" />
     <None Include="shaders\box.frag" />
     <None Include="shaders\box.vert" />
     <None Include="shaders\pcBasic.frag" />
     <None Include="shaders\pcBasic.vert" />
+    <None Include="shaders\pcBrickGS.frag" />
+    <None Include="shaders\pcBrickGS.geom" />
+    <None Include="shaders\pcBrickGS.vert" />
     <None Include="shaders\pcBrickIndirect.frag" />
-    <None Include="shaders\pcBarebonesBrickVS.geom" />
     <None Include="shaders\pcBrickIndirect.vert" />
     <None Include="shaders\pcBrickIndirectLit.vert" />
     <None Include="shaders\pcBrickIndirectLitColored.vert" />

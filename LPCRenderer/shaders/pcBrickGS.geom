@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 #define MAX_VERTS 256
 layout(points, invocations = 32) in;
 layout(points, max_vertices = MAX_VERTS) out;

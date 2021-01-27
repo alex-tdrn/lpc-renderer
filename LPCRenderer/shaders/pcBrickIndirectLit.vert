@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 const float pi = 3.14;
 uniform vec3 cloudOrigin;
@@ -49,7 +49,7 @@ vec3 decodePosition()
 	}
 	relativePosition *= brickSize;
 
-	uint index = gl_BaseInstanceARB;
+	uint index = gl_BaseInstance;
 	uvec3 indices;
 	indices.z = index / ((subdivisions.x + 1) * (subdivisions.y + 1));//count surfaces
 	index  = index % ((subdivisions.x + 1) * (subdivisions.y + 1));

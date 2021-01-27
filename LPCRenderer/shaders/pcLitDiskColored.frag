@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 struct Light
 {
@@ -21,9 +21,9 @@ in GS_OUT
 
 out vec4 fragColor;
 
-const vec3 normal = normalize(fs_in.normal);
-const vec3 viewDirection = normalize(-fs_in.position);
-const vec3 lightDirection = normalize(-light.direction);
+vec3 normal = normalize(fs_in.normal);
+vec3 viewDirection = normalize(-fs_in.position);
+vec3 lightDirection = normalize(-light.direction);
 
 void main()
 {
